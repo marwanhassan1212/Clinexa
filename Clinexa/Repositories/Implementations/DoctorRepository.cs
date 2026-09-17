@@ -34,6 +34,8 @@ namespace Clinexa.Repositories.Implementations
         {
             return await _db.Doctors
                 .AsNoTracking()
+                .Include(x => x.User)
+                .Include(x => x.Speciality)
                 .OrderBy(x => x.DoctorId)
                 .ToListAsync();
         }
@@ -41,7 +43,9 @@ namespace Clinexa.Repositories.Implementations
         public async Task<Doctor?> GetByIdAsync(int id)
         {
             return await _db.Doctors
-                .AsNoTracking()
+                
+                .Include(x => x.User)
+                .Include(x => x.Speciality)
                 .FirstOrDefaultAsync(x => x.DoctorId == id);
         }
 
@@ -53,6 +57,54 @@ namespace Clinexa.Repositories.Implementations
         public void UpdateAsync(Doctor doctor)
         {
             _db.Doctors.Update(doctor);
+        }
+
+        public async Task<(List<Doctor> Doctors, int TotalCount)> FilterAsync(
+       string? search,
+       int? specialityId,
+       bool? isActive,
+       int page,
+       int pageSize)
+        {
+            var query = _db.Doctors
+                .AsNoTracking()
+                .Include(x => x.User)
+                .Include(x => x.Speciality)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
+
+                query = query.Where(x =>
+                    x.User.FirstName.Contains(search) ||
+                    x.User.LastName.Contains(search) ||
+                    x.User.Email.Contains(search) ||
+                    x.User.PhoneNumber.Contains(search));
+            }
+
+            if (specialityId.HasValue)
+            {
+                query = query.Where(x =>
+                    x.SpecialityId == specialityId.Value);
+            }
+
+            if (isActive.HasValue)
+            {
+                query = query.Where(x =>
+                    x.IsActive == isActive.Value);
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var doctors = await query
+                .OrderBy(x => x.User.FirstName)
+                .ThenBy(x => x.User.LastName)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (doctors, totalCount);
         }
     }
 }

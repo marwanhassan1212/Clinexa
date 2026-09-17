@@ -10,6 +10,10 @@ namespace Clinexa.Services.Interfaces
 
         Task<bool> CreateAsync(Doctor doctor);
 
+        Task<bool> ActivateAsync(int id);
+
+        Task<(List<Doctor> Doctors, int TotalCount)> FilterAsync(string? search, int? specialityId,
+                         bool? isActive, int page, int pageSize);
         Task<bool> UpdateAsync(Doctor doctor);
 
         Task<bool> DeactivateAsync(int id);

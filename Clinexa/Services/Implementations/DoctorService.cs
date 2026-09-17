@@ -1,6 +1,7 @@
 ﻿using Clinexa.Models.Entities;
 using Clinexa.Repositories.Interfaces;
 using Clinexa.Services.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Clinexa.Services.Implementations
 {
@@ -65,17 +66,50 @@ namespace Clinexa.Services.Implementations
         public async Task<bool> UpdateAsync(Doctor doctor)
         {
             var doctorExists = await doctorRepository.GetByIdAsync(doctor.DoctorId);
+
+            if (doctorExists == null)
+                return false;
+
+            if (doctor.ConsultationFee < 0)
+                return false;
+
+            doctorExists.SpecialityId = doctor.SpecialityId;
+            doctorExists.ConsultationFee = doctor.ConsultationFee;
+
+            doctorRepository.UpdateAsync(doctorExists);
+
+            await doctorRepository.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<(List<Doctor> Doctors, int TotalCount)> FilterAsync(
+                  string? search,
+                  int? specialityId,
+                  bool? isActive,
+                  int page,
+                  int pageSize)
+        {
+            return await doctorRepository.FilterAsync(
+                search,
+                specialityId,
+                isActive,
+                page,
+                pageSize);
+        }
+
+        public async Task<bool> ActivateAsync(int id)
+        {
+            var doctorExists = await doctorRepository.GetByIdAsync(id);
             if(doctorExists == null)
             {
                 return false;
             }
-            if(doctor.ConsultationFee < 0)
-            {
-                return false;
-            }
-            doctorRepository.UpdateAsync(doctor);
+            doctorExists.IsActive = true;
+            doctorRepository.UpdateAsync(doctorExists);
             await doctorRepository.SaveChangesAsync();
             return true;
+
         }
     }
 }

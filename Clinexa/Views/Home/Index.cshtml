@@ -1,8 +1,548 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- =========================================================
+     WELCOME
+========================================================= -->
+
+<div class="row row-cards mb-4">
+
+    <div class="col-12">
+
+        <div class="card">
+
+            <div class="card-body">
+
+                <div class="row align-items-center">
+
+                    <div class="col">
+
+                        <div class="h2 mb-1">
+                            Good afternoon 👋
+                        </div>
+
+                        <div class="text-secondary">
+                            Here's what's happening in your clinic today.
+                        </div>
+
+                    </div>
+
+                    <div class="col-auto">
+
+                        <a asp-controller="Appointment"
+                           asp-action="Index"
+                           class="btn btn-primary">
+
+                            <i class="bi bi-calendar-plus me-1"></i>
+
+                            New Appointment
+
+                        </a>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     KEY METRICS
+========================================================= -->
+
+<div class="row row-cards mb-4">
+
+
+    <!-- Today's Appointments -->
+
+    <div class="col-sm-6 col-lg-3">
+
+        <div class="card">
+
+            <div class="card-body">
+
+                <div class="d-flex align-items-center">
+
+                    <div class="subheader">
+                        Today's Appointments
+                    </div>
+
+                    <div class="ms-auto">
+                        <i class="bi bi-calendar3 text-primary fs-2"></i>
+                    </div>
+
+                </div>
+
+                <div class="h1 mb-1">
+                    24
+                </div>
+
+                <div class="text-secondary">
+                    Scheduled for today
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Patients -->
+
+    <div class="col-sm-6 col-lg-3">
+
+        <div class="card">
+
+            <div class="card-body">
+
+                <div class="d-flex align-items-center">
+
+                    <div class="subheader">
+                        Active Patients
+                    </div>
+
+                    <div class="ms-auto">
+                        <i class="bi bi-people text-primary fs-2"></i>
+                    </div>
+
+                </div>
+
+                <div class="h1 mb-1">
+                    1,248
+                </div>
+
+                <div class="text-secondary">
+                    Currently active
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Doctors -->
+
+    <div class="col-sm-6 col-lg-3">
+
+        <div class="card">
+
+            <div class="card-body">
+
+                <div class="d-flex align-items-center">
+
+                    <div class="subheader">
+                        Doctors
+                    </div>
+
+                    <div class="ms-auto">
+                        <i class="bi bi-person-badge text-primary fs-2"></i>
+                    </div>
+
+                </div>
+
+                <div class="h1 mb-1">
+                    12
+                </div>
+
+                <div class="text-secondary">
+                    Active doctors
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Revenue -->
+
+    <div class="col-sm-6 col-lg-3">
+
+        <div class="card">
+
+            <div class="card-body">
+
+                <div class="d-flex align-items-center">
+
+                    <div class="subheader">
+                        Today's Revenue
+                    </div>
+
+                    <div class="ms-auto">
+                        <i class="bi bi-cash-stack text-primary fs-2"></i>
+                    </div>
+
+                </div>
+
+                <div class="h1 mb-1">
+                    $4,850
+                </div>
+
+                <div class="text-secondary">
+                    Payments received today
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================================
+     MAIN DASHBOARD
+========================================================= -->
+
+<div class="row row-cards">
+
+
+    <!-- Today's Appointments -->
+
+    <div class="col-lg-8">
+
+        <div class="card">
+
+            <div class="card-header">
+
+                <h3 class="card-title">
+                    Today's Appointments
+                </h3>
+
+                <div class="card-actions">
+
+                    <a asp-controller="Appointment"
+                       asp-action="Index"
+                       class="btn btn-sm btn-ghost-primary">
+
+                        View all
+
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <div class="table-responsive">
+
+                <table class="table table-vcenter card-table clinexa-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Patient</th>
+
+                            <th>Doctor</th>
+
+                            <th>Time</th>
+
+                            <th>Status</th>
+
+                            <th class="w-1"></th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        <tr>
+
+                            <td>
+                                <strong>Ahmed Hassan</strong>
+                            </td>
+
+                            <td>
+                                Dr. Mohamed Ali
+                            </td>
+
+                            <td>
+                                09:30 AM
+                            </td>
+
+                            <td>
+
+                                <span class="badge bg-green-lt">
+                                    Confirmed
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                <a href="#"
+                                   class="btn btn-sm btn-ghost-secondary">
+
+                                    <i class="bi bi-three-dots"></i>
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <td>
+                                <strong>Sara Mohamed</strong>
+                            </td>
+
+                            <td>
+                                Dr. Ahmed Hassan
+                            </td>
+
+                            <td>
+                                10:00 AM
+                            </td>
+
+                            <td>
+
+                                <span class="badge bg-yellow-lt">
+                                    Waiting
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                <a href="#"
+                                   class="btn btn-sm btn-ghost-secondary">
+
+                                    <i class="bi bi-three-dots"></i>
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <td>
+                                <strong>Omar Khaled</strong>
+                            </td>
+
+                            <td>
+                                Dr. Mohamed Ali
+                            </td>
+
+                            <td>
+                                11:30 AM
+                            </td>
+
+                            <td>
+
+                                <span class="badge bg-blue-lt">
+                                    Completed
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                <a href="#"
+                                   class="btn btn-sm btn-ghost-secondary">
+
+                                    <i class="bi bi-three-dots"></i>
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+
+                        <tr>
+
+                            <td>
+                                <strong>Mariam Adel</strong>
+                            </td>
+
+                            <td>
+                                Dr. Ahmed Hassan
+                            </td>
+
+                            <td>
+                                12:00 PM
+                            </td>
+
+                            <td>
+
+                                <span class="badge bg-red-lt">
+                                    Cancelled
+                                </span>
+
+                            </td>
+
+                            <td>
+
+                                <a href="#"
+                                   class="btn btn-sm btn-ghost-secondary">
+
+                                    <i class="bi bi-three-dots"></i>
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Quick Actions -->
+
+    <div class="col-lg-4">
+
+        <div class="card">
+
+            <div class="card-header">
+
+                <h3 class="card-title">
+                    Quick Actions
+                </h3>
+
+            </div>
+
+
+            <div class="list-group list-group-flush">
+
+
+                <a asp-controller="Patient"
+                   asp-action="Create"
+                   class="list-group-item list-group-item-action">
+
+                    <div class="d-flex align-items-center">
+
+                        <span class="avatar bg-blue-lt me-3">
+                            <i class="bi bi-person-plus"></i>
+                        </span>
+
+                        <div>
+
+                            <div class="fw-semibold">
+                                Add Patient
+                            </div>
+
+                            <div class="text-secondary small">
+                                Register a new patient
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+
+                <a asp-controller="Appointment"
+                   asp-action="Create"
+                   class="list-group-item list-group-item-action">
+
+                    <div class="d-flex align-items-center">
+
+                        <span class="avatar bg-green-lt me-3">
+                            <i class="bi bi-calendar-plus"></i>
+                        </span>
+
+                        <div>
+
+                            <div class="fw-semibold">
+                                Book Appointment
+                            </div>
+
+                            <div class="text-secondary small">
+                                Schedule a patient visit
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+
+                <a asp-controller="MedicalRecord"
+                   asp-action="Create"
+                   class="list-group-item list-group-item-action">
+
+                    <div class="d-flex align-items-center">
+
+                        <span class="avatar bg-purple-lt me-3">
+                            <i class="bi bi-file-medical"></i>
+                        </span>
+
+                        <div>
+
+                            <div class="fw-semibold">
+                                Medical Record
+                            </div>
+
+                            <div class="text-secondary small">
+                                Create a medical record
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+
+                <a asp-controller="Invoice"
+                   asp-action="Create"
+                   class="list-group-item list-group-item-action">
+
+                    <div class="d-flex align-items-center">
+
+                        <span class="avatar bg-orange-lt me-3">
+                            <i class="bi bi-receipt"></i>
+                        </span>
+
+                        <div>
+
+                            <div class="fw-semibold">
+                                Create Invoice
+                            </div>
+
+                            <div class="text-secondary small">
+                                Generate a patient invoice
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
 </div>

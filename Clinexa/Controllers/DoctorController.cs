@@ -9,14 +9,29 @@ namespace Clinexa.Controllers
     public class DoctorController : Controller
     {
         private readonly IDoctorService doctorService;
-        public DoctorController(IDoctorService doctorService)
+        private readonly ISpecialityService specialityService;
+        private readonly IUserService userService;
+        public DoctorController(IDoctorService doctorService , ISpecialityService specialityService
+            , IUserService userService)
         {
             this.doctorService = doctorService;
+            this.specialityService = specialityService;
+            this.userService = userService;
         }
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(DoctorFilterViewModel model)
         {
-            var doctors = await doctorService.GetAllAsync();
-            return View(doctors);
+            var result = await doctorService.FilterAsync(
+               model.Search,
+               model.SpecialityId,
+               model.IsActive,
+               model.Page,
+               model.PageSize);
+
+               model.Doctors = result.Doctors;
+               model.TotalCount = result.TotalCount;
+            model.Specialities = await specialityService.GetAllAsync();
+
+            return View(model);
         }
 
         public async Task<IActionResult> Details(int id)
@@ -33,9 +48,15 @@ namespace Clinexa.Controllers
         }
 
         // GET
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            return View();
+            var model = new CreateViewModel
+            {
+                Users = await userService.GetAllAsync(),
+                Specialities = await specialityService.GetAllAsync()
+            };
+
+            return View(model);
         }
 
         [HttpPost]
@@ -57,6 +78,8 @@ namespace Clinexa.Controllers
                    "",
                    "Unable to create doctor. The selected user may already be assigned to a doctor or the speciality may not exist."
                     );
+                    doctor.Users = await userService.GetAllAsync();
+                    doctor.Specialities = await specialityService.GetAllAsync();
 
                     return View(doctor);
                 }
@@ -68,6 +91,8 @@ namespace Clinexa.Controllers
             }
             else
             {
+                doctor.Users = await userService.GetAllAsync();
+                doctor.Specialities = await specialityService.GetAllAsync();
                 return View(doctor);
             }
         }
@@ -86,7 +111,9 @@ namespace Clinexa.Controllers
             {
                 DoctorId = doctor.DoctorId,
                 SpecialityId = doctor.SpecialityId,
-                ConsultationFee = doctor.ConsultationFee
+                ConsultationFee = doctor.ConsultationFee,
+                Specialities = await specialityService.GetAllAsync()
+                
             };
 
             return View(model);
@@ -98,6 +125,7 @@ namespace Clinexa.Controllers
         {
             if (!ModelState.IsValid)
             {
+                model.Specialities = await specialityService.GetAllAsync();
                 return View(model);
             }
 
@@ -110,12 +138,15 @@ namespace Clinexa.Controllers
 
             doctor.SpecialityId = model.SpecialityId;
             doctor.ConsultationFee = model.ConsultationFee;
+            
 
             var result = await doctorService.UpdateAsync(doctor);
 
             if (!result)
             {
-                return NotFound();
+                ModelState.AddModelError("", "Unable to update doctor.");
+                model.Specialities = await specialityService.GetAllAsync();
+                return View(model);
             }
 
             TempData["Success"] = "Doctor updated successfully.";
@@ -138,5 +169,23 @@ namespace Clinexa.Controllers
                 return RedirectToAction(nameof(Index));
             }
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Activate(int id)
+        {
+            var activate = await doctorService.ActivateAsync(id);
+            if(!activate)
+            {
+                return NotFound();
+            }
+
+            TempData["Success"] = "Doctor activated successfully.";
+
+            return RedirectToAction("Index");
+
+        }
+
+        }
     }
-}
+

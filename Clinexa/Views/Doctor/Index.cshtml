@@ -1,15 +1,16 @@
-﻿@model Clinexa.Models.ViewModels.Patient.PatientFilterViewModel
+﻿
+@model Clinexa.Models.ViewModels.Doctor.DoctorFilterViewModel
 
 @{
-    ViewData["Title"] = "Patients";
+    ViewData["Title"] = "Doctors";
 }
 
 @section PageActions {
-    <a asp-controller="Patient"
+    <a asp-controller="Doctor"
        asp-action="Create"
        class="btn btn-primary px-3 py-2">
         <i class="bi bi-plus-lg me-1"></i>
-        Add Patient
+        Add Doctor
     </a>
 }
 
@@ -17,39 +18,45 @@
 
     <!-- Header -->
     <div class="card-header py-2">
+
         <div class="row w-100 align-items-center">
 
             <div class="col">
+
                 <h3 class="card-title mb-1">
-                    Patients
+                    Doctors
                 </h3>
 
                 <div class="text-secondary">
-                    Manage and view registered patients
+                    Manage and view registered doctors
                 </div>
+
             </div>
 
             <div class="col-auto">
+
                 <span class="badge bg-blue-lt">
-                    @Model.Patients.Count patients
+                    @Model.Doctors.Count doctors
                 </span>
+
             </div>
 
         </div>
+
     </div>
 
 
-    <!-- Search -->
+    <!-- Search & Filters -->
     <div class="card-body border-bottom clinexa-patient-filters">
 
-        <form asp-controller="Patient"
+        <form asp-controller="Doctor"
               asp-action="Index"
               method="get">
 
             <div class="row g-2">
 
                 <!-- Search -->
-                <div class="col-md-4">
+                <div class="col-md-5">
 
                     <div class="input-icon">
 
@@ -57,7 +64,7 @@
                             <i class="bi bi-search"></i>
                         </span>
 
-                       <input type="text"
+                        <input type="text"
                                name="Search"
                                value="@Model.Search"
                                class="form-control"
@@ -66,87 +73,83 @@
                     </div>
 
                 </div>
-           
 
 
-                <!-- Gender -->
-                <div class="col-md-2">
+                <!-- Speciality -->
+                <div class="col-md-3">
 
-                    <select name="Gender" class="form-select">
-
-                        <option value="">Gender</option>
-
-                        <option value="Male"
-                                selected="@(Model.Gender?.ToString() == "Male")">
-                            Male
-                        </option>
-
-                        <option value="Female"
-                                selected="@(Model.Gender?.ToString() == "Female")">
-                            Female
-                        </option>
-
-                    </select>
-
-                </div>
-
-                <!-- Blood Type -->
-                <div class="col-md-2">
-
-                    <select asp-for="BloodType"
+                    <select name="SpecialityId"
                             class="form-select">
 
-                        <option value="">Blood Type</option>
-                        <option value="A+">A+</option>
-                        <option value="A-">A-</option>
-                        <option value="B+">B+</option>
-                        <option value="B-">B-</option>
-                        <option value="AB+">AB+</option>
-                        <option value="AB-">AB-</option>
-                        <option value="O+">O+</option>
-                        <option value="O-">O-</option>
+                        <option value="">
+                            Speciality
+                        </option>
+
+                        @foreach (var speciality in Model.Specialities)
+                        {
+                            <option value="@speciality.SpecialityId"
+                                    selected="@(Model.SpecialityId == speciality.SpecialityId)">
+                                @speciality.Name
+                            </option>
+                        }
 
                     </select>
 
                 </div>
+
 
                 <!-- Status -->
                 <div class="col-md-2">
 
-                    <select asp-for="IsActive"
+                    <select name="IsActive"
                             class="form-select">
 
-                        <option value="">Status</option>
-                        <option value="true">Active</option>
-                        <option value="false">Inactive</option>
+                        <option value="">
+                            Status
+                        </option>
+
+                        <option value="true"
+                                selected="@(Model.IsActive == true)">
+                            Active
+                        </option>
+
+                        <option value="false"
+                                selected="@(Model.IsActive == false)">
+                            Inactive
+                        </option>
 
                     </select>
 
                 </div>
+
 
                 <!-- Search Button -->
                 <div class="col-md-1">
 
                     <button type="submit"
                             class="btn btn-primary w-100">
+
                         <i class="bi bi-search"></i>
+
                     </button>
 
                 </div>
 
+
                 <!-- Reset Button -->
                 <div class="col-md-1">
 
-                    <a asp-controller="Patient"
+                    <a asp-controller="Doctor"
                        asp-action="Index"
                        class="btn btn-outline-secondary w-100">
-                        <i class="bi bi-arrow-counterclockwise"></i>
-                    </a>
 
-                    </div>
+                        <i class="bi bi-arrow-counterclockwise"></i>
+
+                    </a>
 
                 </div>
 
+            </div>
 
         </form>
 
@@ -156,48 +159,65 @@
     <!-- Table -->
     <div class="table-responsive clinexa-patient-table">
 
-        @if (Model.Patients.Any())
+        @if (Model.Doctors.Any())
         {
             <table class="table table-vcenter card-table clinexa-table">
 
                 <thead>
 
                     <tr>
-                        <th>Patient</th>
+
+                        <th>Doctor</th>
+
+                        <th>Speciality</th>
+
                         <th>Phone</th>
-                        <th>Gender</th>
-                        <th>Date of Birth</th>
+
+                        <th>Consultation Fee</th>
+
                         <th>Status</th>
-                        <th class="text-center">Actions</th>
+
+                        <th class="text-center">
+                            Actions
+                        </th>
+
                     </tr>
 
                 </thead>
 
+
                 <tbody>
 
-                    @foreach (var patient in Model.Patients)
+                    @foreach (var doctor in Model.Doctors)
                     {
                         <tr>
 
-                            <!-- Patient -->
+                            <!-- Doctor -->
                             <td>
 
                                 <div class="d-flex align-items-center">
 
                                     <span class="avatar avatar-sm bg-blue-lt me-2">
-                                        @patient.FirstName.Substring(0, 1)
+
+                                        @doctor.User.FirstName.Substring(0, 1)
+
                                     </span>
 
                                     <div>
 
                                         <div class="clinexa-patient-name">
-                                            @patient.FirstName @patient.LastName
+
+                                            Dr. @doctor.User.FirstName
+                                            @doctor.User.LastName
+
                                         </div>
 
-                                        @if (!string.IsNullOrWhiteSpace(patient.Email))
+                                        @if (!string.IsNullOrWhiteSpace(doctor.User.Email))
                                         {
                                             <div class="clinexa-patient-meta">
-                                                @patient.Email
+
+                                                @doctor.User.Email
+
                                             </div>
                                         }
 
@@ -208,39 +228,51 @@
                             </td>
 
 
+                            <!-- Speciality -->
+                            <td>
+
+                                @doctor.Speciality.Name
+
+                            </td>
+
+
                             <!-- Phone -->
                             <td>
-                                @patient.PhoneNumber
+
+                                @doctor.User.PhoneNumber
+
                             </td>
 
 
-                            <!-- Gender -->
+                            <!-- Consultation Fee -->
                             <td>
-                                @patient.Gender
-                            </td>
 
+                                @doctor.ConsultationFee.ToString("N2") EGP
 
-                            <!-- Date of Birth -->
-                            <td>
-                                @patient.DateOfBirth.ToString("dd MMM yyyy")
                             </td>
 
 
                             <!-- Status -->
                             <td>
 
-                                @if (patient.IsActive)
+                                @if (doctor.IsActive)
                                 {
                                     <span class="clinexa-status clinexa-status-success">
+
                                         <span class="clinexa-status-dot"></span>
+
                                         Active
+
                                     </span>
                                 }
                                 else
                                 {
                                     <span class="clinexa-status clinexa-status-danger">
+
                                         <span class="clinexa-status-dot"></span>
+
                                         Inactive
+
                                     </span>
                                 }
 
@@ -252,9 +284,9 @@
 
                                 <div class="btn-list justify-content-end">
 
-                                    <a asp-controller="Patient"
+                                    <a asp-controller="Doctor"
                                        asp-action="Details"
-                                       asp-route-id="@patient.PatientId"
+                                       asp-route-id="@doctor.DoctorId"
                                        class="btn btn-sm btn-outline-primary">
 
                                         <i class="bi bi-eye me-1"></i>
@@ -262,9 +294,10 @@
 
                                     </a>
 
-                                    <a asp-controller="Patient"
+
+                                    <a asp-controller="Doctor"
                                        asp-action="Edit"
-                                       asp-route-id="@patient.PatientId"
+                                       asp-route-id="@doctor.DoctorId"
                                        class="btn btn-sm btn-outline-secondary">
 
                                         <i class="bi bi-pencil me-1"></i>
@@ -272,11 +305,12 @@
 
                                     </a>
 
-                                    @if (patient.IsActive)
+
+                                    @if (doctor.IsActive)
                                     {
-                                        <form asp-controller="Patient"
+                                        <form asp-controller="Doctor"
                                               asp-action="Deactivate"
-                                              asp-route-id="@patient.PatientId"
+                                              asp-route-id="@doctor.DoctorId"
                                               method="post"
                                               class="d-inline">
 
@@ -294,9 +328,9 @@
                                     }
                                     else
                                     {
-                                        <form asp-controller="Patient"
+                                        <form asp-controller="Doctor"
                                               asp-action="Activate"
-                                              asp-route-id="@patient.PatientId"
+                                              asp-route-id="@doctor.DoctorId"
                                               method="post"
                                               class="d-inline">
 
@@ -322,9 +356,8 @@
 
                 </tbody>
 
-
-
             </table>
+
 
             <!-- Pagination -->
             @if (Model.TotalPages > 1)
@@ -337,12 +370,12 @@
                         @if (Model.Page > 1)
                         {
                             <li class="page-item">
+
                                 <a class="page-link"
-                                   asp-controller="Patient"
+                                   asp-controller="Doctor"
                                    asp-action="Index"
                                    asp-route-Search="@Model.Search"
-                                   asp-route-Gender="@Model.Gender"
-                                   asp-route-BloodType="@Model.BloodType"
+                                   asp-route-SpecialityId="@Model.SpecialityId"
                                    asp-route-IsActive="@Model.IsActive"
                                    asp-route-Page="@(Model.Page - 1)"
                                    asp-route-PageSize="@Model.PageSize">
@@ -350,8 +383,10 @@
                                     <i class="bi bi-chevron-left"></i>
 
                                 </a>
+
                             </li>
                         }
+
 
                         <!-- Page Numbers -->
                         @for (int i = 1; i <= Model.TotalPages; i++)
@@ -359,11 +394,10 @@
                             <li class="page-item @(i == Model.Page ? "active" : "")">
 
                                 <a class="page-link"
-                                   asp-controller="Patient"
+                                   asp-controller="Doctor"
                                    asp-action="Index"
                                    asp-route-Search="@Model.Search"
-                                   asp-route-Gender="@Model.Gender"
-                                   asp-route-BloodType="@Model.BloodType"
+                                   asp-route-SpecialityId="@Model.SpecialityId"
                                    asp-route-IsActive="@Model.IsActive"
                                    asp-route-Page="@i"
                                    asp-route-PageSize="@Model.PageSize">
@@ -375,16 +409,17 @@
                             </li>
                         }
 
+
                         <!-- Next -->
                         @if (Model.Page < Model.TotalPages)
                         {
                             <li class="page-item">
+
                                 <a class="page-link"
-                                   asp-controller="Patient"
+                                   asp-controller="Doctor"
                                    asp-action="Index"
                                    asp-route-Search="@Model.Search"
-                                   asp-route-Gender="@Model.Gender"
-                                   asp-route-BloodType="@Model.BloodType"
+                                   asp-route-SpecialityId="@Model.SpecialityId"
                                    asp-route-IsActive="@Model.IsActive"
                                    asp-route-Page="@(Model.Page + 1)"
                                    asp-route-PageSize="@Model.PageSize">
@@ -392,6 +427,7 @@
                                     <i class="bi bi-chevron-right"></i>
 
                                 </a>
+
                             </li>
                         }
 
@@ -408,23 +444,30 @@
             <div class="clinexa-empty-state">
 
                 <div class="clinexa-empty-state-icon">
-                    <i class="bi bi-people"></i>
+
+                    <i class="bi bi-person-badge"></i>
+
                 </div>
 
                 <div class="clinexa-empty-state-title">
-                    No patients found
+
+                    No doctors found
+
                 </div>
 
                 <div class="clinexa-empty-state-text">
-                    There are no patients matching your current search.
+
+                    There are no doctors matching your current search.
+
                 </div>
 
-                <a asp-controller="Patient"
+                <a asp-controller="Doctor"
                    asp-action="Create"
                    class="btn btn-primary">
 
                     <i class="bi bi-plus-lg me-1"></i>
-                    Add Patient
+
+                    Add Doctor
 
                 </a>
 
@@ -432,8 +475,6 @@
         }
 
     </div>
-
-
 
 </div>
 
@@ -455,3 +496,4 @@
     }
 
 }
+```

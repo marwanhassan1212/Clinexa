@@ -14,10 +14,20 @@ namespace Clinexa.Controllers
         {
             this.patientService = patientService;
         }
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(PatientFilterViewModel model)
         {
-            var patients = await patientService.GetAllAsync();
-            return View(patients);
+            var result = await patientService.FilterAsync(
+            model.Search,
+            model.Gender,
+            model.BloodType,
+            model.IsActive,
+            model.Page,
+            model.PageSize);
+
+            model.Patients = result.Patients;
+            model.TotalCount = result.TotalCount;
+
+            return View(model);
         }
 
         public async Task<IActionResult> Details(int id)
@@ -63,7 +73,7 @@ namespace Clinexa.Controllers
                 if(!result)
                 {
                     ModelState.AddModelError(nameof(model.PhoneNumber)
-                        , "A Patient with this phone is already exists.");
+                        , "A Patient with this phone number is already exists.");
                     return View(model);
                 }
                 else
@@ -140,6 +150,7 @@ namespace Clinexa.Controllers
                 }
                 else
                 {
+                    TempData["Success"] = "Patient updated successfully.";
                     return RedirectToAction("Index");
                 }
 
@@ -157,7 +168,13 @@ namespace Clinexa.Controllers
         {
             var patients = await patientService.SearchAsync(searchTerm);
 
-            return View("Index", patients);
+            var model = new PatientFilterViewModel
+            {
+                Search = searchTerm,
+                Patients = patients
+            };
+
+            return View("Index", model);
         }
 
 
@@ -174,6 +191,23 @@ namespace Clinexa.Controllers
             }
 
             TempData["SuccessMessage"] = "Patient deactivated successfully.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        // ACTIVATE
+        public async Task<IActionResult> Activate(int id)
+        {
+            var result = await patientService.ActivateAsync(id);
+
+            if (!result)
+            {
+                return NotFound();
+            }
+
+            TempData["SuccessMessage"] = "Patient activated successfully.";
 
             return RedirectToAction(nameof(Index));
         }

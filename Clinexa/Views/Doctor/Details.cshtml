@@ -1,0 +1,376 @@
+﻿@model Clinexa.Models.Entities.Doctor
+
+@{
+    ViewData["Title"] = "Doctor Details";
+
+var initials =
+    $"{Model.User.FirstName.Substring(0, 1)}{Model.User.LastName.Substring(0, 1)}";
+
+
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+
+        ```
+        <!-- Doctor Header -->
+        <div class="card clinexa-card mb-3">
+
+            <div class="card-body">
+
+                <div class="d-flex align-items-center justify-content-between">
+
+                    <div class="d-flex align-items-center">
+
+                        <span class="avatar avatar-lg bg-blue-lt me-3">
+                            @initials
+                        </span>
+
+                        <div>
+
+                            <h2 class="mb-1">
+                                Dr. @Model.User.FirstName @Model.User.LastName
+                            </h2>
+
+                            <div class="text-secondary">
+                                @Model.Speciality.Name
+                            </div>
+
+                            <div class="text-secondary small mt-1">
+                                Doctor ID: #@Model.DoctorId
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="text-end">
+
+                        @if (Model.IsActive)
+                        {
+                            <span class="clinexa-status clinexa-status-success">
+                                <span class="clinexa-status-dot"></span>
+                                Active
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="clinexa-status clinexa-status-danger">
+                                <span class="clinexa-status-dot"></span>
+                                Inactive
+                            </span>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Information Cards -->
+        <div class="row g-3">
+
+            <!-- Personal Information -->
+            <div class="col-md-6">
+
+                <div class="card clinexa-card h-100">
+
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-person me-2 text-primary"></i>
+                            Personal Information
+                        </h3>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="mb-3">
+
+                            <div class="text-secondary small">
+                                Full Name
+                            </div>
+
+                            <div class="fw-semibold">
+                                Dr. @Model.User.FirstName @Model.User.LastName
+                            </div>
+
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <div class="text-secondary small">
+                                Email
+                            </div>
+
+                            <div class="fw-semibold">
+                                @Model.User.Email
+                            </div>
+
+                        </div>
+
+
+                        <div>
+
+                            <div class="text-secondary small">
+                                Phone Number
+                            </div>
+
+                            <div class="fw-semibold">
+                                @Model.User.PhoneNumber
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Professional Information -->
+            <div class="col-md-6">
+
+                <div class="card clinexa-card h-100">
+
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-briefcase me-2 text-primary"></i>
+                            Professional Information
+                        </h3>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="mb-3">
+
+                            <div class="text-secondary small">
+                                Speciality
+                            </div>
+
+                            <div class="fw-semibold">
+                                @Model.Speciality.Name
+                            </div>
+
+                        </div>
+
+
+                        <div class="mb-3">
+
+                            <div class="text-secondary small">
+                                Consultation Fee
+                            </div>
+
+                            <div class="fw-semibold">
+                                @Model.ConsultationFee.ToString("N2") EGP
+                            </div>
+
+                        </div>
+
+
+                        <div>
+
+                            <div class="text-secondary small">
+                                Status
+                            </div>
+
+                            <div class="mt-1">
+
+                                @if (Model.IsActive)
+                                {
+                                    <span class="badge bg-success-lt">
+                                        Active
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger-lt">
+                                        Inactive
+                                    </span>
+                                }
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Record Information -->
+            <div class="col-md-6">
+
+                <div class="card clinexa-card h-100">
+
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-database me-2 text-primary"></i>
+                            Record Information
+                        </h3>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div>
+
+                            <div class="text-secondary small">
+                                Created At
+                            </div>
+
+                            <div class="fw-semibold">
+                                @Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Account Information -->
+            <div class="col-md-6">
+
+                <div class="card clinexa-card h-100">
+
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="bi bi-person-vcard me-2 text-primary"></i>
+                            Account Information
+                        </h3>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="mb-3">
+
+                            <div class="text-secondary small">
+                                User ID
+                            </div>
+
+                            <div class="fw-semibold">
+                                #@Model.User.UserId
+                            </div>
+
+                        </div>
+
+
+                        <div>
+
+                            <div class="text-secondary small">
+                                Account Status
+                            </div>
+
+                            <div class="mt-1">
+
+                                @if (Model.User.IsActive)
+                                {
+                                    <span class="badge bg-success-lt">
+                                        Active
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger-lt">
+                                        Inactive
+                                    </span>
+                                }
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Actions -->
+        <div class="d-flex justify-content-between align-items-center mt-3">
+
+            <a asp-controller="Doctor"
+               asp-action="Index"
+               class="btn btn-outline-secondary">
+
+                <i class="bi bi-arrow-left me-1"></i>
+                Back to Doctors
+
+            </a>
+
+
+            <div class="d-flex gap-2">
+
+                <a asp-controller="Doctor"
+                   asp-action="Edit"
+                   asp-route-id="@Model.DoctorId"
+                   class="btn btn-primary">
+
+                    <i class="bi bi-pencil me-1"></i>
+                    Edit Doctor
+
+                </a>
+
+
+                @if (Model.IsActive)
+                {
+                    <form asp-controller="Doctor"
+                          asp-action="Deactivate"
+                          asp-route-id="@Model.DoctorId"
+                          method="post"
+                          class="d-inline">
+
+                        @Html.AntiForgeryToken()
+
+                        <button type="submit"
+                                class="btn btn-outline-danger">
+
+                            <i class="bi bi-person-x me-1"></i>
+                            Deactivate
+
+                        </button>
+
+                    </form>
+                }
+                else
+                {
+                    <form asp-controller="Doctor"
+                          asp-action="Activate"
+                          asp-route-id="@Model.DoctorId"
+                          method="post"
+                          class="d-inline">
+
+                        @Html.AntiForgeryToken()
+
+                        <button type="submit"
+                                class="btn btn-outline-success">
+
+                            <i class="bi bi-person-check me-1"></i>
+                            Activate
+
+                        </button>
+
+                    </form>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+    ```
+
+</div>

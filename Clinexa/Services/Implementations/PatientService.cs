@@ -1,4 +1,5 @@
-﻿using Clinexa.Models.Entities;
+﻿using Clinexa.Enums;
+using Clinexa.Models.Entities;
 using Clinexa.Repositories.Interfaces;
 using Clinexa.Services.Interfaces;
 
@@ -80,6 +81,35 @@ namespace Clinexa.Services.Implementations
                 return true;
             }
 
+        }
+
+        public async Task<bool> ActivateAsync(int id)
+        {
+            var patient = await patientRepository.GetByIdAsync(id);
+
+            if (patient == null)
+            {
+                return false;
+            }
+
+            patient.IsActive = true;
+
+            patientRepository.Update(patient);
+            await patientRepository.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<(List<Patient> Patients, int TotalCount)> FilterAsync(string? search,
+                  Gender? gender, string? bloodType, bool? isActive, int page, int pageSize)
+        {
+            return await patientRepository.FilterAsync(
+                search,
+                gender,
+                bloodType,
+                isActive,
+                page,
+                pageSize);
         }
     }
 }

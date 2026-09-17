@@ -1,0 +1,325 @@
+﻿/* =========================================================
+   CLINEXA DESIGN SYSTEM
+========================================================= */
+
+/* ---------------------------------------------------------
+   1. ROOT VARIABLES
+--------------------------------------------------------- */
+
+:root {
+    --clinexa-primary: #206bc4;
+    --clinexa-primary-hover: #1a5aa8;
+    --clinexa-success: #2fb344;
+    --clinexa-warning: #f59f00;
+    --clinexa-danger: #d63939;
+    --clinexa-info: #4299e1;
+    --clinexa-text: #182433;
+    --clinexa-muted: #667382;
+    --clinexa-border: #e6e7e9;
+    --clinexa-bg: #f5f7fb;
+    --clinexa-surface: #ffffff;
+    --clinexa-radius: 8px;
+    --clinexa-radius-sm: 6px;
+    --clinexa-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --clinexa-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+
+/* ---------------------------------------------------------
+   2. GLOBAL
+--------------------------------------------------------- */
+
+body {
+    color: var(--clinexa-text);
+    background-color: var(--clinexa-bg);
+}
+
+.page {
+    min-height: 100vh;
+}
+
+
+/* ---------------------------------------------------------
+   3. BRAND
+--------------------------------------------------------- */
+
+.clinexa-brand-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+}
+
+.clinexa-brand-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+
+/* ---------------------------------------------------------
+   4. TOPBAR
+--------------------------------------------------------- */
+
+.clinexa-notification-icon {
+    position: relative;
+    top: 2px;
+}
+
+
+/* ---------------------------------------------------------
+   5. PAGE HEADER
+--------------------------------------------------------- */
+
+.page-header {
+    margin-bottom: 1.5rem;
+}
+
+.page-pretitle {
+    color: var(--clinexa-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+
+/* ---------------------------------------------------------
+   6. CARDS
+--------------------------------------------------------- */
+
+.clinexa-card {
+    background: var(--clinexa-surface);
+    border: 1px solid var(--clinexa-border);
+    border-radius: var(--clinexa-radius);
+    box-shadow: var(--clinexa-shadow-sm);
+}
+
+.clinexa-card-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--clinexa-border);
+}
+
+.clinexa-card-body {
+    padding: 1.25rem;
+}
+
+
+/* ---------------------------------------------------------
+   7. TABLES
+--------------------------------------------------------- */
+
+.clinexa-table {
+    margin-bottom: 0;
+}
+
+    .clinexa-table thead th {
+        color: var(--clinexa-muted);
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        white-space: nowrap;
+    }
+
+    .clinexa-table tbody tr {
+        transition: background-color 0.15s ease;
+    }
+
+        .clinexa-table tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+
+/* ---------------------------------------------------------
+   8. STATUS BADGES
+--------------------------------------------------------- */
+
+.clinexa-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.clinexa-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.clinexa-status-success .clinexa-status-dot {
+    background-color: var(--clinexa-success);
+}
+
+.clinexa-status-warning .clinexa-status-dot {
+    background-color: var(--clinexa-warning);
+}
+
+.clinexa-status-danger .clinexa-status-dot {
+    background-color: var(--clinexa-danger);
+}
+
+.clinexa-status-info .clinexa-status-dot {
+    background-color: var(--clinexa-info);
+}
+
+
+/* ---------------------------------------------------------
+   9. QUICK ACTIONS
+--------------------------------------------------------- */
+
+.clinexa-quick-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+
+/* ---------------------------------------------------------
+   10. SEARCH
+--------------------------------------------------------- */
+
+.clinexa-search {
+    min-width: 280px;
+}
+
+    .clinexa-search input {
+        border-radius: var(--clinexa-radius-sm);
+    }
+
+
+/* ---------------------------------------------------------
+   11. EMPTY STATE
+--------------------------------------------------------- */
+
+.clinexa-empty-state {
+    padding: 3rem 1rem;
+    text-align: center;
+}
+
+.clinexa-empty-state-icon {
+    font-size: 2.5rem;
+    color: var(--clinexa-muted);
+    margin-bottom: 1rem;
+}
+
+.clinexa-empty-state-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.35rem;
+}
+
+.clinexa-empty-state-text {
+    color: var(--clinexa-muted);
+    margin-bottom: 1.25rem;
+}
+
+
+/* ---------------------------------------------------------
+   12. FORM
+--------------------------------------------------------- */
+
+.form-label {
+    font-weight: 600;
+}
+
+.form-control,
+.form-select {
+    border-radius: var(--clinexa-radius-sm);
+}
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--clinexa-primary);
+    }
+
+
+/* ---------------------------------------------------------
+   13. QUICK PATIENT INFO
+--------------------------------------------------------- */
+
+.clinexa-patient-avatar {
+    width: 40px;
+    height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: 600;
+}
+
+.clinexa-patient-name {
+    font-weight: 600;
+}
+
+.clinexa-patient-meta {
+    color: var(--clinexa-muted);
+    font-size: 0.8rem;
+}
+
+
+/* ---------------------------------------------------------
+   14. RESPONSIVE
+--------------------------------------------------------- */
+
+@media (max-width: 767.98px) {
+
+    .clinexa-search {
+        min-width: 100%;
+    }
+
+    .page-header {
+        margin-bottom: 1rem;
+    }
+
+    .clinexa-card-body {
+        padding: 1rem;
+    }
+}
+
+
+/* =========================================================
+   CLINEXA PAGE HEADER
+========================================================= */
+
+.clinexa-page-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+    position: relative;
+    top: -6px;
+}
+
+.clinexa-page-title h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+.clinexa-page-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+@media (max-width: 767.98px) {
+
+    .clinexa-page-header {
+        align-items: flex-start;
+        gap: 1rem;
+    }
+}
+.clinexa-patient-filters {
+    padding-top: 0.5rem !important;
+}
+
+.clinexa-patient-table {
+    padding-top: 10px;
+}

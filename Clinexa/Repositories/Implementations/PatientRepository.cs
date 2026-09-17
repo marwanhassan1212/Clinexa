@@ -1,4 +1,5 @@
 ﻿using Clinexa.Data;
+using Clinexa.Enums;
 using Clinexa.Models.Entities;
 using Clinexa.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -59,6 +60,51 @@ namespace Clinexa.Repositories.Implementations
         public void Update(Patient patient)
         {
             _db.Patients.Update(patient);
+        }
+
+        public async Task<(List<Patient> Patients, int TotalCount)> FilterAsync(string? search,
+             Gender? gender, string? bloodType, bool? isActive, int page, int pageSize)
+        {
+            var query = _db.Patients
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
+
+                query = query.Where(x =>
+                    x.FirstName.Contains(search) ||
+                    x.LastName.Contains(search) ||
+                    x.PhoneNumber.Contains(search) ||
+                    (x.Email != null && x.Email.Contains(search)));
+            }
+
+            if (gender.HasValue)
+            {
+                query = query.Where(x => x.Gender == gender.Value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(bloodType))
+            {
+                query = query.Where(x => x.BloodType == bloodType);
+            }
+
+            if (isActive.HasValue)
+            {
+                query = query.Where(x => x.IsActive == isActive.Value);
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var patients = await query
+                .OrderBy(x => x.FirstName)
+                .ThenBy(x => x.LastName)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (patients, totalCount);
         }
     }
 }

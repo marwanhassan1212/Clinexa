@@ -9,6 +9,9 @@ namespace Clinexa.Repositories.Interfaces
         Task<bool> ExistsByUserId(int id);
         Task<bool> ExistBySpecialityId(int id);
         Task AddAsync(Doctor doctor);
+
+        Task<(List<Doctor> Doctors, int TotalCount)> FilterAsync(string? search, int? specialityId,
+                        bool? isActive, int page, int pageSize);
         void UpdateAsync(Doctor doctor);
         Task SaveChangesAsync();
 

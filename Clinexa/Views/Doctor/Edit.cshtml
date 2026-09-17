@@ -1,0 +1,198 @@
+﻿@model Clinexa.Models.ViewModels.Doctor.EditViewModel
+
+@{
+    ViewData["Title"] = "Edit Doctor";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+
+        ```
+        <div class="card clinexa-card">
+
+            <!-- Header -->
+            <div class="card-header">
+
+                <div>
+                    <h3 class="card-title mb-1">
+                        <i class="bi bi-pencil-square me-2 text-primary"></i>
+                        Edit Doctor
+                    </h3>
+
+                    <div class="text-secondary">
+                        Update the doctor's speciality and consultation fee
+                    </div>
+                </div>
+
+            </div>
+
+
+            <!-- Form -->
+            <div class="card-body">
+
+                <form asp-controller="Doctor"
+                      asp-action="Edit"
+                      method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <input asp-for="DoctorId"
+                           type="hidden" />
+
+                    <div asp-validation-summary="ModelOnly"
+                         class="alert alert-danger"
+                         role="alert"></div>
+
+
+                    <!-- Doctor Information -->
+                    <div class="mb-4">
+
+                        <h4 class="mb-1">
+                            Doctor Information
+                        </h4>
+
+                        <div class="text-secondary mb-3">
+                            Update the professional information for this doctor
+                        </div>
+
+
+                        <div class="row g-3">
+
+                            <!-- Speciality -->
+                            <div class="col-md-6">
+
+                                <label asp-for="SpecialityId"
+                                       class="form-label">
+                                    Speciality
+                                </label>
+
+                                <select asp-for="SpecialityId"
+                                        class="form-select">
+
+                                    <option value="0">
+                                        Select speciality
+                                    </option>
+
+                                    @foreach (var speciality in Model.Specialities)
+                                    {
+                                        <option value="@speciality.SpecialityId">
+                                            @speciality.Name
+                                        </option>
+                                    }
+
+                                </select>
+
+                                <span asp-validation-for="SpecialityId"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Consultation Fee -->
+                            <div class="col-md-6">
+
+                                <label asp-for="ConsultationFee"
+                                       class="form-label">
+                                    Consultation Fee
+                                </label>
+
+                                <div class="input-group">
+
+                                    <input asp-for="ConsultationFee"
+                                           type="number"
+                                           min="0"
+                                           max="1000000"
+                                           step="0.01"
+                                           class="form-control"
+                                           placeholder="Enter consultation fee" />
+
+                                    <span class="input-group-text">
+                                        EGP
+                                    </span>
+
+                                </div>
+
+                                <span asp-validation-for="ConsultationFee"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <hr class="my-4" />
+
+
+                    <!-- Information -->
+                    <div>
+
+                        <h4 class="mb-1">
+                            Account Information
+                        </h4>
+
+                        <div class="text-secondary mb-3">
+                            Doctor account information is managed through the linked user.
+                        </div>
+
+                        <div class="alert alert-info mb-0">
+
+                            <div class="d-flex align-items-start">
+
+                                <i class="bi bi-info-circle me-2 mt-1"></i>
+
+                                <div>
+                                    The doctor's name, email, and phone number are linked
+                                    to the user account and are not changed from this screen.
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Actions -->
+                    <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+
+                        <a asp-controller="Doctor"
+                           asp-action="Details"
+                           asp-route-id="@Model.DoctorId"
+                           class="btn btn-outline-secondary">
+
+                            Cancel
+
+                        </a>
+
+                        <button type="submit"
+                                class="btn btn-primary">
+
+                            <i class="bi bi-check-lg me-1"></i>
+                            Save Changes
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+    ```
+
+</div>
+
+@section Scripts {
+
+    ```
+    <partial name="_ValidationScriptsPartial" />
+    ```
+
+}
