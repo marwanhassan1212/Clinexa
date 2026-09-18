@@ -93,5 +93,37 @@ namespace Clinexa.Services.Implementations
             await doctorScheduleRepository.SaveChangesAsync();
             return true;
         }
+
+        public async Task<bool> ActivateAsync(int id)
+        {
+            var schedule = await doctorScheduleRepository.GetByIdAsync(id);
+
+            if (schedule == null)
+                return false;
+
+            schedule.IsAvailable = true;
+
+            doctorScheduleRepository.Update(schedule);
+            await doctorScheduleRepository.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<(List<DoctorSchedule> Schedules, int TotalCount)> FilterAsync(
+                    string? search,
+                    int? doctorId,
+                    DayOfWeek? dayOfWeek,
+                    bool? isAvailable,
+                    int page,
+                    int pageSize)
+        {
+            return await doctorScheduleRepository.FilterAsync(
+                search,
+                doctorId,
+                dayOfWeek,
+                isAvailable,
+                page,
+                pageSize);
+        }
     }
 }

@@ -1,4 +1,6 @@
-﻿using Clinexa.Models.Entities;
+﻿using Clinexa.Enums;
+using Clinexa.Models.Entities;
+
 
 namespace Clinexa.Services.Interfaces
 {
@@ -13,7 +15,18 @@ namespace Clinexa.Services.Interfaces
         Task<List<Appointment>> GetByPatientIdAsync(int patientId);
 
         Task<bool> CreateAsync(Appointment appointment);
+        Task<List<TimeSpan>> GetAvailableSlotsAsync(
+            int doctorId,
+            DateTime appointmentDate);
 
+        Task<(List<Appointment> Appointments, int TotalCount)> FilterAsync(
+           string? search,
+           int? doctorId,
+           int? patientId,
+           DateTime? appointmentDate,
+           AppointmentStatus? status,
+           int page,
+           int pageSize);
         Task<bool> UpdateAsync(Appointment appointment);
 
         Task<bool> CancelAsync(int id);

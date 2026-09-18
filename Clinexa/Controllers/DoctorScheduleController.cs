@@ -9,14 +9,29 @@ namespace Clinexa.Controllers
     public class DoctorScheduleController : Controller
     {
         private readonly IDoctorScheduleService doctorScheduleService;
-        public DoctorScheduleController(IDoctorScheduleService doctorScheduleService)
+        private readonly IDoctorService doctorService;
+        public DoctorScheduleController(IDoctorScheduleService doctorScheduleService
+            ,IDoctorService doctorService)
         {
             this.doctorScheduleService = doctorScheduleService;
+            this.doctorService = doctorService;
         }
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(DoctorScheduleFilterViewModel model)
         {
-            var schedules = await doctorScheduleService.GetAllAsync();
-            return View(schedules);
+            var result = await doctorScheduleService.FilterAsync(
+                model.Search,
+                model.DoctorId,
+                model.DayOfWeek,
+                model.IsAvailable,
+                model.Page,
+                model.PageSize);
+
+            model.Schedules = result.Schedules;
+            model.TotalCount = result.TotalCount;
+
+            model.Doctors = await doctorService.GetAllAsync();
+
+            return View(model);
         }
 
         public async Task<IActionResult> Details(int id)
@@ -27,12 +42,13 @@ namespace Clinexa.Controllers
             {
                 return NotFound();
             }
-
+            await doctorService.GetByIdAsync(id);
             return View(schedule);
         }
 
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            ViewBag.Doctors = await doctorService.GetAllAsync();
             return View();
         }
 
@@ -42,6 +58,7 @@ namespace Clinexa.Controllers
         {
             if(!ModelState.IsValid)
             {
+                ViewBag.Doctors = await doctorService.GetAllAsync();
                 return View(model);
             }
             var doctorSchedule = new DoctorSchedule()
@@ -58,6 +75,7 @@ namespace Clinexa.Controllers
                "",
                "Unable to create schedule. Please check the doctor, time, or duplicate schedule."
            );
+                ViewBag.Doctors = await doctorService.GetAllAsync();
                 return View(model);
             }
             else
@@ -84,6 +102,7 @@ namespace Clinexa.Controllers
                 StartTime = Schedule.StartTime,
                 EndTime = Schedule.EndTime
             };
+            ViewBag.Doctors = await doctorService.GetAllAsync();
             return View(doctorSchedule);
         }
 
@@ -93,6 +112,7 @@ namespace Clinexa.Controllers
         {
             if(!ModelState.IsValid)
             {
+                ViewBag.Doctors = await doctorService.GetAllAsync();
                 return View(model);
             }
             var schedule = await doctorScheduleService.GetByIdAsync(model.DoctorScheduleId);
@@ -115,7 +135,7 @@ namespace Clinexa.Controllers
               "",
               "Unable to update schedule. Please check the doctor, time, or duplicate schedule."
                 );
-
+                ViewBag.Doctors = await doctorService.GetAllAsync();
                 return View(model);
             }
             else
@@ -139,6 +159,21 @@ namespace Clinexa.Controllers
             }
 
             TempData["Success"] = "Doctor schedule deactivated successfully.";
+
+            return RedirectToAction(nameof(Index));
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Activate(int id)
+        {
+            var result = await doctorScheduleService.ActivateAsync(id);
+
+            if (!result)
+            {
+                return NotFound();
+            }
+
+            TempData["Success"] = "Doctor schedule activated successfully.";
 
             return RedirectToAction(nameof(Index));
         }

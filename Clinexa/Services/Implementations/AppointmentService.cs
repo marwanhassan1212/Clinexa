@@ -1,4 +1,6 @@
-﻿using Clinexa.Models.Entities;
+﻿using Clinexa.Enums;
+using Clinexa.Models.Entities;
+
 using Clinexa.Repositories.Interfaces;
 using Clinexa.Services.Interfaces;
 
@@ -26,7 +28,10 @@ namespace Clinexa.Services.Implementations
 
         public async Task<bool> CreateAsync(Appointment appointment)
         {
-            if(appointment.StartTime >= appointment.EndTime)
+            if (appointment.AppointmentDate.Date < DateTime.Today)
+                return false;
+
+            if (appointment.StartTime >= appointment.EndTime)
             {
                 return false;
             }
@@ -62,6 +67,7 @@ namespace Clinexa.Services.Implementations
                 return false;
             }
             appointment.AppointmentStatus = Enums.AppointmentStatus.Scheduled;
+            appointment.CreatedAt = DateTime.UtcNow;
             await appointmentRepository.AddAsync(appointment);
             await appointmentRepository.SaveChangesAsync();
             return true;
@@ -134,5 +140,76 @@ namespace Clinexa.Services.Implementations
             await appointmentRepository.SaveChangesAsync();
             return true;
         }
+
+        public async Task<(List<Appointment> Appointments, int TotalCount)> FilterAsync(
+             string? search,
+             int? doctorId,
+             int? patientId,
+             DateTime? appointmentDate,
+             Enums.AppointmentStatus? status,
+             int page,
+             int pageSize)
+        {
+            return await appointmentRepository.FilterAsync(
+                search,
+                doctorId,
+                patientId,
+                appointmentDate,
+                status,
+                page,
+                pageSize);
+        }
+
+        public async Task<List<TimeSpan>> GetAvailableSlotsAsync(int doctorId, DateTime appointmentDate)
+        {
+            var dayOfWeek = appointmentDate.DayOfWeek;
+
+            var schedules = await appointmentRepository.GetDoctorSchedulesAsync(
+                doctorId,
+                dayOfWeek);
+
+            if (!schedules.Any())
+            {
+                return new List<TimeSpan>();
+            }
+
+            var appointments = await appointmentRepository.GetDoctorAppointmentsAsync(
+                doctorId,
+                appointmentDate);
+
+            const int slotDurationMinutes = 30;
+
+            var slots = new List<TimeSpan>();
+
+            foreach (var schedule in schedules)
+            {
+                var currentTime = schedule.StartTime;
+
+                while (currentTime.Add(
+                           TimeSpan.FromMinutes(slotDurationMinutes))
+                       <= schedule.EndTime)
+                {
+                    var slotEndTime = currentTime.Add(
+                        TimeSpan.FromMinutes(slotDurationMinutes));
+
+                    bool isBooked = appointments.Any(x =>
+                        x.StartTime < slotEndTime &&
+                        x.EndTime > currentTime);
+
+                    if (!isBooked)
+                    {
+                        slots.Add(currentTime);
+                    }
+
+                    currentTime = slotEndTime;
+                }
+            }
+
+            return slots
+                .Distinct()
+                .OrderBy(x => x)
+                .ToList();
+        }
+
     }
 }

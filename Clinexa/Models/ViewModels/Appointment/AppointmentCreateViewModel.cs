@@ -16,7 +16,15 @@ namespace Clinexa.Models.ViewModels.Appointment
         [Required]
         public TimeSpan StartTime { get; set; }
 
-        [Required]
-        public TimeSpan EndTime { get; set; }
+        public string? Reason { get; set; }
+
+        public string? Notes { get; set; }
+
+        public List<Entities.Patient> Patients { get; set; } = new();
+        public List<Entities.Doctor> Doctors { get; set; } = new();
+
+        public List<TimeSpan> AvailableSlots { get; set; } = new();
+
+
     }
 }

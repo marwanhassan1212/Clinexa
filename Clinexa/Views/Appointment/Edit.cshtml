@@ -1,0 +1,293 @@
+﻿@model Clinexa.Models.ViewModels.Appointment.AppointmentEditViewModel
+
+@{
+    ViewData["Title"] = "Edit Appointment";
+
+    var doctors = ViewBag.Doctors as List<Clinexa.Models.Entities.Doctor>
+                   ?? new List<Clinexa.Models.Entities.Doctor>();
+
+    var patients = ViewBag.Patients as List<Clinexa.Models.Entities.Patient>
+                   ?? new List<Clinexa.Models.Entities.Patient>();
+}
+
+<div class="container-fluid">
+
+    <!-- Page Header -->
+    <div class="clinexa-page-header d-print-none">
+
+        <div class="clinexa-page-title">
+            <h2 class="mb-0 fw-bold">
+                <i class="bi bi-calendar-event me-2 text-primary"></i>
+                Edit Appointment
+            </h2>
+        </div>
+
+        <div class="clinexa-page-actions">
+
+            <a asp-action="Details"
+               asp-route-id="@Model.AppointmentId"
+               class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i>
+                Back
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <div class="row">
+
+        <div class="col-lg-8">
+
+            <div class="card">
+
+                <div class="card-header">
+                    <h3 class="card-title">
+                        Appointment Information
+                    </h3>
+                </div>
+
+
+                <form asp-action="Edit" method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <input asp-for="AppointmentId" type="hidden" />
+
+                    <div class="card-body">
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="text-danger mb-3">
+                        </div>
+
+
+                        <div class="row g-3">
+
+                            <!-- Patient -->
+                            <div class="col-md-6">
+
+                                <label asp-for="PatientId"
+                                       class="form-label required">
+                                    Patient
+                                </label>
+
+                                <select asp-for="PatientId"
+                                        class="form-select">
+
+                                    <option value="">
+                                        Select patient
+                                    </option>
+
+                                    @foreach (var patient in patients)
+                                    {
+                                        <option value="@patient.PatientId">
+                                            @patient.FirstName @patient.LastName
+                                            — @patient.PhoneNumber
+                                        </option>
+                                    }
+
+                                </select>
+
+                                <span asp-validation-for="PatientId"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Doctor -->
+                            <div class="col-md-6">
+
+                                <label asp-for="DoctorId"
+                                       class="form-label required">
+                                    Doctor
+                                </label>
+
+                                <select asp-for="DoctorId"
+                                        class="form-select">
+
+                                    <option value="">
+                                        Select doctor
+                                    </option>
+
+                                    @foreach (var doctor in doctors)
+                                    {
+                                        <option value="@doctor.DoctorId">
+                                            Dr. @doctor.User.FirstName
+                                            @doctor.User.LastName
+                                            — @doctor.Speciality.Name
+                                        </option>
+                                    }
+
+                                </select>
+
+                                <span asp-validation-for="DoctorId"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Date -->
+                            <div class="col-md-4">
+
+                                <label asp-for="AppointmentDate"
+                                       class="form-label required">
+                                    Appointment Date
+                                </label>
+
+                                <input asp-for="AppointmentDate"
+                                       type="date"
+                                       class="form-control" />
+
+                                <span asp-validation-for="AppointmentDate"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Start Time -->
+                            <div class="col-md-4">
+
+                                <label asp-for="StartTime"
+                                       class="form-label required">
+                                    Start Time
+                                </label>
+
+                                <input asp-for="StartTime"
+                                       type="time"
+                                       class="form-control" />
+
+                                <span asp-validation-for="StartTime"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- End Time -->
+                            <div class="col-md-4">
+
+                                <label asp-for="EndTime"
+                                       class="form-label required">
+                                    End Time
+                                </label>
+
+                                <input asp-for="EndTime"
+                                       type="time"
+                                       class="form-control" />
+
+                                <span asp-validation-for="EndTime"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Reason -->
+                            <div class="col-12">
+
+                                <label asp-for="Reason"
+                                       class="form-label">
+                                    Reason for Visit
+                                </label>
+
+                                <input asp-for="Reason"
+                                       class="form-control"
+                                       placeholder="e.g. Follow-up, consultation, examination..." />
+
+                                <span asp-validation-for="Reason"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Notes -->
+                            <div class="col-12">
+
+                                <label asp-for="Notes"
+                                       class="form-label">
+                                    Notes
+                                </label>
+
+                                <textarea asp-for="Notes"
+                                          class="form-control"
+                                          rows="4"
+                                          placeholder="Additional appointment notes...">
+                                </textarea>
+
+                                <span asp-validation-for="Notes"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="card-footer d-flex justify-content-end gap-2">
+
+                        <a asp-action="Details"
+                           asp-route-id="@Model.AppointmentId"
+                           class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+
+                        <button type="submit"
+                                class="btn btn-primary">
+
+                            <i class="bi bi-check-lg me-1"></i>
+                            Save Changes
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+        <!-- Information -->
+        <div class="col-lg-4 mt-3 mt-lg-0">
+
+            <div class="card">
+
+                <div class="card-header">
+                    <h3 class="card-title">
+                        Appointment Status
+                    </h3>
+                </div>
+
+                <div class="card-body">
+
+                    <div class="text-secondary small">
+                        The appointment status is managed by the
+                        clinic workflow and cannot be changed from
+                        this form.
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+```

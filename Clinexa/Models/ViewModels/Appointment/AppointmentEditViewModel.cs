@@ -21,5 +21,11 @@ namespace Clinexa.Models.ViewModels.Appointment
 
         [Required]
         public TimeSpan EndTime { get; set; }
+
+        [StringLength(200)]
+        public string? Reason { get; set; }
+
+        [StringLength(2000)]
+        public string? Notes { get; set; }
     }
 }

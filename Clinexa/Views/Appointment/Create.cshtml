@@ -1,7 +1,733 @@
-﻿
+﻿@model Clinexa.Models.ViewModels.Appointment.AppointmentCreateViewModel
+
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "New Appointment";
+
+    var doctors = ViewBag.Doctors as List<Clinexa.Models.Entities.Doctor>
+                   ?? new List<Clinexa.Models.Entities.Doctor>();
+
+    var patients = ViewBag.Patients as List<Clinexa.Models.Entities.Patient>
+                   ?? new List<Clinexa.Models.Entities.Patient>();
 }
 
-<h1>Create</h1>
+<div class="container-fluid">
 
+    <!-- Page Header -->
+    <div class="clinexa-page-header d-print-none">
+
+        <div class="clinexa-page-title">
+
+            <h2 class="mb-0 fw-bold">
+                <i class="bi bi-calendar-plus me-2 text-primary"></i>
+                New Appointment
+            </h2>
+
+        </div>
+
+        <div class="clinexa-page-actions">
+
+            <a asp-action="Index"
+               class="btn btn-outline-secondary">
+
+                <i class="bi bi-arrow-left me-1"></i>
+                Back
+
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <div class="row">
+
+        <!-- Main Form -->
+        <div class="col-lg-8">
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <h3 class="card-title">
+                        Appointment Information
+                    </h3>
+
+                </div>
+
+
+                <form asp-action="Create"
+                      method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <div class="card-body">
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="text-danger mb-3">
+                        </div>
+
+
+                        <div class="row g-3">
+
+                            <!-- Patient -->
+                            <div class="col-md-6">
+
+                                <label asp-for="PatientId"
+                                       class="form-label required">
+
+                                    Patient
+
+                                </label>
+
+                                <select asp-for="PatientId"
+                                        class="form-select">
+
+                                    <option value="">
+                                        Select patient
+                                    </option>
+
+                                    @foreach (var patient in patients)
+                                    {
+                                        <option value="@patient.PatientId">
+
+                                            @patient.FirstName
+                                            @patient.LastName
+                                            —
+                                            @patient.PhoneNumber
+
+                                        </option>
+                                    }
+
+                                </select>
+
+                                <span asp-validation-for="PatientId"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Doctor -->
+                            <div class="col-md-6">
+
+                                <label asp-for="DoctorId"
+                                       class="form-label required">
+
+                                    Doctor
+
+                                </label>
+
+                                <select asp-for="DoctorId"
+                                        id="DoctorId"
+                                        class="form-select">
+
+                                    <option value="">
+                                        Select doctor
+                                    </option>
+
+                                    @foreach (var doctor in doctors)
+                                    {
+                                        <option value="@doctor.DoctorId">
+
+                                            Dr.
+                                            @doctor.User.FirstName
+                                            @doctor.User.LastName
+                                            —
+                                            @doctor.Speciality.Name
+
+                                        </option>
+                                    }
+
+                                </select>
+
+                                <span asp-validation-for="DoctorId"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Appointment Date -->
+                            <div class="col-md-6">
+
+                                <label asp-for="AppointmentDate"
+                                       class="form-label required">
+
+                                    Appointment Date
+
+                                </label>
+
+                                <input asp-for="AppointmentDate"
+                                       id="AppointmentDate"
+                                       type="date"
+                                       min="@DateTime.Today.ToString("yyyy-MM-dd")"
+                                       class="form-control" />
+
+                                <span asp-validation-for="AppointmentDate"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Available Times -->
+                            <div class="col-12">
+
+                                <label class="form-label required">
+
+                                    Available Times
+
+                                </label>
+
+
+                                <div id="availableSlots"
+                                     class="border rounded p-3 bg-light">
+
+                                    <div class="text-secondary text-center py-3">
+
+                                        <i class="bi bi-calendar2-week me-1"></i>
+
+                                        Select a doctor and date
+                                        to view available times.
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- Selected Start Time -->
+                                <input asp-for="StartTime"
+                                       id="StartTime"
+                                       type="hidden" />
+
+                                <span asp-validation-for="StartTime"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Reason -->
+                            <div class="col-12">
+
+                                <label asp-for="Reason"
+                                       class="form-label">
+
+                                    Reason for Visit
+
+                                </label>
+
+                                <input asp-for="Reason"
+                                       class="form-control"
+                                       placeholder="e.g. Follow-up, consultation, examination..." />
+
+                                <span asp-validation-for="Reason"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+
+                            <!-- Notes -->
+                            <div class="col-12">
+
+                                <label asp-for="Notes"
+                                       class="form-label">
+
+                                    Notes
+
+                                </label>
+
+                                <textarea asp-for="Notes"
+                                          class="form-control"
+                                          rows="4"
+                                          placeholder="Additional appointment notes...">
+                                </textarea>
+
+                                <span asp-validation-for="Notes"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Footer -->
+                    <div class="card-footer d-flex justify-content-end gap-2">
+
+                        <a asp-action="Index"
+                           class="btn btn-outline-secondary">
+
+                            Cancel
+
+                        </a>
+
+                        <button type="submit"
+                                class="btn btn-primary">
+
+                            <i class="bi bi-check-lg me-1"></i>
+
+                            Create Appointment
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+        <!-- Side Information -->
+        <div class="col-lg-4 mt-3 mt-lg-0">
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <h3 class="card-title">
+                        Scheduling Rules
+                    </h3>
+
+                </div>
+
+
+                <div class="card-body">
+
+                    <!-- Doctor Schedule -->
+                    <div class="d-flex mb-3">
+
+                        <span class="avatar avatar-sm bg-blue-lt me-3">
+
+                            <i class="bi bi-clock"></i>
+
+                        </span>
+
+                        <div>
+
+                            <div class="fw-semibold">
+                                Doctor Schedule
+                            </div>
+
+                            <div class="text-secondary small">
+
+                                Available times are based on
+                                the doctor's working schedule.
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Available Times -->
+                    <div class="col-12">
+
+                        <label class="form-label required">
+                            Available Times
+                        </label>
+
+                        <div id="availableSlots"
+                             class="card bg-light">
+
+                            <div class="card-body">
+
+                                <div class="text-secondary text-center py-4">
+
+                                    <i class="bi bi-calendar2-week fs-2 d-block mb-2"></i>
+
+                                    <div class="fw-semibold">
+                                        Select a doctor and date
+                                    </div>
+
+                                    <div class="small">
+                                        Available appointment times will appear here.
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <input asp-for="StartTime"
+                               id="StartTime"
+                               type="hidden" />
+
+                        <div id="selectedTime"
+                             class="text-secondary small mt-2">
+                        </div>
+
+                        <span asp-validation-for="StartTime"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <!-- Conflict Detection -->
+                    <div class="d-flex mb-3">
+
+                        <span class="avatar avatar-sm bg-red-lt me-3">
+
+                            <i class="bi bi-calendar-x"></i>
+
+                        </span>
+
+                        <div>
+
+                            <div class="fw-semibold">
+                                Conflict Detection
+                            </div>
+
+                            <div class="text-secondary small">
+
+                                Overlapping appointments for
+                                the same doctor are not allowed.
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Initial Status -->
+                    <div class="d-flex">
+
+                        <span class="avatar avatar-sm bg-azure-lt me-3">
+
+                            <i class="bi bi-check-circle"></i>
+
+                        </span>
+
+                        <div>
+
+                            <div class="fw-semibold">
+                                Initial Status
+                            </div>
+
+                            <div class="text-secondary small">
+
+                                New appointments are automatically
+                                created as Scheduled.
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts
+{
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+
+        const doctorSelect =
+            document.getElementById("DoctorId");
+
+        const dateInput =
+            document.getElementById("AppointmentDate");
+
+        const slotsContainer =
+            document.getElementById("availableSlots");
+
+        const startTimeInput =
+            document.getElementById("StartTime");
+
+        const selectedTime =
+            document.getElementById("selectedTime");
+
+
+        async function loadAvailableSlots()
+        {
+            const doctorId =
+                doctorSelect.value;
+
+            const appointmentDate =
+                dateInput.value;
+
+
+            // Clear previously selected time
+            startTimeInput.value = "";
+
+            selectedTime.innerHTML = "";
+
+
+            // No doctor or date selected
+            if (!doctorId || !appointmentDate)
+            {
+                slotsContainer.innerHTML = `
+                    <div class="card-body">
+
+                        <div class="text-secondary text-center py-4">
+
+                            <i class="bi bi-calendar2-week fs-2 d-block mb-2"></i>
+
+                            <div class="fw-semibold">
+                                Select a doctor and date
+                            </div>
+
+                            <div class="small mt-1">
+                                Available appointment times will appear here.
+                            </div>
+
+                        </div>
+
+                    </div>
+                `;
+
+                return;
+            }
+
+
+            // Loading state
+            slotsContainer.innerHTML = `
+                <div class="card-body">
+
+                    <div class="text-secondary text-center py-4">
+
+                        <span
+                            class="spinner-border spinner-border-sm me-2"
+                            role="status">
+                        </span>
+
+                        Loading available times...
+
+                    </div>
+
+                </div>
+            `;
+
+
+            try
+            {
+                const response = await fetch(
+                    `/Appointment/GetAvailableSlots?doctorId=${doctorId}&appointmentDate=${appointmentDate}`
+                );
+
+
+                if (!response.ok)
+                {
+                    throw new Error(
+                        "Unable to load available times."
+                    );
+                }
+
+
+                const slots =
+                    await response.json();
+
+
+                // No available slots
+                if (slots.length === 0)
+                {
+                    slotsContainer.innerHTML = `
+                        <div class="card-body">
+
+                            <div class="text-secondary text-center py-4">
+
+                                <i class="bi bi-calendar-x fs-2 d-block mb-2"></i>
+
+                                <div class="fw-semibold">
+                                    No available times
+                                </div>
+
+                                <div class="small mt-1">
+                                    There are no available appointment
+                                    slots for this doctor on the selected date.
+                                </div>
+
+                            </div>
+
+                        </div>
+                    `;
+
+                    return;
+                }
+
+
+                // Render available slots
+                slotsContainer.innerHTML = `
+                    <div class="card-body">
+
+                        <div class="mb-3">
+
+                            <div class="fw-semibold">
+                                Available appointment times
+                            </div>
+
+                            <div class="text-secondary small">
+                                Select a time to continue
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            id="slotButtons"
+                            class="d-flex flex-wrap gap-2">
+                        </div>
+
+                    </div>
+                `;
+
+
+                const slotButtons =
+                    document.getElementById("slotButtons");
+
+
+                // Create buttons for every available slot
+                slots.forEach(slot =>
+                {
+                    const button =
+                        document.createElement("button");
+
+
+                    button.type = "button";
+
+
+                    button.className =
+                        "btn btn-outline-secondary px-3 py-2";
+
+
+                    button.innerHTML = `
+                        <i class="bi bi-clock me-1"></i>
+                        ${slot.text}
+                    `;
+
+
+                    button.dataset.value =
+                        slot.value;
+
+
+                    button.addEventListener(
+                        "click",
+                        function ()
+                        {
+
+                            // Reset all slot buttons
+                            document
+                                .querySelectorAll(
+                                    "#slotButtons button"
+                                )
+                                .forEach(btn =>
+                                {
+                                    btn.classList.remove(
+                                        "btn-primary"
+                                    );
+
+                                    btn.classList.add(
+                                        "btn-outline-secondary"
+                                    );
+                                });
+
+
+                            // Mark selected slot
+                            button.classList.remove(
+                                "btn-outline-secondary"
+                            );
+
+                            button.classList.add(
+                                "btn-primary"
+                            );
+
+
+                            // Store selected time
+                            startTimeInput.value =
+                                slot.value;
+
+
+                            // Show selected time
+                            selectedTime.innerHTML = `
+                                <i class="bi bi-check-circle text-success me-1"></i>
+
+                                Selected time:
+                                <strong>${slot.text}</strong>
+                            `;
+
+                        }
+                    );
+
+
+                    slotButtons.appendChild(button);
+
+                });
+
+            }
+            catch (error)
+            {
+                slotsContainer.innerHTML = `
+                    <div class="card-body">
+
+                        <div class="text-danger text-center py-4">
+
+                            <i class="bi bi-exclamation-triangle fs-2 d-block mb-2"></i>
+
+                            <div class="fw-semibold">
+                                Unable to load available times
+                            </div>
+
+                            <div class="small mt-1">
+                                Please try again.
+                            </div>
+
+                        </div>
+
+                    </div>
+                `;
+            }
+        }
+
+
+        // Load available slots when doctor changes
+        doctorSelect.addEventListener(
+            "change",
+            loadAvailableSlots
+        );
+
+
+        // Load available slots when date changes
+        dateInput.addEventListener(
+            "change",
+            loadAvailableSlots
+        );
+
+
+        // Reload slots after validation failure
+        document.addEventListener(
+            "DOMContentLoaded",
+            function ()
+            {
+                if (
+                    doctorSelect.value &&
+                    dateInput.value
+                )
+                {
+                    loadAvailableSlots();
+                }
+            }
+        );
+
+    </script>
+}

@@ -1,0 +1,444 @@
+﻿@using Clinexa.Models.Entities
+@model Clinexa.Models.ViewModels.DoctorSchedule.DoctorScheduleFilterViewModel
+
+@{
+    ViewData["Title"] = "Schedules";
+}
+
+@section PageActions {
+    <a asp-controller="DoctorSchedule"
+       asp-action="Create"
+       class="btn btn-primary px-3 py-2">
+        <i class="bi bi-plus-lg me-1"></i>
+        Add Schedule
+    </a>
+}
+
+<!-- Filters -->
+<div class="card mb-3">
+
+    <div class="card-body">
+
+        <form asp-controller="DoctorSchedule"
+              asp-action="Index"
+              method="get">
+
+            <div class="row g-3 align-items-end">
+
+                <!-- Doctor -->
+                <div class="col-md-4">
+
+                    <label asp-for="DoctorId"
+                           class="form-label">
+                        Doctor
+                    </label>
+
+                    <select asp-for="DoctorId"
+                            class="form-select">
+
+                        <option value="">
+                            All Doctors
+                        </option>
+
+                        @foreach (var doctor in Model.Doctors)
+                        {
+                            <option value="@doctor.DoctorId">
+                                Dr. @doctor.User.FirstName @doctor.User.LastName
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+
+                <!-- Day -->
+                <div class="col-md-3">
+
+                    <label asp-for="DayOfWeek"
+                           class="form-label">
+                        Day
+                    </label>
+
+                    <select asp-for="DayOfWeek"
+                            class="form-select">
+
+                        <option value="">
+                            All Days
+                        </option>
+
+                        <option value="Saturday">Saturday</option>
+                        <option value="Sunday">Sunday</option>
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- Status -->
+                <div class="col-md-3">
+
+                    <label asp-for="IsAvailable"
+                           class="form-label">
+                        Status
+                    </label>
+
+                    <select asp-for="IsAvailable"
+                            class="form-select">
+
+                        <option value="">
+                            All Statuses
+                        </option>
+
+                        <option value="true">
+                            Available
+                        </option>
+
+                        <option value="false">
+                            Unavailable
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <!-- Actions -->
+                <div class="col-md-2">
+
+                    <div class="d-flex gap-2">
+
+                        <a asp-controller="DoctorSchedule"
+                           asp-action="Index"
+                           class="btn btn-outline-secondary flex-fill"
+                           title="Reset">
+
+                            <i class="bi bi-arrow-counterclockwise"></i>
+
+                        </a>
+
+                        <button type="submit"
+                                class="btn btn-primary flex-fill"
+                                title="Apply Filters">
+
+                            <i class="bi bi-search"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- Schedule Table -->
+<div class="card">
+
+    <div class="card-header">
+
+        <h3 class="card-title">
+            Doctor Availability
+        </h3>
+
+        <div class="card-actions">
+            <span class="text-secondary">
+                @Model.TotalCount schedule(s)
+            </span>
+        </div>
+
+    </div>
+
+
+    <div class="table-responsive">
+
+        <table class="table table-vcenter card-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Doctor</th>
+                    <th>Speciality</th>
+                    <th>Day</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                    <th class="w-1 text-end">Actions</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                @if (Model.Schedules.Any())
+                {
+                    foreach (var schedule in Model.Schedules)
+                    {
+                        <tr>
+
+                            <!-- Doctor -->
+                            <td>
+
+                                <div class="d-flex align-items-center">
+
+                                    <span class="avatar avatar-sm bg-blue-lt me-2">
+                                        <i class="bi bi-person-badge"></i>
+                                    </span>
+
+                                    <div class="fw-semibold">
+                                        Dr.
+                                        @schedule.Doctor?.User?.FirstName
+                                        @schedule.Doctor?.User?.LastName
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+
+                            <!-- Speciality -->
+                            <td>
+                                <span class="text-secondary">
+                                    @schedule.Doctor?.Speciality?.Name
+                                </span>
+                            </td>
+
+
+                            <!-- Day -->
+                            <td>
+
+                                <span class="fw-medium">
+                                    @schedule.DayOfWeek
+                                </span>
+
+                            </td>
+
+
+                            <!-- Time -->
+                            <td>
+
+                                <span class="text-secondary">
+                                    @schedule.StartTime.ToString(@"hh\:mm")
+                                    -
+                                    @schedule.EndTime.ToString(@"hh\:mm")
+                                </span>
+
+                            </td>
+
+
+                            <!-- Status -->
+                            <td>
+
+                                @if (schedule.IsAvailable)
+                                {
+                                    <span class="badge bg-green-lt">
+                                        Available
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary-lt">
+                                        Unavailable
+                                    </span>
+                                }
+
+                            </td>
+
+
+                            <!-- Actions -->
+                            <td>
+
+                                <div class="btn-list flex-nowrap justify-content-end">
+
+                                    <a asp-action="Details"
+                                       asp-route-id="@schedule.DoctorScheduleId"
+                                       class="btn btn-sm btn-outline-secondary"
+                                       title="Details">
+
+                                        <i class="bi bi-eye"></i>
+
+                                    </a>
+
+                                    <a asp-action="Edit"
+                                       asp-route-id="@schedule.DoctorScheduleId"
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Edit">
+
+                                        <i class="bi bi-pencil"></i>
+
+                                    </a>
+
+                                    @if (schedule.IsAvailable)
+                                    {
+                                        <form asp-action="Deactivate"
+                                              asp-route-id="@schedule.DoctorScheduleId"
+                                              method="post"
+                                              class="d-inline">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    title="Deactivate"
+                                                    onclick="return confirm('Are you sure you want to deactivate this schedule?');">
+
+                                                <i class="bi bi-x-circle"></i>
+
+                                            </button>
+
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form asp-action="Activate"
+                                              asp-route-id="@schedule.DoctorScheduleId"
+                                              method="post"
+                                              class="d-inline">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-success"
+                                                    title="Activate">
+
+                                                <i class="bi bi-check-circle"></i>
+
+                                            </button>
+
+                                        </form>
+                                    }
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+
+                        <td colspan="6">
+
+                            <div class="empty py-5">
+
+                                <div class="empty-img">
+                                    <i class="bi bi-calendar-x"
+                                       style="font-size: 3rem;"></i>
+                                </div>
+
+                                <p class="empty-title">
+                                    No doctor schedules found
+                                </p>
+
+                                <p class="empty-subtitle text-secondary">
+                                    Try changing your filters or create a new schedule.
+                                </p>
+
+                                <div class="empty-action">
+
+                                    <a asp-action="Create"
+                                       class="btn btn-primary">
+
+                                        <i class="bi bi-plus-lg me-1"></i>
+                                        Create Schedule
+
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <div class="card-footer">
+
+            <div class="d-flex justify-content-center">
+
+                <ul class="pagination mb-0">
+
+                    <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-DoctorId="@Model.DoctorId"
+                           asp-route-DayOfWeek="@Model.DayOfWeek"
+                           asp-route-IsAvailable="@Model.IsAvailable"
+                           asp-route-Page="@(Model.Page - 1)">
+
+                            <i class="bi bi-chevron-left"></i>
+
+                        </a>
+
+                    </li>
+
+
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.Page ? "active" : "")">
+
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-DoctorId="@Model.DoctorId"
+                               asp-route-DayOfWeek="@Model.DayOfWeek"
+                               asp-route-IsAvailable="@Model.IsAvailable"
+                               asp-route-Page="@i">
+
+                                @i
+
+                            </a>
+
+                        </li>
+                    }
+
+
+                    <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
+
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-DoctorId="@Model.DoctorId"
+                           asp-route-DayOfWeek="@Model.DayOfWeek"
+                           asp-route-IsAvailable="@Model.IsAvailable"
+                           asp-route-Page="@(Model.Page + 1)">
+
+                            <i class="bi bi-chevron-right"></i>
+
+                        </a>
+
+                    </li>
+
+                </ul>
+
+            </div>
+
+        </div>
+    }
+
+</div>

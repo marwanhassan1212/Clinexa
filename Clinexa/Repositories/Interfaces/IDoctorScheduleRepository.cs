@@ -17,6 +17,14 @@ namespace Clinexa.Repositories.Interfaces
 
         Task<bool> DoctorExistsAsync(int doctorId);
 
+        Task<(List<DoctorSchedule> Schedules, int TotalCount)> FilterAsync(
+                string? search,
+                int? doctorId,
+                DayOfWeek? dayOfWeek,
+                bool? isAvailable,
+                int page,
+                int pageSize);
+
         Task AddAsync(DoctorSchedule schedule);
 
         void Update(DoctorSchedule schedule);
