@@ -9,14 +9,34 @@ namespace Clinexa.Controllers
     public class UserController : Controller
     {
         private readonly IUserService userService;
-        public UserController(IUserService userService)
+        private readonly IRoleService roleService;
+        public UserController(IUserService userService , IRoleService roleService)
         {
             this.userService = userService;
+            this.roleService = roleService;
         }
-        public async Task<IActionResult> Index()
+
+        public async Task<IActionResult> Index(
+        UserFilterViewModel model)
         {
-            var user = await userService.GetAllAsync();
-            return View(user);
+            if (model.Page < 1)
+            {
+                model.Page = 1;
+            }
+
+            var result = await userService.FilterAsync(
+                model.Search,
+                model.RoleId,
+                model.IsActive,
+                model.Page,
+                model.PageSize);
+
+            model.Users = result.Users;
+            model.TotalCount = result.TotalCount;
+
+            model.Roles = await roleService.GetAllAsync();
+
+            return View(model);
         }
 
         public async Task<IActionResult> Details(int id)
@@ -31,6 +51,16 @@ namespace Clinexa.Controllers
                 return View(user);
             }
         }
+        [HttpGet]
+        public async Task<IActionResult> Create()
+        {
+            var model = new UserCreateViewModel
+            {
+                Roles = await roleService.GetAllAsync()
+            };
+
+            return View(model);
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -38,6 +68,7 @@ namespace Clinexa.Controllers
         {
             if (!ModelState.IsValid)
             {
+                model.Roles = await roleService.GetAllAsync();
                 return View(model);
             }
 
@@ -84,7 +115,8 @@ namespace Clinexa.Controllers
                 LastName = user.LastName,
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
-                RoleId = user.RoleId
+                RoleId = user.RoleId,
+                Roles = await roleService.GetAllAsync()
             };
 
             return View(model);
@@ -135,6 +167,23 @@ namespace Clinexa.Controllers
         public async Task<IActionResult> Deactivate(int id)
         {
             var result = await userService.DeactivateAsync(id);
+
+            if (!result)
+            {
+                return NotFound();
+            }
+
+            TempData["Success"] = "User deactivated successfully.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Activate(int id)
+        {
+            var result = await userService.Activate(id);
 
             if (!result)
             {

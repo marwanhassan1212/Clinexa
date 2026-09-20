@@ -1,0 +1,107 @@
+﻿@model List<Clinexa.Models.Entities.Role>
+
+@{
+    ViewData["Title"] = "Roles";
+}
+
+@section PageActions {
+    <a asp-action="Create" class="btn btn-primary px-3 py-2">
+        <i class="bi bi-plus-lg me-1"></i>
+        Add Role
+    </a>
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">System Roles</h3>
+
+        <div class="card-actions">
+            <span class="text-secondary">
+                @Model.Count role(s)
+            </span>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table">
+            <thead>
+                <tr>
+                    <th>Role</th>
+                    <th>Description</th>
+                    <th class="w-1 text-end">Actions</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (Model.Any())
+                {
+                    foreach (var role in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">
+                                    @role.Name
+                                </div>
+                            </td>
+
+                            <td>
+                                <span class="text-secondary">
+                                    @(string.IsNullOrWhiteSpace(role.Description)
+                                                                ? "No description"
+                                                                : role.Description)
+                        </span>
+                    </td>
+
+                            <td>
+                                <div class="btn-list flex-nowrap justify-content-end">
+                                    <a asp-action="Details"
+                                       asp-route-id="@role.RoleId"
+                                       class="btn btn-sm btn-outline-secondary"
+                                       title="Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+
+                                    <a asp-action="Edit"
+                                       asp-route-id="@role.RoleId"
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                                }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="3">
+                            <div class="empty py-5">
+                                <div class="empty-img">
+                                    <i class="bi bi-shield-lock"
+                                       style="font-size: 3rem;"></i>
+                                </div>
+
+                                <p class="empty-title">
+                                    No roles found
+                                </p>
+
+                                <p class="empty-subtitle text-secondary">
+                                    Create a role to start managing system access.
+                                </p>
+
+                                <div class="empty-action">
+                                    <a asp-action="Create"
+                                       class="btn btn-primary">
+                                        <i class="bi bi-plus-lg me-1"></i>
+                                        Create Role
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

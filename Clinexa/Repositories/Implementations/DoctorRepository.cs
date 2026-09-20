@@ -106,5 +106,19 @@ namespace Clinexa.Repositories.Implementations
 
             return (doctors, totalCount);
         }
+
+        public async Task<List<User>> GetAvailableUsersAsync()
+        {
+            return await _db.Users
+                .AsNoTracking()
+                .Include(x => x.Role)
+                .Where(x =>
+                    x.Role.Name == "Doctor" &&
+                    x.Doctor == null &&
+                    x.IsActive)
+                .OrderBy(x => x.FirstName)
+                .ThenBy(x => x.LastName)
+                .ToListAsync();
+        }
     }
 }

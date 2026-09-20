@@ -2,7 +2,7 @@
 
 namespace Clinexa.Models.ViewModels.Doctor
 {
-    public class CreateViewModel
+    public class DoctorCreateViewModel
     {
         [Range(1, int.MaxValue, ErrorMessage = "Please select a user.")]
         public int UserId { get; set; }

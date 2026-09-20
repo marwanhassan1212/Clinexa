@@ -14,6 +14,8 @@ namespace Clinexa.Services.Interfaces
 
         Task<(List<Doctor> Doctors, int TotalCount)> FilterAsync(string? search, int? specialityId,
                          bool? isActive, int page, int pageSize);
+
+        Task<List<User>> GetAvailableUsersAsync();
         Task<bool> UpdateAsync(Doctor doctor);
 
         Task<bool> DeactivateAsync(int id);

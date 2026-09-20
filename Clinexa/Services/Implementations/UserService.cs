@@ -86,5 +86,38 @@ namespace Clinexa.Services.Implementations
             await userRepository.SaveChangesAsync();
             return true;
         }
+
+        public async Task<(List<User> Users, int TotalCount)> FilterAsync(
+                   string? search,
+                   int? roleId,
+                   bool? isActive,
+                   int page,
+                   int pageSize)
+        {
+            return await userRepository.FilterAsync(
+                search,
+                roleId,
+                isActive,
+                page,
+                pageSize);
+        }
+
+        public async Task<bool> Activate(int id)
+        {
+            var userExists = await userRepository.GetByIdAsync(id);
+
+            if (userExists == null)
+            {
+                return false;
+            }
+
+            userExists.IsActive = true;
+
+            userRepository.Update(userExists);
+
+            await userRepository.SaveChangesAsync();
+
+            return true;
+        }
     }
 }

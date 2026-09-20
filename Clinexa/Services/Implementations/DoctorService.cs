@@ -111,5 +111,10 @@ namespace Clinexa.Services.Implementations
             return true;
 
         }
+
+        public async Task<List<User>> GetAvailableUsersAsync()
+        {
+            return await doctorRepository.GetAvailableUsersAsync();
+        }
     }
 }

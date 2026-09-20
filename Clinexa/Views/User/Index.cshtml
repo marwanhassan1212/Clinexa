@@ -1,49 +1,85 @@
-﻿@using Clinexa.Models.Entities
-@model Clinexa.Models.ViewModels.DoctorSchedule.DoctorScheduleFilterViewModel
+﻿@model Clinexa.Models.ViewModels.User.UserFilterViewModel
 
 @{
-    ViewData["Title"] = "Schedules";
+    ViewData["Title"] = "Users";
 }
 
 @section PageActions {
-    <a asp-controller="DoctorSchedule"
-       asp-action="Create"
+    <a asp-action="Create"
        class="btn btn-primary px-3 py-2">
+
         <i class="bi bi-plus-lg me-1"></i>
-        Add Schedule
+        Add User
+
     </a>
 }
 
-<!-- Filters -->
-<div class="card mb-3">
+<div class="card">
 
-    <div class="card-body">
+    <!-- Header -->
+    <div class="card-header">
 
-        <form asp-controller="DoctorSchedule"
-              asp-action="Index"
+        <h3 class="card-title">
+            System Users
+        </h3>
+
+        <div class="card-actions">
+
+            <span class="text-secondary">
+                @Model.TotalCount user(s)
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- Filters -->
+    <div class="card-body border-bottom">
+
+        <form asp-action="Index"
               method="get">
 
             <div class="row g-3 align-items-end">
 
-                <!-- Doctor -->
-                <div class="col-md-4">
+                <!-- Search -->
+                <div class="col-md-5">
 
-                    <label asp-for="DoctorId"
+                    <label asp-for="Search"
                            class="form-label">
-                        Doctor
+
+                        Search
+
                     </label>
 
-                    <select asp-for="DoctorId"
+                    <input asp-for="Search"
+                           class="form-control"
+                           placeholder="Name, email or phone..." />
+
+                </div>
+
+
+                <!-- Role -->
+                <div class="col-md-3">
+
+                    <label asp-for="RoleId"
+                           class="form-label">
+
+                        Role
+
+                    </label>
+
+                    <select asp-for="RoleId"
                             class="form-select">
 
                         <option value="">
-                            All Doctors
+                            All Roles
                         </option>
 
-                        @foreach (var doctor in Model.Doctors)
+                        @foreach (var role in Model.Roles)
                         {
-                            <option value="@doctor.DoctorId">
-                                Dr. @doctor.User.FirstName @doctor.User.LastName
+                            <option value="@role.RoleId">
+                                @role.Name
                             </option>
                         }
 
@@ -52,43 +88,17 @@
                 </div>
 
 
-                <!-- Day -->
-                <div class="col-md-3">
-
-                    <label asp-for="DayOfWeek"
-                           class="form-label">
-                        Day
-                    </label>
-
-                    <select asp-for="DayOfWeek"
-                            class="form-select">
-
-                        <option value="">
-                            All Days
-                        </option>
-
-                        <option value="Saturday">Saturday</option>
-                        <option value="Sunday">Sunday</option>
-                        <option value="Monday">Monday</option>
-                        <option value="Tuesday">Tuesday</option>
-                        <option value="Wednesday">Wednesday</option>
-                        <option value="Thursday">Thursday</option>
-                        <option value="Friday">Friday</option>
-
-                    </select>
-
-                </div>
-
-
                 <!-- Status -->
-                <div class="col-md-3">
+                <div class="col-md-2">
 
-                    <label asp-for="IsAvailable"
+                    <label asp-for="IsActive"
                            class="form-label">
+
                         Status
+
                     </label>
 
-                    <select asp-for="IsAvailable"
+                    <select asp-for="IsActive"
                             class="form-select">
 
                         <option value="">
@@ -96,11 +106,11 @@
                         </option>
 
                         <option value="true">
-                            Available
+                            Active
                         </option>
 
                         <option value="false">
-                            Unavailable
+                            Inactive
                         </option>
 
                     </select>
@@ -108,13 +118,13 @@
                 </div>
 
 
-                <!-- Actions -->
+                <!-- Filter Actions -->
                 <div class="col-md-2">
 
                     <div class="d-flex gap-2">
 
-                        <a asp-controller="DoctorSchedule"
-                           asp-action="Index"
+                        <!-- Reset -->
+                        <a asp-action="Index"
                            class="btn btn-outline-secondary flex-fill"
                            title="Reset">
 
@@ -122,6 +132,8 @@
 
                         </a>
 
+
+                        <!-- Apply -->
                         <button type="submit"
                                 class="btn btn-primary flex-fill"
                                 title="Apply Filters">
@@ -140,27 +152,8 @@
 
     </div>
 
-</div>
 
-
-<!-- Schedule Table -->
-<div class="card">
-
-    <div class="card-header">
-
-        <h3 class="card-title">
-            Doctor Availability
-        </h3>
-
-        <div class="card-actions">
-            <span class="text-secondary">
-                @Model.TotalCount schedule(s)
-            </span>
-        </div>
-
-    </div>
-
-
+    <!-- Users Table -->
     <div class="table-responsive">
 
         <table class="table table-vcenter card-table">
@@ -169,12 +162,29 @@
 
                 <tr>
 
-                    <th>Doctor</th>
-                    <th>Speciality</th>
-                    <th>Day</th>
-                    <th>Time</th>
-                    <th>Status</th>
-                    <th class="w-1 text-end">Actions</th>
+                    <th>
+                        User
+                    </th>
+
+                    <th>
+                        Email
+                    </th>
+
+                    <th>
+                        Phone
+                    </th>
+
+                    <th>
+                        Role
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                    <th class="w-1 text-end">
+                        Actions
+                    </th>
 
                 </tr>
 
@@ -183,25 +193,37 @@
 
             <tbody>
 
-                @if (Model.Schedules.Any())
+                @if (Model.Users.Any())
                 {
-                    foreach (var schedule in Model.Schedules)
+                    foreach (var user in Model.Users)
                     {
                         <tr>
 
-                            <!-- Doctor -->
+                            <!-- User -->
                             <td>
 
                                 <div class="d-flex align-items-center">
 
                                     <span class="avatar avatar-sm bg-blue-lt me-2">
-                                        <i class="bi bi-person-badge"></i>
+
+                                        <i class="bi bi-person"></i>
+
                                     </span>
 
-                                    <div class="fw-semibold">
-                                        Dr.
-                                        @schedule.Doctor?.User?.FirstName
-                                        @schedule.Doctor?.User?.LastName
+                                    <div>
+
+                                        <div class="fw-semibold">
+
+                                            @user.FirstName @user.LastName
+
+                                        </div>
+
+                                        <div class="text-secondary small">
+
+                                            #@user.UserId
+
+                                        </div>
+
                                     </div>
 
                                 </div>
@@ -209,31 +231,33 @@
                             </td>
 
 
-                            <!-- Speciality -->
+                            <!-- Email -->
                             <td>
+
                                 <span class="text-secondary">
-                                    @schedule.Doctor?.Speciality?.Name
-                                </span>
-                            </td>
 
+                                    @user.Email
 
-                            <!-- Day -->
-                            <td>
-
-                                <span class="fw-medium">
-                                    @schedule.DayOfWeek
                                 </span>
 
                             </td>
 
 
-                            <!-- Time -->
+                            <!-- Phone -->
                             <td>
 
-                                <span class="text-secondary">
-                                    @schedule.StartTime.ToString(@"hh\:mm")
-                                    -
-                                    @schedule.EndTime.ToString(@"hh\:mm")
+                                @user.PhoneNumber
+
+                            </td>
+
+
+                            <!-- Role -->
+                            <td>
+
+                                <span class="badge bg-blue-lt">
+
+                                    @user.Role?.Name
+
                                 </span>
 
                             </td>
@@ -242,17 +266,15 @@
                             <!-- Status -->
                             <td>
 
-                                @if (schedule.IsAvailable)
+                                @if (user.IsActive)
                                 {
                                     <span class="badge bg-green-lt">
-                                        Available
+                                        Active
                                     </span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-red-lt">
-                                        UnAvailable
-                                    </span>
+                                    <span class="badge bg-red-lt">Inactive</span>
                                 }
 
                             </td>
@@ -263,8 +285,9 @@
 
                                 <div class="btn-list flex-nowrap justify-content-end">
 
+                                    <!-- Details -->
                                     <a asp-action="Details"
-                                       asp-route-id="@schedule.DoctorScheduleId"
+                                       asp-route-id="@user.UserId"
                                        class="btn btn-sm btn-outline-secondary"
                                        title="Details">
 
@@ -272,8 +295,10 @@
 
                                     </a>
 
+
+                                    <!-- Edit -->
                                     <a asp-action="Edit"
-                                       asp-route-id="@schedule.DoctorScheduleId"
+                                       asp-route-id="@user.UserId"
                                        class="btn btn-sm btn-outline-primary"
                                        title="Edit">
 
@@ -281,10 +306,12 @@
 
                                     </a>
 
-                                    @if (schedule.IsAvailable)
+
+                                    @if (user.IsActive)
                                     {
+                                        <!-- Deactivate -->
                                         <form asp-action="Deactivate"
-                                              asp-route-id="@schedule.DoctorScheduleId"
+                                              asp-route-id="@user.UserId"
                                               method="post"
                                               class="d-inline">
 
@@ -293,9 +320,9 @@
                                             <button type="submit"
                                                     class="btn btn-sm btn-outline-danger"
                                                     title="Deactivate"
-                                                    onclick="return confirm('Are you sure you want to deactivate this schedule?');">
+                                                    onclick="return confirm('Are you sure you want to deactivate this user?');">
 
-                                                <i class="bi bi-x-circle"></i>
+                                                <i class="bi bi-person-x"></i>
 
                                             </button>
 
@@ -303,8 +330,9 @@
                                     }
                                     else
                                     {
+                                        <!-- Activate -->
                                         <form asp-action="Activate"
-                                              asp-route-id="@schedule.DoctorScheduleId"
+                                              asp-route-id="@user.UserId"
                                               method="post"
                                               class="d-inline">
 
@@ -314,7 +342,7 @@
                                                     class="btn btn-sm btn-outline-success"
                                                     title="Activate">
 
-                                                <i class="bi bi-check-circle"></i>
+                                                <i class="bi bi-person-check"></i>
 
                                             </button>
 
@@ -330,32 +358,39 @@
                 }
                 else
                 {
+                    <!-- Empty State -->
                     <tr>
 
                         <td colspan="6">
 
-                            <div class="empty py-5">
+                            <div class="clinexa-empty-state">
 
-                                <div class="empty-img">
-                                    <i class="bi bi-calendar-x"
-                                       style="font-size: 3rem;"></i>
+                                <div class="clinexa-empty-state-icon">
+
+                                    <i class="bi bi-people"></i>
+
                                 </div>
 
-                                <p class="empty-title">
-                                    No doctor schedules found
-                                </p>
+                                <div class="clinexa-empty-state-title">
 
-                                <p class="empty-subtitle text-secondary">
-                                    Try changing your filters or create a new schedule.
-                                </p>
+                                    No users found
 
-                                <div class="empty-action">
+                                </div>
+
+                                <div class="clinexa-empty-state-text">
+
+                                    There are no users matching your current search.
+
+                                </div>
+
+                                <div>
 
                                     <a asp-action="Create"
                                        class="btn btn-primary">
 
                                         <i class="bi bi-plus-lg me-1"></i>
-                                        Create Schedule
+
+                                        Add User
 
                                     </a>
 
@@ -384,13 +419,14 @@
 
                 <ul class="pagination mb-0">
 
+                    <!-- Previous -->
                     <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
 
                         <a class="page-link"
                            asp-action="Index"
-                           asp-route-DoctorId="@Model.DoctorId"
-                           asp-route-DayOfWeek="@Model.DayOfWeek"
-                           asp-route-IsAvailable="@Model.IsAvailable"
+                           asp-route-Search="@Model.Search"
+                           asp-route-RoleId="@Model.RoleId"
+                           asp-route-IsActive="@Model.IsActive"
                            asp-route-Page="@(Model.Page - 1)">
 
                             <i class="bi bi-chevron-left"></i>
@@ -400,15 +436,16 @@
                     </li>
 
 
+                    <!-- Page Numbers -->
                     @for (int i = 1; i <= Model.TotalPages; i++)
                     {
                         <li class="page-item @(i == Model.Page ? "active" : "")">
 
                             <a class="page-link"
                                asp-action="Index"
-                               asp-route-DoctorId="@Model.DoctorId"
-                               asp-route-DayOfWeek="@Model.DayOfWeek"
-                               asp-route-IsAvailable="@Model.IsAvailable"
+                               asp-route-Search="@Model.Search"
+                               asp-route-RoleId="@Model.RoleId"
+                               asp-route-IsActive="@Model.IsActive"
                                asp-route-Page="@i">
 
                                 @i
@@ -419,13 +456,14 @@
                     }
 
 
+                    <!-- Next -->
                     <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
 
                         <a class="page-link"
                            asp-action="Index"
-                           asp-route-DoctorId="@Model.DoctorId"
-                           asp-route-DayOfWeek="@Model.DayOfWeek"
-                           asp-route-IsAvailable="@Model.IsAvailable"
+                           asp-route-Search="@Model.Search"
+                           asp-route-RoleId="@Model.RoleId"
+                           asp-route-IsActive="@Model.IsActive"
                            asp-route-Page="@(Model.Page + 1)">
 
                             <i class="bi bi-chevron-right"></i>

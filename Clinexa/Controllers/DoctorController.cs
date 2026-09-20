@@ -48,12 +48,16 @@ namespace Clinexa.Controllers
         }
 
         // GET
+        [HttpGet]
         public async Task<IActionResult> Create()
         {
-            var model = new CreateViewModel
+            var users = await doctorService.GetAvailableUsersAsync();
+            var specialities = await specialityService.GetAllAsync();
+
+            var model = new DoctorCreateViewModel
             {
-                Users = await userService.GetAllAsync(),
-                Specialities = await specialityService.GetAllAsync()
+                Users = users,
+                Specialities = specialities
             };
 
             return View(model);
@@ -61,7 +65,7 @@ namespace Clinexa.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(CreateViewModel doctor)
+        public async Task<IActionResult> Create(DoctorCreateViewModel doctor)
         {
             if(ModelState.IsValid)
             {

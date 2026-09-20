@@ -28,5 +28,7 @@ namespace Clinexa.Models.ViewModels.User
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Please select a role.")]
         public int RoleId { get; set; }
+        public List<Entities.Role> Roles { get; set; } = new();
+
     }
 }

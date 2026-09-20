@@ -1,0 +1,88 @@
+﻿@model Clinexa.Models.ViewModels.Role.RoleEditViewModel
+
+@{
+    ViewData["Title"] = "Edit Role";
+}
+
+@section PageActions {
+    <a asp-action="Details"
+       asp-route-id="@Model.RoleId"
+       class="btn btn-outline-secondary px-3 py-2">
+        <i class="bi bi-arrow-left me-1"></i>
+        Back
+    </a>
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+
+        <div class="card">
+            <div class="card-header">
+                <h3 class="card-title">Edit Role</h3>
+            </div>
+
+            <form asp-action="Edit" method="post">
+                @Html.AntiForgeryToken()
+
+                <input asp-for="RoleId" type="hidden" />
+
+                <div class="card-body">
+
+                    <div asp-validation-summary="ModelOnly"
+                         class="text-danger mb-3">
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Name"
+                               class="form-label">
+                            Role Name
+                        </label>
+
+                        <input asp-for="Name"
+                               class="form-control" />
+
+                        <span asp-validation-for="Name"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Description"
+                               class="form-label">
+                            Description
+                        </label>
+
+                        <textarea asp-for="Description"
+                                  class="form-control"
+                                  rows="4"></textarea>
+
+                        <span asp-validation-for="Description"
+                              class="text-danger">
+                        </span>
+                    </div>
+
+                </div>
+
+                <div class="card-footer d-flex justify-content-end gap-2">
+                    <a asp-action="Details"
+                       asp-route-id="@Model.RoleId"
+                       class="btn btn-outline-secondary">
+                        Cancel
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        <i class="bi bi-check-lg me-1"></i>
+                        Save Changes
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
