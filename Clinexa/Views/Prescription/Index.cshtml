@@ -1,0 +1,396 @@
+﻿@model Clinexa.Models.ViewModels.Prescription.PrescriptionFilterViewModel
+
+@{
+    ViewData["Title"] = "Prescriptions";
+}
+
+@section PageActions {
+
+    <a asp-action="Create"
+       class="btn btn-primary">
+
+        <i class="bi bi-plus-lg me-1"></i>
+        New Prescription
+
+    </a>
+
+}
+
+<div class="card">
+
+    <!-- Header -->
+
+    <div class="card-header">
+
+        <div>
+            <h3 class="card-title mb-1">
+                Prescriptions
+            </h3>
+
+            <div class="text-secondary">
+                Manage patient prescriptions and their medications.
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Filters -->
+
+    <div class="card-body border-bottom">
+
+        <form asp-action="Index"
+              method="get">
+
+            <div class="row g-2">
+
+                <!-- Search -->
+
+                <div class="col-md-4">
+
+                    <label class="form-label">
+                        Search
+                    </label>
+
+                    <input asp-for="Search"
+                           class="form-control"
+                           placeholder="Search by ID or notes..." />
+
+                </div>
+
+
+                <!-- Date From -->
+
+                <div class="col-md-2">
+
+                    <label asp-for="DateFrom"
+                           class="form-label">
+                        From
+                    </label>
+
+                    <input asp-for="DateFrom"
+                           type="date"
+                           class="form-control" />
+
+                </div>
+
+
+                <!-- Date To -->
+
+                <div class="col-md-2">
+
+                    <label asp-for="DateTo"
+                           class="form-label">
+                        To
+                    </label>
+
+                    <input asp-for="DateTo"
+                           type="date"
+                           class="form-control" />
+
+                </div>
+
+
+                <!-- Medical Record -->
+
+                <div class="col-md-3">
+
+                    <label asp-for="MedicalRecordId"
+                           class="form-label">
+                        Medical Record
+                    </label>
+
+                    <select asp-for="MedicalRecordId"
+                            class="form-select">
+
+                        <option value="">
+                            All Medical Records
+                        </option>
+
+                        @foreach (var record in Model.MedicalRecords)
+                        {
+                            <option value="@record.MedicalRecordId">
+
+                                Medical Record
+                                #@record.MedicalRecordId
+
+                            </option>
+                        }
+
+                    </select>
+
+                </div>
+
+
+                <!-- Search Button -->
+
+                <div class="col-md-1 d-flex align-items-end">
+
+                    <button type="submit"
+                            class="btn btn-primary w-100"
+                            title="Apply Filters">
+
+                        <i class="bi bi-search"></i>
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+
+    <!-- Table -->
+
+    <div class="table-responsive">
+
+        <table class="table table-vcenter card-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        ID
+                    </th>
+
+                    <th>
+                        Prescription Date
+                    </th>
+
+                    <th>
+                        Medical Record
+                    </th>
+
+                    <th>
+                        Notes
+                    </th>
+
+                    <th class="w-1">
+                        Actions
+                    </th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                @if (Model.Prescriptions.Any())
+                {
+                    foreach (var prescription in Model.Prescriptions)
+                    {
+                        <tr>
+
+                            <!-- ID -->
+
+                            <td>
+
+                                <span class="fw-bold">
+                                    #@prescription.PrescriptionId
+                                </span>
+
+                            </td>
+
+
+                            <!-- Date -->
+
+                            <td>
+
+                                @prescription.PrescriptionDate
+                                .ToString("dd MMM yyyy")
+
+                            </td>
+
+
+                            <!-- Medical Record -->
+
+                            <td>
+
+                                <span class="badge bg-blue-lt">
+
+                                    Medical Record
+                                    #@prescription.MedicalRecordId
+
+                                </span>
+
+                            </td>
+
+
+                            <!-- Notes -->
+
+                            <td>
+
+                                @if (!string.IsNullOrWhiteSpace(
+                                                        prescription.Notes))
+                                {
+                                    @(prescription.Notes.Length > 60
+                                                            ? prescription.Notes.Substring(0, 60) + "..."
+                                                            : prescription.Notes)
+                                                }
+                                else
+                                {
+                                    <span class="text-secondary">
+                                        No notes
+                                    </span>
+                                }
+
+                            </td>
+
+
+                            <!-- Actions -->
+
+                            <td>
+                                <div class="btn-list flex-nowrap" style="margin-left: 20px;">
+
+                                    <a asp-controller="Prescription"
+                                       asp-action="Details"
+                                       asp-route-id="@prescription.PrescriptionId"
+                                       class="btn btn-sm btn-outline-secondary"
+                                       title="Details">
+
+                                        <i class="bi bi-eye"></i>
+
+                                    </a>
+
+                                    <a asp-controller="Prescription"
+                                       asp-action="Edit"
+                                       asp-route-id="@prescription.PrescriptionId"
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Edit">
+
+                                        <i class="bi bi-pencil"></i>
+
+                                    </a>
+
+                                </div>
+                            </td>
+
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <!-- Empty State -->
+
+                    <tr>
+
+                        <td colspan="5">
+
+                            <div class="empty py-5">
+
+                                <div class="empty-icon">
+
+                                    <i class="bi bi-prescription2 fs-1"></i>
+
+                                </div>
+
+                                <p class="empty-title">
+                                    No prescriptions found
+                                </p>
+
+                                <p class="empty-subtitle text-secondary">
+                                    Try adjusting your filters or create a new prescription.
+                                </p>
+
+                                <div class="empty-action">
+
+                                    <a asp-action="Create"
+                                       class="btn btn-primary">
+
+                                        <i class="bi bi-plus-lg me-1"></i>
+                                        Create Prescription
+
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <div class="card-footer d-flex justify-content-center">
+
+            <ul class="pagination mb-0">
+
+                <!-- Previous -->
+                @if (Model.Page > 1)
+                {
+                    <li class="page-item">
+
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-page="@(Model.Page - 1)"
+                           asp-route-search="@Model.Search"
+                           asp-route-dateFrom="@Model.DateFrom?.ToString("yyyy-MM-dd")"
+                           asp-route-dateTo="@Model.DateTo?.ToString("yyyy-MM-dd")"
+                           asp-route-medicalRecordId="@Model.MedicalRecordId"
+                           asp-route-sortBy="@Model.SortBy"
+                           asp-route-sortDirection="@Model.SortDirection">
+
+                            <i class="bi bi-chevron-left me-1"></i>
+                            Previous
+
+                        </a>
+
+                    </li>
+                }
+
+
+                <!-- Current Page -->
+
+                <li class="page-item active">
+
+                    <span class="page-link">
+                        @Model.Page
+                    </span>
+
+                </li>
+
+
+                <!-- Next -->
+                @if (Model.Page < Model.TotalPages)
+                {
+                    <li class="page-item">
+
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-page="@(Model.Page + 1)"
+                           asp-route-search="@Model.Search"
+                           asp-route-dateFrom="@Model.DateFrom?.ToString("yyyy-MM-dd")"
+                           asp-route-dateTo="@Model.DateTo?.ToString("yyyy-MM-dd")"
+                           asp-route-medicalRecordId="@Model.MedicalRecordId"
+                           asp-route-sortBy="@Model.SortBy"
+                           asp-route-sortDirection="@Model.SortDirection">
+
+                            Next
+                            <i class="bi bi-chevron-right ms-1"></i>
+
+                        </a>
+
+                    </li>
+                }
+
+            </ul>
+
+        </div>
+    }
+
+</div>

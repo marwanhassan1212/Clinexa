@@ -1,5 +1,6 @@
 ﻿using Clinexa.Enums;
 using Clinexa.Models.Entities;
+using Clinexa.Repositories.Implementations;
 using Clinexa.Repositories.Interfaces;
 using Clinexa.Services.Interfaces;
 
@@ -111,5 +112,6 @@ namespace Clinexa.Services.Implementations
                 page,
                 pageSize);
         }
+
     }
 }

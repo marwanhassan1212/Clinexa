@@ -27,5 +27,7 @@ namespace Clinexa.Models.ViewModels.PrescriptionItem
 
         [MaxLength(500)]
         public string? Instructions { get; set; }
+
+        public List<Entities.Medicine> Medicines { get; set; } = new();
     }
 }

@@ -17,6 +17,13 @@ namespace Clinexa.Repositories.Interfaces
         Task<bool> MedicineExistsAsync(
             int medicineId);
 
+        Task<bool> ActiveMedicineExistsAsync(int medicineId);
+
+        Task<bool> ExistsForPrescriptionAsync(
+                int prescriptionId,
+                int medicineId,
+                int? excludedPrescriptionItemId = null);
+
         Task AddAsync(
             PrescriptionItem prescriptionItem);
 

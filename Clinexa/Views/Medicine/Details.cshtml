@@ -1,0 +1,225 @@
+﻿@model Clinexa.Models.Entities.Medicine
+
+@{
+    ViewData["Title"] = "Medicine Details";
+}
+
+@section PageActions {
+
+    <a asp-action="Index"
+       class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>
+        Back to Medicines
+    </a>
+
+    <a asp-action="Edit"
+       asp-route-id="@Model.MedicineId"
+       class="btn btn-primary">
+        <i class="bi bi-pencil me-1"></i>
+        Edit Medicine
+    </a>
+}
+
+<div class="row g-4">
+
+    <!-- Medicine Overview -->
+    <div class="col-lg-8">
+
+        <div class="card">
+
+            <div class="card-header">
+                <h3 class="card-title">
+                    Medicine Information
+                </h3>
+            </div>
+
+            <div class="card-body">
+
+                <div class="d-flex align-items-center mb-4">
+
+                    <span class="avatar avatar-lg bg-blue-lt me-3">
+                        <i class="bi bi-capsule fs-2"></i>
+                    </span>
+
+                    <div>
+                        <h2 class="mb-1">
+                            @Model.Name
+                        </h2>
+
+                        <div class="text-secondary">
+                            Medicine #@Model.MedicineId
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row g-4">
+
+                    <div class="col-md-6">
+
+                        <div class="text-secondary small mb-1">
+                            Medicine Name
+                        </div>
+
+                        <div class="fw-semibold">
+                            @Model.Name
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                        <div class="text-secondary small mb-1">
+                            Generic Name
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.GenericName))
+                        {
+                            <div class="fw-semibold">
+                                @Model.GenericName
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-secondary">
+                                —
+                            </div>
+                        }
+
+                    </div>
+
+                    <div class="col-12">
+
+                        <div class="text-secondary small mb-1">
+                            Description
+                        </div>
+
+                        @if (!string.IsNullOrWhiteSpace(Model.Description))
+                        {
+                            <div>
+                                @Model.Description
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-secondary">
+                                No description provided.
+                            </div>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- Status -->
+    <div class="col-lg-4">
+
+        <div class="card">
+
+            <div class="card-header">
+                <h3 class="card-title">
+                    Status
+                </h3>
+            </div>
+
+            <div class="card-body">
+
+                <div class="mb-4">
+
+                    @if (Model.IsActive)
+                    {
+                        <span class="badge bg-green-lt fs-3">
+                            <i class="bi bi-check-circle me-1"></i>
+                            Active
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-red-lt fs-3">
+                            <i class="bi bi-x-circle me-1"></i>
+                            Inactive
+                        </span>
+                    }
+
+                </div>
+
+                <div class="mb-3">
+
+                    <div class="text-secondary small mb-1">
+                        Created At
+                    </div>
+
+                    <div class="fw-semibold">
+                        @Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")
+                    </div>
+
+                </div>
+
+                <div>
+
+                    <div class="text-secondary small mb-1">
+                        Medicine ID
+                    </div>
+
+                    <div class="fw-semibold">
+                        #@Model.MedicineId
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="card-footer">
+
+                @if (Model.IsActive)
+                {
+                    <form asp-action="Deactivate"
+                          asp-route-id="@Model.MedicineId"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <button type="submit"
+                                class="btn btn-outline-danger w-100"
+                                onclick="return confirm('Are you sure you want to deactivate this medicine?');">
+
+                            <i class="bi bi-toggle-off me-1"></i>
+                            Deactivate Medicine
+
+                        </button>
+
+                    </form>
+                }
+                else
+                {
+                    <form asp-action="Activate"
+                          asp-route-id="@Model.MedicineId"
+                          method="post">
+
+                        @Html.AntiForgeryToken()
+
+                        <button type="submit"
+                                class="btn btn-outline-success w-100">
+
+                            <i class="bi bi-toggle-on me-1"></i>
+                            Activate Medicine
+
+                        </button>
+
+                    </form>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

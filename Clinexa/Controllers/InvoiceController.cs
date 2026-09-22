@@ -1,4 +1,5 @@
-﻿using Clinexa.Models.Entities;
+﻿using Clinexa.Enums;
+using Clinexa.Models.Entities;
 using Clinexa.Models.ViewModels.Invoice;
 using Clinexa.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -8,39 +9,121 @@ namespace Clinexa.Controllers
     public class InvoiceController : Controller
     {
         private readonly IInvoiceService invoiceService;
+        private readonly IAppointmentService appointmentService;
+        private readonly IInvoiceItemService invoiceItemService;
+        private readonly IPaymentService paymentService;
 
-        public InvoiceController(IInvoiceService invoiceService)
+        public InvoiceController(
+            IInvoiceService invoiceService,
+            IAppointmentService appointmentService,
+            IInvoiceItemService invoiceItemService
+            ,IPaymentService paymentService)
         {
             this.invoiceService = invoiceService;
+            this.appointmentService = appointmentService;
+            this.invoiceItemService = invoiceItemService;
+            this.paymentService = paymentService;
         }
 
         // GET: Invoice
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            string? search,
+            int? patientId,
+            InvoiceStatus? invoiceStatus,
+            DateTime? dateFrom,
+            DateTime? dateTo,
+            string sortBy = "Date",
+            string sortDirection = "Desc",
+            int page = 1)
         {
-            var invoices =
-                await invoiceService.GetAllAsync();
+            var result =
+                await invoiceService.FilterAsync(
+                    search,
+                    patientId,
+                    invoiceStatus?.ToString(),
+                    dateFrom,
+                    dateTo,
+                    sortBy,
+                    sortDirection,
+                    page,
+                    10);
 
-            return View(invoices);
+            var model = new InvoiceFilterViewModel
+            {
+                Search = search,
+                PatientId = patientId,
+                InvoiceStatus = invoiceStatus,
+                DateFrom = dateFrom,
+                DateTo = dateTo,
+                SortBy = sortBy,
+                SortDirection = sortDirection,
+                Page = page,
+                PageSize = 10,
+                Invoices = result.Invoices,
+                TotalPages =
+                    (int)Math.Ceiling(
+                        (double)result.TotalCount / 10)
+            };
+
+            return View(model);
         }
 
-        
+        // GET: Invoice/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            var invoice =
-                await invoiceService.GetByIdAsync(id);
+            var invoice = await invoiceService.GetByIdAsync(id);
 
             if (invoice == null)
             {
                 return NotFound();
             }
 
-            return View(invoice);
+            var items = await invoiceItemService.GetByInvoiceIdAsync(id);
+
+            var payments = await paymentService.GetByInvoiceIdAsync(id);
+
+            var model = new InvoiceDetailsViewModel
+            {
+                Invoice = invoice,
+                InvoiceItems = items,
+                Payments = payments
+            };
+
+            return View(model);
         }
 
-        // GET: Invoice/Create
-        public IActionResult Create()
+        // GET: Invoice/Create?appointmentId=5
+        [HttpGet]
+        public async Task<IActionResult> Create(int appointmentId)
         {
-            return View();
+            var appointment =
+                await appointmentService
+                    .GetByIdAsync(appointmentId);
+
+            if (appointment == null)
+            {
+                return NotFound();
+            }
+
+            var existingInvoice =
+                await invoiceService
+                    .GetByAppointmentIdAsync(appointmentId);
+
+            if (existingInvoice != null)
+            {
+                return RedirectToAction(
+                    nameof(Details),
+                    new { id = existingInvoice.InvoiceId });
+            }
+
+            var model = new InvoiceCreateViewModel
+            {
+                AppointmentId = appointment.AppointmentId,
+                PatientId = appointment.PatientId,
+                InvoiceDate = DateTime.Today
+            };
+
+            return View(model);
         }
 
         // POST: Invoice/Create
@@ -54,15 +137,36 @@ namespace Clinexa.Controllers
                 return View(model);
             }
 
+            var appointment =
+                await appointmentService
+                    .GetByIdAsync(model.AppointmentId);
+
+            if (appointment == null)
+            {
+                return NotFound();
+            }
+
+            var existingInvoice =
+                await invoiceService
+                    .GetByAppointmentIdAsync(
+                        model.AppointmentId);
+
+            if (existingInvoice != null)
+            {
+                return RedirectToAction(
+                    nameof(Details),
+                    new { id = existingInvoice.InvoiceId });
+            }
+
             var invoice = new Invoice
             {
                 InvoiceDate = model.InvoiceDate,
-                PatientId = model.PatientId,
-                AppointmentId = model.AppointmentId,
-                SubTotal = model.SubTotal,
-                Discount = model.Discount,
-                Tax = model.Tax,
-                PaidAmount = model.PaidAmount
+                AppointmentId = appointment.AppointmentId,
+                PatientId = appointment.PatientId,
+                SubTotal = 0,
+                Discount = 0,
+                Tax = 0,
+                PaidAmount = 0
             };
 
             var result =
@@ -73,8 +177,7 @@ namespace Clinexa.Controllers
             {
                 ModelState.AddModelError(
                     "",
-                    "Unable to create invoice. Please check the patient, appointment, or invoice amounts."
-                );
+                    "Unable to create invoice.");
 
                 return View(model);
             }
@@ -82,10 +185,13 @@ namespace Clinexa.Controllers
             TempData["Success"] =
                 "Invoice created successfully.";
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(
+                nameof(Details),
+                new { id = invoice.InvoiceId });
         }
 
         // GET: Invoice/Edit/5
+        [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
             var invoice =
@@ -99,29 +205,10 @@ namespace Clinexa.Controllers
 
             var model = new InvoiceEditViewModel
             {
-                InvoiceId =
-                    invoice.InvoiceId,
-
-                InvoiceDate =
-                    invoice.InvoiceDate,
-
-                PatientId =
-                    invoice.PatientId,
-
-                AppointmentId =
-                    invoice.AppointmentId,
-
-                SubTotal =
-                    invoice.SubTotal,
-
-                Discount =
-                    invoice.Discount,
-
-                Tax =
-                    invoice.Tax,
-
-                PaidAmount =
-                    invoice.PaidAmount
+                InvoiceId = invoice.InvoiceId,
+                InvoiceDate = invoice.InvoiceDate,
+                Discount = invoice.Discount,
+                Tax = invoice.Tax
             };
 
             return View(model);
@@ -150,23 +237,11 @@ namespace Clinexa.Controllers
             invoice.InvoiceDate =
                 model.InvoiceDate;
 
-            invoice.PatientId =
-                model.PatientId;
-
-            invoice.AppointmentId =
-                model.AppointmentId;
-
-            invoice.SubTotal =
-                model.SubTotal;
-
             invoice.Discount =
                 model.Discount;
 
             invoice.Tax =
                 model.Tax;
-
-            invoice.PaidAmount =
-                model.PaidAmount;
 
             var result =
                 await invoiceService
@@ -176,8 +251,7 @@ namespace Clinexa.Controllers
             {
                 ModelState.AddModelError(
                     "",
-                    "Unable to update invoice. Please check the patient, appointment, or invoice amounts."
-                );
+                    "Unable to update invoice. Please check the invoice date, discount, or tax.");
 
                 return View(model);
             }
@@ -185,7 +259,9 @@ namespace Clinexa.Controllers
             TempData["Success"] =
                 "Invoice updated successfully.";
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(
+                nameof(Details),
+                new { id = invoice.InvoiceId });
         }
     }
 }

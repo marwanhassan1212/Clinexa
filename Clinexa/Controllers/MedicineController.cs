@@ -14,12 +14,23 @@ namespace Clinexa.Controllers
             this.medicineService = medicineService;
         }
         // GET: Medicine
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(MedicineFilterViewModel model)
         {
-            var medicines =
-                await medicineService.GetAllAsync();
+            if (model.Page < 1)
+            {
+                model.Page = 1;
+            }
 
-            return View(medicines);
+            var result = await medicineService.FilterAsync(
+                model.Search,
+                model.IsActive,
+                model.Page,
+                model.PageSize);
+
+            model.Medicines = result.Medicines;
+            model.TotalCount = result.TotalCount;
+
+            return View(model);
         }
 
         // GET: Medicine/Details/5
@@ -175,6 +186,23 @@ namespace Clinexa.Controllers
 
             TempData["Success"] =
                 "Medicine deactivated successfully.";
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Activate(int id)
+        {
+            var result = await medicineService.ActivateAsync(id);
+
+            if (!result)
+            {
+                return NotFound();
+            }
+
+            TempData["Success"] =
+                "Medicine activated successfully.";
 
             return RedirectToAction(nameof(Index));
         }

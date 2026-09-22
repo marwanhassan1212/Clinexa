@@ -9,7 +9,16 @@ namespace Clinexa.Services.Interfaces
         Task<List<Invoice>> GetAllAsync();
 
         Task<Invoice?> GetByIdAsync(int id);
-
+        Task<(List<Invoice> Invoices, int TotalCount)> FilterAsync(
+          string? search,
+          int? patientId,
+          string? invoiceStatus,
+          DateTime? dateFrom,
+          DateTime? dateTo,
+          string sortBy,
+          string sortDirection,
+          int page,
+          int pageSize);
         Task<List<Invoice>> GetByPatientIdAsync(int patientId);
 
         Task<Invoice?> GetByAppointmentIdAsync(int appointmentId);

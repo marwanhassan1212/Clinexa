@@ -10,7 +10,10 @@ namespace Clinexa.Services.Interfaces
 
         Task<InvoiceItem?> GetByIdAsync(int id);
 
+        Task<bool> DeleteAsync(int id);
         Task<List<InvoiceItem>> GetByInvoiceIdAsync(int invoiceId);
+
+        Task<bool> InvoiceExistsAsync(int invoiceId);
 
         Task<bool> UpdateAsync(InvoiceItem invoiceItem);
     }

@@ -1,0 +1,176 @@
+﻿@model Clinexa.Models.ViewModels.Invoice.InvoiceCreateViewModel
+
+@{
+    ViewData["Title"] = "Create Invoice";
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+
+            <div class="col">
+                <div class="page-pretitle">
+                    Billing
+                </div>
+
+                <h2 class="page-title">
+                    Create Invoice
+                </h2>
+            </div>
+
+            <div class="col-auto ms-auto">
+                <a asp-controller="Appointment"
+                   asp-action="Details"
+                   asp-route-id="@Model.AppointmentId"
+                   class="btn btn-outline-secondary">
+
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Back
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+
+        <div class="row">
+
+            <div class="col-lg-8">
+
+                <div class="card">
+
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            Invoice Information
+                        </h3>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div asp-validation-summary="ModelOnly"
+                             class="text-danger mb-3">
+                        </div>
+
+                        <div class="row">
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+                                    Appointment
+                                </label>
+
+                                <input class="form-control"
+                                       value="#@Model.AppointmentId"
+                                       readonly />
+
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+
+                                <label class="form-label">
+                                    Patient
+                                </label>
+
+                                <input class="form-control"
+                                       value="Patient #@Model.PatientId"
+                                       readonly />
+
+                            </div>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label asp-for="InvoiceDate"
+                                   class="form-label">
+                            </label>
+
+                            <input asp-for="InvoiceDate"
+                                   class="form-control" />
+
+                            <span asp-validation-for="InvoiceDate"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <div class="card-footer d-flex justify-content-end gap-2">
+
+                        <a asp-controller="Appointment"
+                           asp-action="Details"
+                           asp-route-id="@Model.AppointmentId"
+                           class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+
+                        <button type="submit"
+                                form="createInvoiceForm"
+                                class="btn btn-primary">
+
+                            <i class="bi bi-receipt me-1"></i>
+                            Create Invoice
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-4">
+
+                <div class="card">
+
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            Next Step
+                        </h3>
+                    </div>
+
+                    <div class="card-body">
+
+                        <div class="text-secondary">
+                            After creating the invoice, you can add
+                            consultation fees, medicines, services,
+                            or other invoice items.
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<form id="createInvoiceForm"
+      asp-action="Create"
+      method="post">
+
+    @Html.AntiForgeryToken()
+
+    <input type="hidden"
+           asp-for="AppointmentId" />
+
+    <input type="hidden"
+           asp-for="PatientId" />
+
+    <input type="hidden"
+           asp-for="InvoiceDate" />
+
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -159,5 +159,19 @@ namespace Clinexa.Services.Implementations
 
             return true;
         }
+
+        public async Task<List<Appointment>> GetAvailableAppointmentsAsync()
+        {
+            return await medicalRecordRepository
+                .GetAvailableAppointmentsAsync();
+        }
+
+        public async Task<Appointment?> GetAppointmentByIdAsync(
+         int appointmentId)
+        {
+            return await medicalRecordRepository
+                .GetAppointmentByIdAsync(
+                    appointmentId);
+        }
     }
 }

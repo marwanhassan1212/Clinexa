@@ -62,5 +62,134 @@ namespace Clinexa.Repositories.Implementations
         {
             _db.Prescriptions.Update(prescription);
         }
+
+        public async Task<(List<Prescription> Prescriptions, int TotalCount)> FilterAsync(
+         string? search,
+         DateTime? dateFrom,
+         DateTime? dateTo,
+         int? medicalRecordId,
+         string sortBy,
+         string sortDirection,
+         int page,
+         int pageSize)
+
+        {
+            var query = _db.Prescriptions
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
+
+                if (int.TryParse(search, out int prescriptionId))
+                {
+                    query = query.Where(x =>
+                        x.PrescriptionId == prescriptionId ||
+                        (x.Notes != null &&
+                         x.Notes.Contains(search)));
+                }
+                else
+                {
+                    query = query.Where(x =>
+                        x.Notes != null &&
+                        x.Notes.Contains(search));
+                }
+            }
+
+            if (dateFrom.HasValue)
+            {
+                query = query.Where(x =>
+                    x.PrescriptionDate >= dateFrom.Value);
+            }
+
+            if (dateTo.HasValue)
+            {
+                query = query.Where(x =>
+                    x.PrescriptionDate <= dateTo.Value);
+            }
+
+            if (medicalRecordId.HasValue)
+            {
+                query = query.Where(x =>
+                    x.MedicalRecordId == medicalRecordId.Value);
+            }
+
+            var totalCount = await query.CountAsync();
+
+            query = sortBy switch
+            {
+                "Id" => sortDirection == "Asc"
+                    ? query.OrderBy(x => x.PrescriptionId)
+                    : query.OrderByDescending(x => x.PrescriptionId),
+
+                "Date" => sortDirection == "Asc"
+                    ? query.OrderBy(x => x.PrescriptionDate)
+                    : query.OrderByDescending(x => x.PrescriptionDate),
+
+                "MedicalRecord" => sortDirection == "Asc"
+                    ? query.OrderBy(x => x.MedicalRecordId)
+                    : query.OrderByDescending(x => x.MedicalRecordId),
+
+                _ => query.OrderByDescending(x => x.PrescriptionDate)
+            };
+
+            var prescriptions = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (prescriptions, totalCount);
+        }
+
+        public async Task<List<MedicalRecord>> GetMedicalRecordsAsync()
+        {
+            return await _db.MedicalRecords
+                .AsNoTracking()
+                .OrderByDescending(x => x.MedicalRecordId)
+                .ToListAsync();
+        }
+
+        public async Task<List<MedicalRecord>> SearchMedicalRecordsAsync(
+    string? search,
+    int take = 10)
+        {
+            IQueryable<MedicalRecord> query = _db.MedicalRecords
+                .AsNoTracking()
+                .Include(x => x.Patient)
+                .Include(x => x.Doctor)
+                    .ThenInclude(x => x.User)
+                .Include(x => x.Appointment);
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
+
+                query = query.Where(x =>
+                    EF.Functions.Like(
+                        x.Patient.FirstName,
+                        $"%{search}%")
+
+                    || EF.Functions.Like(
+                        x.Patient.LastName,
+                        $"%{search}%")
+
+                    || EF.Functions.Like(
+                        x.Doctor.User.FirstName,
+                        $"%{search}%")
+
+                    || EF.Functions.Like(
+                        x.Doctor.User.LastName,
+                        $"%{search}%")
+
+                    || x.MedicalRecordId.ToString().Contains(search)
+                );
+            }
+
+            return await query
+                .OrderByDescending(x => x.MedicalRecordId)
+                .Take(take)
+                .ToListAsync();
+        }
     }
 }

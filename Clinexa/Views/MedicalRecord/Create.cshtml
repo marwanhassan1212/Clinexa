@@ -1,0 +1,430 @@
+﻿@model Clinexa.Models.ViewModels.MedicalRecord.MedicalRecordCreateViewModel
+
+@{
+    ViewData["Title"] = "Create Medical Record";
+}
+
+@section PageActions {
+
+    <a asp-action="Index"
+       class="btn btn-outline-secondary">
+
+        <i class="bi bi-arrow-left me-1"></i>
+        Back to Medical Records
+
+    </a>
+
+}
+
+<form asp-action="Create"
+      method="post">
+
+    @Html.AntiForgeryToken()
+
+    <div class="row row-cards">
+
+        <!-- ========================= -->
+        <!-- Visit Information -->
+        <!-- ========================= -->
+
+        <div class="col-12">
+
+            <div class="card">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h3 class="card-title mb-1">
+                            Visit Information
+                        </h3>
+
+                        <div class="text-secondary">
+                            Select the completed appointment for this medical record.
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div asp-validation-summary="ModelOnly"
+                         class="text-danger mb-3">
+                    </div>
+
+                    <div class="row g-3">
+
+                        <div class="col-md-8">
+
+                            <label asp-for="AppointmentId"
+                                   class="form-label required">
+                                Appointment
+                            </label>
+
+                            <select asp-for="AppointmentId"
+                                    class="form-select"
+                                    id="appointmentSelect">
+
+                                <option value="">
+                                    Select an appointment...
+                                </option>
+
+                                @foreach (var appointment in Model.Appointments)
+                                {
+                                    var patientName =
+                                    appointment.Patient != null
+                                    ? $"{appointment.Patient.FirstName} {appointment.Patient.LastName}"
+                                    : "Unknown Patient";
+
+                                    var doctorName =
+                                    appointment.Doctor?.User != null
+                                    ? $"Dr. {appointment.Doctor.User.FirstName} {appointment.Doctor.User.LastName}"
+                                    : "Unknown Doctor";
+
+                                    var appointmentDate =
+                                    appointment.AppointmentDate
+                                    .ToString("dd MMM yyyy");
+
+                                    var startTime =
+                                    appointment.StartTime
+                                    .ToString(@"hh\:mm");
+
+                                    <option value="@appointment.AppointmentId"
+                                            data-patient="@patientName"
+                                            data-doctor="@doctorName"
+                                            data-date="@appointmentDate"
+                                            data-time="@startTime">
+
+                                        #@appointment.AppointmentId
+                                        — @patientName
+                                        — @doctorName
+                                        — @appointmentDate @startTime
+
+                                    </option>
+                                }
+
+                            </select>
+
+                            <span asp-validation-for="AppointmentId"
+                                  class="text-danger">
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Selected appointment preview -->
+
+                    <div id="appointmentPreview"
+                         class="mt-4 d-none">
+
+                        <div class="alert alert-info mb-0">
+
+                            <div class="d-flex">
+
+                                <div class="me-3">
+
+                                    <i class="bi bi-calendar-check fs-2"></i>
+
+                                </div>
+
+                                <div>
+
+                                    <div class="fw-semibold mb-1">
+                                        Selected Appointment
+                                    </div>
+
+                                    <div class="text-secondary">
+
+                                        <span id="previewPatient"></span>
+                                        <span class="mx-1">•</span>
+
+                                        <span id="previewDoctor"></span>
+
+                                    </div>
+
+                                    <div class="text-secondary">
+
+                                        <span id="previewDate"></span>
+                                        <span class="mx-1">•</span>
+
+                                        <span id="previewTime"></span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ========================= -->
+        <!-- Clinical Information -->
+        <!-- ========================= -->
+
+        <div class="col-md-8">
+
+            <div class="card h-100">
+
+                <div class="card-header">
+
+                    <div>
+
+                        <h3 class="card-title mb-1">
+                            Clinical Information
+                        </h3>
+
+                        <div class="text-secondary">
+                            Record the patient's clinical findings and treatment.
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="mb-3">
+
+                        <label asp-for="Symptoms"
+                               class="form-label">
+                            Symptoms
+                        </label>
+
+                        <textarea asp-for="Symptoms"
+                                  class="form-control"
+                                  rows="4"
+                                  placeholder="Describe the patient's symptoms...">
+                        </textarea>
+
+                        <span asp-validation-for="Symptoms"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label asp-for="Diagnosis"
+                               class="form-label">
+                            Diagnosis
+                        </label>
+
+                        <textarea asp-for="Diagnosis"
+                                  class="form-control"
+                                  rows="4"
+                                  placeholder="Enter the diagnosis...">
+                        </textarea>
+
+                        <span asp-validation-for="Diagnosis"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label asp-for="Treatment"
+                               class="form-label">
+                            Treatment
+                        </label>
+
+                        <textarea asp-for="Treatment"
+                                  class="form-control"
+                                  rows="4"
+                                  placeholder="Describe the treatment plan...">
+                        </textarea>
+
+                        <span asp-validation-for="Treatment"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <div>
+
+                        <label asp-for="Notes"
+                               class="form-label">
+                            Notes
+                        </label>
+
+                        <textarea asp-for="Notes"
+                                  class="form-control"
+                                  rows="4"
+                                  placeholder="Add additional clinical notes...">
+                        </textarea>
+
+                        <span asp-validation-for="Notes"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ========================= -->
+        <!-- Follow-up -->
+        <!-- ========================= -->
+
+        <div class="col-md-4">
+
+            <div class="card h-100">
+
+                <div class="card-header">
+
+                    <h3 class="card-title">
+                        Follow-up
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <label asp-for="FollowUpDate"
+                           class="form-label">
+
+                        Follow-up Date
+
+                    </label>
+
+                    <input asp-for="FollowUpDate"
+                           type="date"
+                           class="form-control" />
+
+                    <span asp-validation-for="FollowUpDate"
+                          class="text-danger">
+                    </span>
+
+                    <div class="text-secondary small mt-2">
+
+                        Leave empty if no follow-up is required.
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- ========================= -->
+        <!-- Actions -->
+        <!-- ========================= -->
+
+        <div class="col-12">
+
+            <div class="card">
+
+                <div class="card-body d-flex justify-content-end gap-2">
+
+                    <a asp-action="Index"
+                       class="btn btn-outline-secondary">
+
+                        Cancel
+
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        <i class="bi bi-check-lg me-1"></i>
+                        Create Medical Record
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</form>
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const select =
+                document.getElementById("appointmentSelect");
+
+            const preview =
+                document.getElementById("appointmentPreview");
+
+            const patient =
+                document.getElementById("previewPatient");
+
+            const doctor =
+                document.getElementById("previewDoctor");
+
+            const date =
+                document.getElementById("previewDate");
+
+            const time =
+                document.getElementById("previewTime");
+
+
+            function updatePreview() {
+
+                const option =
+                    select.options[select.selectedIndex];
+
+                if (!option || !option.value) {
+
+                    preview.classList.add("d-none");
+
+                    return;
+                }
+
+                patient.textContent =
+                    option.dataset.patient;
+
+                doctor.textContent =
+                    option.dataset.doctor;
+
+                date.textContent =
+                    option.dataset.date;
+
+                time.textContent =
+                    option.dataset.time;
+
+                preview.classList.remove("d-none");
+            }
+
+
+            select.addEventListener(
+                "change",
+                updatePreview
+            );
+
+
+            updatePreview();
+
+        });
+
+    </script>
+}

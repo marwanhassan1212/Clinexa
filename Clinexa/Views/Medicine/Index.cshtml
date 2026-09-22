@@ -1,0 +1,404 @@
+﻿@model Clinexa.Models.ViewModels.Medicine.MedicineFilterViewModel
+
+@{
+    ViewData["Title"] = "Medicines";
+}
+
+@section PageActions {
+    <a asp-action="Create"
+       class="btn btn-primary px-3 py-2">
+        <i class="bi bi-plus-lg me-1"></i>
+        Add Medicine
+    </a>
+}
+
+<div class="card">
+
+    <div class="card-header">
+        <h3 class="card-title">Medicines</h3>
+
+        <div class="card-actions">
+            <span class="text-secondary">
+                @Model.TotalCount medicine(s)
+            </span>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card-body border-bottom">
+
+        <form asp-action="Index" method="get">
+
+            <div class="row g-3 align-items-end">
+
+                <!-- Search -->
+                <div class="col-md-7">
+
+                    <label asp-for="Search"
+                           class="form-label">
+                        Search
+                    </label>
+
+                    <input asp-for="Search"
+                           class="form-control"
+                           placeholder="Medicine name or generic name..." />
+
+                </div>
+
+                <!-- Status -->
+                <div class="col-md-3">
+
+                    <label asp-for="IsActive"
+                           class="form-label">
+                        Status
+                    </label>
+
+                    <select asp-for="IsActive"
+                            class="form-select">
+
+                        <option value="">
+                            All Statuses
+                        </option>
+
+                        <option value="true">
+                            Active
+                        </option>
+
+                        <option value="false">
+                            Inactive
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <!-- Actions -->
+                <div class="col-md-2">
+
+                    <div class="d-flex gap-2">
+
+                        <a asp-action="Index"
+                           class="btn btn-outline-secondary flex-fill"
+                           title="Reset">
+
+                            <i class="bi bi-arrow-counterclockwise"></i>
+
+                        </a>
+
+                        <button type="submit"
+                                class="btn btn-primary flex-fill"
+                                title="Apply Filters">
+
+                            <i class="bi bi-search"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    <!-- Table -->
+    <div class="table-responsive">
+
+        <table class="table table-vcenter card-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Medicine</th>
+
+                    <th>Generic Name</th>
+
+                    <th>Description</th>
+
+                    <th>Status</th>
+
+                    <th class="w-1 text-end">
+                        Actions
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                @if (Model.Medicines.Any())
+                {
+                    foreach (var medicine in Model.Medicines)
+                    {
+                        <tr>
+
+                            <!-- Medicine -->
+                            <td>
+
+                                <div class="d-flex align-items-center">
+
+                                    <span class="avatar avatar-sm bg-blue-lt me-2">
+                                        <i class="bi bi-capsule"></i>
+                                    </span>
+
+                                    <div>
+
+                                        <div class="fw-semibold">
+                                            @medicine.Name
+                                        </div>
+
+                                        <div class="text-secondary small">
+                                            #@medicine.MedicineId
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            </td>
+
+                            <!-- Generic Name -->
+                            <td>
+
+                                @if (!string.IsNullOrWhiteSpace(medicine.GenericName))
+                                {
+                                    <span>
+                                        @medicine.GenericName
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">
+                                        —
+                                    </span>
+                                }
+
+                            </td>
+
+                            <!-- Description -->
+                            <td>
+
+                                @if (!string.IsNullOrWhiteSpace(medicine.Description))
+                                {
+                                    <span class="text-secondary">
+                                        @(medicine.Description.Length > 70
+                                                                    ? medicine.Description.Substring(0, 70) + "..."
+                                                                    : medicine.Description)
+                        </span>
+                                                }
+                                else
+                                {
+                                    <span class="text-secondary">
+                                        —
+                                    </span>
+                                }
+
+                            </td>
+
+                            <!-- Status -->
+                            <td>
+
+                                @if (medicine.IsActive)
+                                {
+                                    <span class="badge bg-green-lt">
+                                        Active
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-red-lt">
+                                        Inactive
+                                    </span>
+                                }
+
+                            </td>
+
+                            <!-- Actions -->
+                            <td>
+
+                                <div class="btn-list flex-nowrap justify-content-end">
+
+                                    <!-- Details -->
+                                    <a asp-action="Details"
+                                       asp-route-id="@medicine.MedicineId"
+                                       class="btn btn-sm btn-outline-secondary"
+                                       title="Details">
+
+                                        <i class="bi bi-eye"></i>
+
+                                    </a>
+
+                                    <!-- Edit -->
+                                    <a asp-action="Edit"
+                                       asp-route-id="@medicine.MedicineId"
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Edit">
+
+                                        <i class="bi bi-pencil"></i>
+
+                                    </a>
+
+                                    @if (medicine.IsActive)
+                                    {
+                                        <!-- Deactivate -->
+                                        <form asp-action="Deactivate"
+                                              asp-route-id="@medicine.MedicineId"
+                                              method="post"
+                                              class="d-inline">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    title="Deactivate"
+                                                    onclick="return confirm('Are you sure you want to deactivate this medicine?');">
+
+                                                <i class="bi bi-toggle-off"></i>
+
+                                            </button>
+
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <!-- Activate -->
+                                        <form asp-action="Activate"
+                                              asp-route-id="@medicine.MedicineId"
+                                              method="post"
+                                              class="d-inline">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-outline-success"
+                                                    title="Activate">
+
+                                                <i class="bi bi-toggle-on"></i>
+
+                                            </button>
+
+                                        </form>
+                                    }
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <!-- Empty State -->
+                    <tr>
+
+                        <td colspan="5">
+
+                            <div class="clinexa-empty-state">
+
+                                <div class="clinexa-empty-state-icon">
+                                    <i class="bi bi-capsule"></i>
+                                </div>
+
+                                <div class="clinexa-empty-state-title">
+                                    No medicines found
+                                </div>
+
+                                <div class="clinexa-empty-state-text">
+                                    There are no medicines matching your current search.
+                                </div>
+
+                                <div>
+
+                                    <a asp-action="Create"
+                                       class="btn btn-primary">
+
+                                        <i class="bi bi-plus-lg me-1"></i>
+                                        Add Medicine
+
+                                    </a>
+
+                                </div>
+
+                            </div>
+
+                        </td>
+
+                    </tr>
+                }
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <div class="card-footer">
+
+            <div class="d-flex justify-content-center">
+
+                <ul class="pagination mb-0">
+
+                    <!-- Previous -->
+                    <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-Search="@Model.Search"
+                           asp-route-IsActive="@Model.IsActive"
+                           asp-route-Page="@(Model.Page - 1)">
+
+                            <i class="bi bi-chevron-left"></i>
+
+                        </a>
+
+                    </li>
+
+                    <!-- Pages -->
+                    @for (int i = 1; i <= Model.TotalPages; i++)
+                    {
+                        <li class="page-item @(i == Model.Page ? "active" : "")">
+
+                            <a class="page-link"
+                               asp-action="Index"
+                               asp-route-Search="@Model.Search"
+                               asp-route-IsActive="@Model.IsActive"
+                               asp-route-Page="@i">
+
+                                @i
+
+                            </a>
+
+                        </li>
+                    }
+
+                    <!-- Next -->
+                    <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
+
+                        <a class="page-link"
+                           asp-action="Index"
+                           asp-route-Search="@Model.Search"
+                           asp-route-IsActive="@Model.IsActive"
+                           asp-route-Page="@(Model.Page + 1)">
+
+                            <i class="bi bi-chevron-right"></i>
+
+                        </a>
+
+                    </li>
+
+                </ul>
+
+            </div>
+
+        </div>
+    }
+
+</div>

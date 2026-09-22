@@ -59,5 +59,42 @@ namespace Clinexa.Repositories.Implementations
         {
             _db.Medicines.Update(medicine);
         }
+
+        public async Task<(List<Medicine> Medicines, int TotalCount)> FilterAsync(
+                 string? search,
+                 bool? isActive,
+                 int page,
+                 int pageSize)
+        {
+            var query = _db.Medicines
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                search = search.Trim();
+
+                query = query.Where(x =>
+                    x.Name.Contains(search) ||
+                    (x.GenericName != null &&
+                     x.GenericName.Contains(search)));
+            }
+
+            if (isActive.HasValue)
+            {
+                query = query.Where(x =>
+                    x.IsActive == isActive.Value);
+            }
+
+            var totalCount = await query.CountAsync();
+
+            var medicines = await query
+                .OrderBy(x => x.Name)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (medicines, totalCount);
+        }
     }
 }

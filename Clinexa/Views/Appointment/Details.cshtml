@@ -1,5 +1,5 @@
 ﻿@using Clinexa.Enums
-@model Clinexa.Models.Entities.Appointment
+@model Clinexa.Models.ViewModels.Appointment.AppointmentDetailsViewModel
 
 @{
     ViewData["Title"] = "Appointment Details";
@@ -11,28 +11,34 @@
     <div class="clinexa-page-header d-print-none">
 
         <div class="clinexa-page-title">
+
             <h2 class="mb-0 fw-bold">
                 <i class="bi bi-calendar2-check me-2 text-primary"></i>
                 Appointment Details
             </h2>
+
         </div>
 
         <div class="clinexa-page-actions">
 
             <a asp-action="Index"
                class="btn btn-outline-secondary">
+
                 <i class="bi bi-arrow-left me-1"></i>
                 Back
+
             </a>
 
-            @if (Model.AppointmentStatus != AppointmentStatus.Cancelled &&
-                        Model.AppointmentStatus != AppointmentStatus.Completed)
+            @if (Model.Appointment.AppointmentStatus != AppointmentStatus.Cancelled &&
+                        Model.Appointment.AppointmentStatus != AppointmentStatus.Completed)
             {
                 <a asp-action="Edit"
-                   asp-route-id="@Model.AppointmentId"
+                   asp-route-id="@Model.Appointment.AppointmentId"
                    class="btn btn-primary">
+
                     <i class="bi bi-pencil me-1"></i>
                     Edit
+
                 </a>
             }
 
@@ -49,9 +55,11 @@
             <div class="card">
 
                 <div class="card-header">
+
                     <h3 class="card-title">
                         Appointment Information
                     </h3>
+
                 </div>
 
                 <div class="card-body">
@@ -66,12 +74,16 @@
                             </div>
 
                             <div class="fw-semibold fs-3">
-                                @Model.Patient?.FirstName
-                                @Model.Patient?.LastName
+
+                                @Model.Appointment.Patient?.FirstName
+                                @Model.Appointment.Patient?.LastName
+
                             </div>
 
                             <div class="text-secondary">
-                                @Model.Patient?.PhoneNumber
+
+                                @Model.Appointment.Patient?.PhoneNumber
+
                             </div>
 
                         </div>
@@ -85,13 +97,17 @@
                             </div>
 
                             <div class="fw-semibold fs-3">
+
                                 Dr.
-                                @Model.Doctor?.User?.FirstName
-                                @Model.Doctor?.User?.LastName
+                                @Model.Appointment.Doctor?.User?.FirstName
+                                @Model.Appointment.Doctor?.User?.LastName
+
                             </div>
 
                             <div class="text-secondary">
-                                @Model.Doctor?.Speciality?.Name
+
+                                @Model.Appointment.Doctor?.Speciality?.Name
+
                             </div>
 
                         </div>
@@ -105,7 +121,9 @@
                             </div>
 
                             <div class="fw-semibold">
-                                @Model.AppointmentDate.ToString("dd MMM yyyy")
+
+                                @Model.Appointment.AppointmentDate
+
                             </div>
 
                         </div>
@@ -119,9 +137,11 @@
                             </div>
 
                             <div class="fw-semibold">
-                                @Model.StartTime.ToString(@"hh\:mm")
+
+                                @Model.Appointment.StartTime.ToString(@"hh\:mm")
                                 -
-                                @Model.EndTime.ToString(@"hh\:mm")
+                                @Model.Appointment.EndTime.ToString(@"hh\:mm")
+
                             </div>
 
                         </div>
@@ -134,42 +154,54 @@
                                 Status
                             </div>
 
-                            @switch (Model.AppointmentStatus)
+                            @switch (Model.Appointment.AppointmentStatus)
                             {
                                 case AppointmentStatus.Scheduled:
+
                                     <span class="badge bg-blue-lt">
                                         Scheduled
                                     </span>
+
                                     break;
 
                                 case AppointmentStatus.Confirmed:
+
                                     <span class="badge bg-green-lt">
                                         Confirmed
                                     </span>
+
                                     break;
 
                                 case AppointmentStatus.CheckedIn:
+
                                     <span class="badge bg-yellow-lt">
                                         Checked In
                                     </span>
+
                                     break;
 
                                 case AppointmentStatus.Completed:
+
                                     <span class="badge bg-green-lt">
                                         Completed
                                     </span>
+
                                     break;
 
                                 case AppointmentStatus.Cancelled:
+
                                     <span class="badge bg-red-lt">
                                         Cancelled
                                     </span>
+
                                     break;
 
                                 default:
+
                                     <span class="badge bg-secondary-lt">
-                                        @Model.AppointmentStatus
+                                        @Model.Appointment.AppointmentStatus
                                     </span>
+
                                     break;
                             }
 
@@ -184,9 +216,12 @@
                             </div>
 
                             <div>
-                                @(string.IsNullOrWhiteSpace(Model.Reason)
+
+                                @(string.IsNullOrWhiteSpace(
+                                                                Model.Appointment.Reason)
                                                                 ? "No reason provided."
-                                                                : Model.Reason)
+                                                                : Model.Appointment.Reason)
+
                             </div>
 
                         </div>
@@ -200,9 +235,12 @@
                             </div>
 
                             <div class="text-wrap">
-                                @(string.IsNullOrWhiteSpace(Model.Notes)
+
+                                @(string.IsNullOrWhiteSpace(
+                                                                Model.Appointment.Notes)
                                                                 ? "No additional notes."
-                                                                : Model.Notes)
+                                                                : Model.Appointment.Notes)
+
                             </div>
 
                         </div>
@@ -222,25 +260,29 @@
             <div class="card">
 
                 <div class="card-header">
+
                     <h3 class="card-title">
                         Quick Actions
                     </h3>
+
                 </div>
 
                 <div class="card-body">
 
-                    @if (Model.AppointmentStatus != AppointmentStatus.Cancelled &&
-                                        Model.AppointmentStatus != AppointmentStatus.Completed)
+                    @if (Model.Appointment.AppointmentStatus != AppointmentStatus.Cancelled &&
+                                        Model.Appointment.AppointmentStatus != AppointmentStatus.Completed)
                     {
                         <a asp-action="Edit"
-                           asp-route-id="@Model.AppointmentId"
+                           asp-route-id="@Model.Appointment.AppointmentId"
                            class="btn btn-primary w-100 mb-2">
+
                             <i class="bi bi-pencil me-1"></i>
                             Edit Appointment
+
                         </a>
 
                         <form asp-action="Cancel"
-                              asp-route-id="@Model.AppointmentId"
+                              asp-route-id="@Model.Appointment.AppointmentId"
                               method="post">
 
                             @Html.AntiForgeryToken()
@@ -248,16 +290,50 @@
                             <button type="submit"
                                     class="btn btn-outline-danger w-100"
                                     onclick="return confirm('Are you sure you want to cancel this appointment?');">
+
                                 <i class="bi bi-x-circle me-1"></i>
                                 Cancel Appointment
+
                             </button>
 
                         </form>
                     }
-                    else
+
+
+                    <!-- Invoice -->
+                    @if (Model.Appointment.AppointmentStatus != AppointmentStatus.Cancelled)
                     {
-                        <div class="text-secondary text-center py-3">
-                            No actions are available for this appointment.
+                        <div class="border-top mt-3 pt-3">
+
+                            <div class="text-secondary small mb-2">
+                                Billing
+                            </div>
+
+                            @if (Model.Invoice == null)
+                            {
+                                <a asp-controller="Invoice"
+                                   asp-action="Create"
+                                   asp-route-appointmentId="@Model.Appointment.AppointmentId"
+                                   class="btn btn-outline-primary w-100">
+
+                                    <i class="bi bi-receipt me-1"></i>
+                                    Create Invoice
+
+                                </a>
+                            }
+                            else
+                            {
+                                <a asp-controller="Invoice"
+                                   asp-action="Details"
+                                   asp-route-id="@Model.Invoice.InvoiceId"
+                                   class="btn btn-outline-primary w-100">
+
+                                    <i class="bi bi-receipt me-1"></i>
+                                    View Invoice
+
+                                </a>
+                            }
+
                         </div>
                     }
 
@@ -270,4 +346,3 @@
     </div>
 
 </div>
-```

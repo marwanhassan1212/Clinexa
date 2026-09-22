@@ -229,6 +229,9 @@ namespace Clinexa.Migrations
                     b.Property<int>("AppointmentId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("AppointmentId1")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Discount")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -268,6 +271,10 @@ namespace Clinexa.Migrations
 
                     b.HasIndex("AppointmentId")
                         .IsUnique();
+
+                    b.HasIndex("AppointmentId1")
+                        .IsUnique()
+                        .HasFilter("[AppointmentId1] IS NOT NULL");
 
                     b.HasIndex("PatientId");
 
@@ -583,7 +590,8 @@ namespace Clinexa.Migrations
 
                     b.HasIndex("PrescriptionId");
 
-                    b.HasIndex("MedicineId", "PrescriptionId");
+                    b.HasIndex("MedicineId", "PrescriptionId")
+                        .IsUnique();
 
                     b.ToTable("PrescriptionItems", (string)null);
                 });
@@ -761,10 +769,14 @@ namespace Clinexa.Migrations
             modelBuilder.Entity("Clinexa.Models.Entities.Invoice", b =>
                 {
                     b.HasOne("Clinexa.Models.Entities.Appointment", "Appointment")
-                        .WithOne("Invoice")
+                        .WithOne()
                         .HasForeignKey("Clinexa.Models.Entities.Invoice", "AppointmentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("Clinexa.Models.Entities.Appointment", null)
+                        .WithOne("Invoice")
+                        .HasForeignKey("Clinexa.Models.Entities.Invoice", "AppointmentId1");
 
                     b.HasOne("Clinexa.Models.Entities.Patient", "Patient")
                         .WithMany("Invoices")

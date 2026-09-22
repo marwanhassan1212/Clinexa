@@ -1,0 +1,544 @@
+﻿@model Clinexa.Models.ViewModels.Payment.PaymentFilterViewModel
+
+@{
+    ViewData["Title"] = "Payments";
+
+    var totalPages = (int)Math.Ceiling(
+        (double)Model.TotalCount / Model.PageSize);
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+
+        <div class="row align-items-center">
+
+            <div class="col">
+
+                <div class="page-pretitle">
+                    Billing
+                </div>
+
+                <h2 class="page-title">
+                    Payments
+                </h2>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+
+<div class="page-body">
+    <div class="container-xl">
+
+        <!-- Filters -->
+        <div class="card mb-3">
+
+            <div class="card-header">
+
+                <h3 class="card-title">
+                    <i class="bi bi-funnel me-2"></i>
+                    Filter Payments
+                </h3>
+
+            </div>
+
+
+            <div class="card-body">
+
+                <form asp-controller="Payment"
+                      asp-action="Index"
+                      method="get">
+
+                    <div class="row g-3">
+
+                        <!-- Search -->
+                        <div class="col-md-6 col-lg-4">
+
+                            <label class="form-label">
+                                Search
+                            </label>
+
+                            <input asp-for="Search"
+                                   class="form-control"
+                                   placeholder="Patient name or reference..." />
+
+                        </div>
+
+
+                        <!-- Invoice -->
+                        <div class="col-md-6 col-lg-2">
+
+                            <label class="form-label">
+                                Invoice #
+                            </label>
+
+                            <input asp-for="InvoiceId"
+                                   type="number"
+                                   min="1"
+                                   class="form-control"
+                                   placeholder="Invoice ID" />
+
+                        </div>
+
+
+                        <!-- Payment Method -->
+                        <div class="col-md-6 col-lg-2">
+
+                            <label class="form-label">
+                                Payment Method
+                            </label>
+
+                            <select asp-for="PaymentMethod"
+                                    class="form-select">
+
+                                <option value="">
+                                    All Methods
+                                </option>
+
+                                @foreach (var method in Enum.GetValues<Clinexa.Enums.PaymentMethod>())
+                                {
+                                    <option value="@method">
+                                        @method
+                                    </option>
+                                }
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- Date From -->
+                        <div class="col-md-6 col-lg-2">
+
+                            <label class="form-label">
+                                Date From
+                            </label>
+
+                            <input asp-for="PaymentDateFrom"
+                                   type="date"
+                                   class="form-control" />
+
+                        </div>
+
+
+                        <!-- Date To -->
+                        <div class="col-md-6 col-lg-2">
+
+                            <label class="form-label">
+                                Date To
+                            </label>
+
+                            <input asp-for="PaymentDateTo"
+                                   type="date"
+                                   class="form-control" />
+
+                        </div>
+
+
+                        <!-- Min Amount -->
+                        <div class="col-md-6 col-lg-2">
+
+                            <label class="form-label">
+                                Min Amount
+                            </label>
+
+                            <input asp-for="MinAmount"
+                                   type="number"
+                                   step="0.01"
+                                   min="0"
+                                   class="form-control"
+                                   placeholder="0.00" />
+
+                        </div>
+
+
+                        <!-- Max Amount -->
+                        <div class="col-md-6 col-lg-2">
+
+                            <label class="form-label">
+                                Max Amount
+                            </label>
+
+                            <input asp-for="MaxAmount"
+                                   type="number"
+                                   step="0.01"
+                                   min="0"
+                                   class="form-control"
+                                   placeholder="0.00" />
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="mt-3 d-flex gap-2">
+
+                        <button type="submit"
+                                class="btn btn-primary">
+
+                            <i class="bi bi-search me-1"></i>
+                            Apply Filters
+
+                        </button>
+
+
+                        <a asp-controller="Payment"
+                           asp-action="Index"
+                           class="btn btn-outline-secondary">
+
+                            <i class="bi bi-arrow-counterclockwise me-1"></i>
+                            Reset
+
+                        </a>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+        <!-- Payments Table -->
+        <div class="card">
+
+            <div class="card-header">
+
+                <h3 class="card-title">
+
+                    Payment History
+
+                    <span class="badge bg-secondary-lt ms-2">
+                        @Model.TotalCount
+                    </span>
+
+                </h3>
+
+            </div>
+
+
+            @if (Model.Payments.Any())
+            {
+                <div class="table-responsive">
+
+                    <table class="table table-vcenter card-table">
+
+                        <thead>
+                            <tr>
+
+                                <th>
+                                    Payment #
+                                </th>
+
+                                <th>
+                                    Invoice
+                                </th>
+
+                                <th>
+                                    Amount
+                                </th>
+
+                                <th>
+                                    Payment Date
+                                </th>
+
+                                <th>
+                                    Method
+                                </th>
+
+                                <th>
+                                    Reference
+                                </th>
+
+                                <th class="w-1">
+                                </th>
+
+                            </tr>
+                        </thead>
+
+
+                        <tbody>
+
+                            @foreach (var payment in Model.Payments)
+                            {
+                                <tr>
+
+                                    <!-- Payment ID -->
+                                    <td>
+
+                                        <div class="fw-medium">
+                                            #@payment.PaymentId
+                                        </div>
+
+                                    </td>
+
+
+                                    <!-- Invoice -->
+                                    <td>
+
+                                        <a asp-controller="Invoice"
+                                           asp-action="Details"
+                                           asp-route-id="@payment.InvoiceId"
+                                           class="text-reset text-decoration-none">
+
+                                            <div class="fw-medium">
+
+                                                #@payment.InvoiceId
+
+                                                <i class="bi bi-box-arrow-up-right ms-1 small"></i>
+
+                                            </div>
+
+                                        </a>
+
+                                    </td>
+
+
+                                    <!-- Amount -->
+                                    <td>
+
+                                        <div class="fw-bold">
+
+                                            @payment.Amount.ToString("N2")
+
+                                            <span class="text-secondary small">
+                                                EGP
+                                            </span>
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <!-- Date -->
+                                    <td>
+
+                                        @payment.PaymentDate.ToString("dd MMM yyyy")
+
+                                    </td>
+
+
+                                    <!-- Method -->
+                                    <td>
+
+                                        <span class="badge bg-blue-lt">
+
+                                            @payment.PaymentMethod
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <!-- Reference -->
+                                    <td>
+
+                                        @if (!string.IsNullOrWhiteSpace(payment.ReferenceNumber))
+                                        {
+                                            @payment.ReferenceNumber
+                                        }
+                                        else
+                                        {
+                                            <span class="text-secondary">
+                                                —
+                                            </span>
+                                        }
+
+                                    </td>
+
+
+                                    <!-- Actions -->
+                                    <td>
+
+                                        <div class="btn-list flex-nowrap">
+
+                                            <a asp-controller="Payment"
+                                               asp-action="Details"
+                                               asp-route-id="@payment.PaymentId"
+                                               class="btn btn-sm btn-outline-secondary"
+                                               title="Details">
+
+                                                <i class="bi bi-eye"></i>
+
+                                            </a>
+
+
+                                            <a asp-controller="Payment"
+                                               asp-action="Edit"
+                                               asp-route-id="@payment.PaymentId"
+                                               class="btn btn-sm btn-outline-primary"
+                                               title="Edit">
+
+                                                <i class="bi bi-pencil"></i>
+
+                                            </a>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <!-- Pagination -->
+                @if (totalPages > 1)
+                {
+                    <div class="card-footer">
+
+                        <div class="d-flex justify-content-between align-items-center">
+
+                            <div class="text-secondary">
+
+                                Showing
+                                <strong>
+                                    @(((Model.Page - 1) * Model.PageSize) + 1)
+                                </strong>
+                                -
+                                <strong>
+                                    @Math.Min(
+                                    Model.Page* Model.PageSize,
+                                                        Model.TotalCount)
+                        </strong>
+
+                        of
+                        <strong>
+                            @Model.TotalCount
+                        </strong>
+
+                    </div>
+
+
+                    <ul class="pagination mb-0">
+
+                        <!-- Previous -->
+                        <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
+
+                            @if (Model.Page > 1)
+                                    {
+                                        <a class="page-link"
+                                           asp-controller="Payment"
+                                           asp-action="Index"
+                                           asp-route-Search="@Model.Search"
+                                           asp-route-InvoiceId="@Model.InvoiceId"
+                                           asp-route-PaymentMethod="@Model.PaymentMethod"
+                                           asp-route-PaymentDateFrom="@Model.PaymentDateFrom?.ToString("yyyy-MM-dd")"
+                                           asp-route-PaymentDateTo="@Model.PaymentDateTo?.ToString("yyyy-MM-dd")"
+                                           asp-route-MinAmount="@Model.MinAmount"
+                                           asp-route-MaxAmount="@Model.MaxAmount"
+                                           asp-route-Page="@(Model.Page - 1)"
+                                           asp-route-PageSize="@Model.PageSize">
+
+                                            <i class="bi bi-chevron-left"></i>
+
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="page-link">
+                                            <i class="bi bi-chevron-left"></i>
+                                        </span>
+                                    }
+
+                                </li>
+
+
+                                <!-- Page Numbers -->
+                                @for (int i = 1; i <= totalPages; i++)
+                                {
+                                    <li class="page-item @(i == Model.Page ? "active" : "")">
+
+                                        <a class="page-link"
+                                           asp-controller="Payment"
+                                           asp-action="Index"
+                                           asp-route-Search="@Model.Search"
+                                           asp-route-InvoiceId="@Model.InvoiceId"
+                                           asp-route-PaymentMethod="@Model.PaymentMethod"
+                                           asp-route-PaymentDateFrom="@Model.PaymentDateFrom?.ToString("yyyy-MM-dd")"
+                                           asp-route-PaymentDateTo="@Model.PaymentDateTo?.ToString("yyyy-MM-dd")"
+                                           asp-route-MinAmount="@Model.MinAmount"
+                                           asp-route-MaxAmount="@Model.MaxAmount"
+                                           asp-route-Page="@i"
+                                           asp-route-PageSize="@Model.PageSize">
+
+                                            @i
+
+                                        </a>
+
+                                    </li>
+                                }
+
+
+                                <!-- Next -->
+                                <li class="page-item @(Model.Page >= totalPages ? "disabled" : "")">
+
+                                    @if (Model.Page < totalPages)
+                                    {
+                                        <a class="page-link"
+                                           asp-controller="Payment"
+                                           asp-action="Index"
+                                           asp-route-Search="@Model.Search"
+                                           asp-route-InvoiceId="@Model.InvoiceId"
+                                           asp-route-PaymentMethod="@Model.PaymentMethod"
+                                           asp-route-PaymentDateFrom="@Model.PaymentDateFrom?.ToString("yyyy-MM-dd")"
+                                           asp-route-PaymentDateTo="@Model.PaymentDateTo?.ToString("yyyy-MM-dd")"
+                                           asp-route-MinAmount="@Model.MinAmount"
+                                           asp-route-MaxAmount="@Model.MaxAmount"
+                                           asp-route-Page="@(Model.Page + 1)"
+                                           asp-route-PageSize="@Model.PageSize">
+
+                                            <i class="bi bi-chevron-right"></i>
+
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="page-link">
+                                            <i class="bi bi-chevron-right"></i>
+                                        </span>
+                                    }
+
+                                </li>
+
+                            </ul>
+
+                        </div>
+
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="empty py-5">
+
+                    <div class="empty-icon">
+
+                        <i class="bi bi-cash-stack fs-1"></i>
+
+                    </div>
+
+                    <p class="empty-title">
+                        No payments found
+                    </p>
+
+                    <p class="empty-subtitle text-secondary">
+                        Try adjusting your filters or search criteria.
+                    </p>
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+</div>

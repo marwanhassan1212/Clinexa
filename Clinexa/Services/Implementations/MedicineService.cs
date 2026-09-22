@@ -24,7 +24,7 @@ namespace Clinexa.Services.Implementations
             }
 
             medicine.IsActive = true;
-            medicine.CreatedAt = DateTime.Now;
+            medicine.CreatedAt = DateTime.UtcNow;
 
             await medicineRepository
                 .AddAsync(medicine);
@@ -99,6 +99,34 @@ namespace Clinexa.Services.Implementations
 
             await medicineRepository
                 .SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<(List<Medicine> Medicines, int TotalCount)> FilterAsync(string? search,
+             bool? isActive, int page, int pageSize)
+        {
+            return await medicineRepository.FilterAsync(
+                search,
+                isActive,
+                page,
+                pageSize);
+        }
+
+        public async Task<bool> ActivateAsync(int id)
+        {
+            var medicine = await medicineRepository.GetByIdAsync(id);
+
+            if (medicine == null)
+            {
+                return false;
+            }
+
+            medicine.IsActive = true;
+
+            medicineRepository.Update(medicine);
+
+            await medicineRepository.SaveChangesAsync();
 
             return true;
         }

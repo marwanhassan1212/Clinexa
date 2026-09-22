@@ -7,20 +7,32 @@ namespace Clinexa.Services.Implementations
     public class PrescriptionItemService : IPrescriptionItemService
     {
         private readonly IPrescriptionItemRepository prescriptionItemRepository;
-        public PrescriptionItemService(IPrescriptionItemRepository prescriptionItemRepository)
+ 
+        public PrescriptionItemService(IPrescriptionItemRepository prescriptionItemRepository , IMedicineRepository medicineRepository)
         {
             this.prescriptionItemRepository = prescriptionItemRepository;
         }
         public async Task<bool> CreateAsync(PrescriptionItem prescriptionItem)
         {
+            bool medicineAlreadyExists =
+                await prescriptionItemRepository
+                    .ExistsForPrescriptionAsync(
+                        prescriptionItem.PrescriptionId,
+                        prescriptionItem.MedicineId);
+
+            if (medicineAlreadyExists)
+            {
+                return false;
+            }
+
             bool PrescriptionExists = await prescriptionItemRepository.PrescriptionExistsAsync(prescriptionItem.PrescriptionId);
             if(!PrescriptionExists)
             {
                 return false;
             }
 
-            bool medicineExists = await prescriptionItemRepository.MedicineExistsAsync(prescriptionItem.MedicineId);
-            if(!medicineExists)
+            bool ActiveMedicineExists = await prescriptionItemRepository.ActiveMedicineExistsAsync(prescriptionItem.MedicineId);
+            if(!ActiveMedicineExists)
             {
                 return false;
             }
@@ -57,8 +69,19 @@ namespace Clinexa.Services.Implementations
             {
                 return false;
             }
-            bool medicineExists = await prescriptionItemRepository.MedicineExistsAsync(prescriptionItem.MedicineId);
-            if(!medicineExists)
+            bool ActiveMedicineExists = await prescriptionItemRepository.ActiveMedicineExistsAsync(prescriptionItem.MedicineId);
+            if(!ActiveMedicineExists)
+            {
+                return false;
+            }
+            bool medicineAlreadyExists =
+            await prescriptionItemRepository
+                .ExistsForPrescriptionAsync(
+                    prescriptionItem.PrescriptionId,
+                    prescriptionItem.MedicineId,
+                    prescriptionItem.PrescriptionItemId);
+
+            if (medicineAlreadyExists)
             {
                 return false;
             }
@@ -67,5 +90,7 @@ namespace Clinexa.Services.Implementations
             return true;
 
         }
+
+     
     }
 }

@@ -7,7 +7,6 @@ namespace Clinexa.Controllers
 {
     public class InvoiceItemController : Controller
     {
-
         private readonly IInvoiceItemService invoiceItemService;
 
         public InvoiceItemController(
@@ -16,35 +15,25 @@ namespace Clinexa.Controllers
             this.invoiceItemService = invoiceItemService;
         }
 
-        // GET: InvoiceItem
-        public async Task<IActionResult> Index()
+        // GET: InvoiceItem/Create?invoiceId=5
+        [HttpGet]
+        public async Task<IActionResult> Create(int invoiceId)
         {
-            var invoiceItems =
-                await invoiceItemService
-                    .GetAllAsync();
+            var invoiceExists =
+                await invoiceItemService.InvoiceExistsAsync(invoiceId);
 
-            return View(invoiceItems);
-        }
-
-        // GET: InvoiceItem/Details/5
-        public async Task<IActionResult> Details(int id)
-        {
-            var invoiceItem =
-                await invoiceItemService
-                    .GetByIdAsync(id);
-
-            if (invoiceItem == null)
+            if (!invoiceExists)
             {
                 return NotFound();
             }
 
-            return View(invoiceItem);
-        }
+            var model = new InvoiceItemCreateViewModel
+            {
+                InvoiceId = invoiceId,
+                Quantity = 1
+            };
 
-        // GET: InvoiceItem/Create
-        public IActionResult Create()
-        {
-            return View();
+            return View(model);
         }
 
         // POST: InvoiceItem/Create
@@ -83,10 +72,14 @@ namespace Clinexa.Controllers
             TempData["Success"] =
                 "Invoice item created successfully.";
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(
+                "Details",
+                "Invoice",
+                new { id = model.InvoiceId });
         }
 
         // GET: InvoiceItem/Edit/5
+        [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
             var invoiceItem =
@@ -140,9 +133,8 @@ namespace Clinexa.Controllers
                 return NotFound();
             }
 
-            invoiceItem.InvoiceId =
-                model.InvoiceId;
-
+            // InvoiceId comes from the existing item.
+            // The item cannot be moved to another invoice.
             invoiceItem.Description =
                 model.Description;
 
@@ -160,7 +152,7 @@ namespace Clinexa.Controllers
             {
                 ModelState.AddModelError(
                     "",
-                    "Unable to update invoice item. Please check the invoice, quantity, or unit price."
+                    "Unable to update invoice item. Please check the quantity or unit price."
                 );
 
                 return View(model);
@@ -169,7 +161,51 @@ namespace Clinexa.Controllers
             TempData["Success"] =
                 "Invoice item updated successfully.";
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(
+                "Details",
+                "Invoice",
+                new { id = invoiceItem.InvoiceId });
+        }
+
+        // POST: InvoiceItem/Delete
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var invoiceItem =
+                await invoiceItemService
+                    .GetByIdAsync(id);
+
+            if (invoiceItem == null)
+            {
+                return NotFound();
+            }
+
+            var invoiceId =
+                invoiceItem.InvoiceId;
+
+            var result =
+                await invoiceItemService
+                    .DeleteAsync(id);
+
+            if (!result)
+            {
+                TempData["Error"] =
+                    "Unable to delete invoice item.";
+
+                return RedirectToAction(
+                    "Details",
+                    "Invoice",
+                    new { id = invoiceId });
+            }
+
+            TempData["Success"] =
+                "Invoice item deleted successfully.";
+
+            return RedirectToAction(
+                "Details",
+                "Invoice",
+                new { id = invoiceId });
         }
     }
 }

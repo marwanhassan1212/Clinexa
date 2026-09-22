@@ -1,0 +1,447 @@
+﻿@model Clinexa.Models.ViewModels.Invoice.InvoiceFilterViewModel
+
+@{
+    ViewData["Title"] = "Invoices";
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+
+        <div class="row align-items-center">
+
+            <div class="col">
+
+                <div class="page-pretitle">
+                    Billing
+                </div>
+
+                <h2 class="page-title">
+                    Invoices
+                </h2>
+
+            </div>
+
+            <div class="col-auto ms-auto">
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+
+        <!-- Filters -->
+        <div class="card mb-3">
+
+            <div class="card-body">
+
+                <form asp-action="Index"
+                      method="get">
+
+                    <div class="row g-3">
+
+                        <!-- Search -->
+                        <div class="col-md-4">
+
+                            <label class="form-label">
+                                Search
+                            </label>
+
+                            <input type="text"
+                                   name="search"
+                                   value="@Model.Search"
+                                   class="form-control"
+                                   placeholder="Invoice ID or patient name..." />
+
+                        </div>
+
+
+                        <!-- Status -->
+                        <div class="col-md-2">
+
+                            <label class="form-label">
+                                Status
+                            </label>
+
+                            <select name="invoiceStatus"
+                                    class="form-select">
+
+                                <option value="">
+                                    All statuses
+                                </option>
+
+                                @foreach (var status in Enum.GetValues<Clinexa.Enums.InvoiceStatus>())
+                                {
+                                    <option value="@status"
+                                            selected="@(Model.InvoiceStatus == status)">
+                                        @status
+                                    </option>
+                                }
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- Date From -->
+                        <div class="col-md-2">
+
+                            <label class="form-label">
+                                Date From
+                            </label>
+
+                            <input type="date"
+                                   name="dateFrom"
+                                   value="@(Model.DateFrom?.ToString("yyyy-MM-dd"))"
+                                   class="form-control" />
+
+                        </div>
+
+
+                        <!-- Date To -->
+                        <div class="col-md-2">
+
+                            <label class="form-label">
+                                Date To
+                            </label>
+
+                            <input type="date"
+                                   name="dateTo"
+                                   value="@(Model.DateTo?.ToString("yyyy-MM-dd"))"
+                                   class="form-control" />
+
+                        </div>
+
+
+                        <!-- Sort -->
+                        <div class="col-md-2">
+
+                            <label class="form-label">
+                                Sort By
+                            </label>
+
+                            <select name="sortBy"
+                                    class="form-select">
+
+                                <option value="Date"
+                                        selected="@(Model.SortBy == "Date")">
+                                    Date
+                                </option>
+
+                                <option value="Total"
+                                        selected="@(Model.SortBy == "Total")">
+                                    Total
+                                </option>
+
+                                <option value="Patient"
+                                        selected="@(Model.SortBy == "Patient")">
+                                    Patient
+                                </option>
+
+                                <option value="Status"
+                                        selected="@(Model.SortBy == "Status")">
+                                    Status
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="col-12">
+
+                            <div class="btn-list">
+
+                                <button type="submit"
+                                        class="btn btn-primary">
+
+                                    <i class="bi bi-search me-1"></i>
+                                    Apply Filters
+
+                                </button>
+
+                                <a asp-action="Index"
+                                   class="btn btn-outline-secondary">
+
+                                    <i class="bi bi-x-lg me-1"></i>
+                                    Clear
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+
+        <!-- Invoice Table -->
+        <div class="card">
+
+            <div class="card-header">
+
+                <h3 class="card-title">
+                    Invoices
+
+                    <span class="badge bg-secondary-lt ms-2">
+                        @Model.Invoices.Count
+                    </span>
+                </h3>
+
+            </div>
+
+
+            @if (Model.Invoices.Any())
+            {
+                <div class="table-responsive">
+
+                    <table class="table table-vcenter card-table">
+
+                        <thead>
+
+                            <tr>
+
+                                <th>
+                                    Invoice
+                                </th>
+
+                                <th>
+                                    Patient
+                                </th>
+
+                                <th>
+                                    Date
+                                </th>
+
+                                <th>
+                                    Status
+                                </th>
+
+                                <th class="text-end">
+                                    Total
+                                </th>
+
+                                <th class="text-end">
+                                    Paid
+                                </th>
+
+                                <th class="text-end">
+                                    Remaining
+                                </th>
+
+                                <th class="w-1">
+                                </th>
+
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            @foreach (var invoice in Model.Invoices)
+                            {
+                                <tr>
+
+                                    <td>
+
+                                        <a asp-action="Details"
+                                           asp-route-id="@invoice.InvoiceId"
+                                           class="fw-bold text-reset text-decoration-none">
+
+                                            #@invoice.InvoiceId
+
+                                        </a>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <div class="fw-medium">
+
+                                            @invoice.Patient.FirstName
+                                            @invoice.Patient.LastName
+
+                                        </div>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @invoice.InvoiceDate.ToString("dd MMM yyyy")
+
+                                    </td>
+
+
+                                    <td>
+
+                                        @switch (invoice.InvoiceStatus)
+                                        {
+                                            case Clinexa.Enums.InvoiceStatus.Paid:
+
+                                                <span class="badge bg-green-lt">
+                                                    Paid
+                                                </span>
+
+                                                break;
+
+                                            case Clinexa.Enums.InvoiceStatus.PartiallyPaid:
+
+                                                <span class="badge bg-yellow-lt">
+                                                    Partially Paid
+                                                </span>
+
+                                                break;
+
+                                            default:
+
+                                                <span class="badge bg-red-lt">
+                                                    Unpaid
+                                                </span>
+
+                                                break;
+                                        }
+
+                                    </td>
+
+
+                                    <td class="text-end fw-medium">
+
+                                        @invoice.TotalAmount.ToString("N2")
+                                        <span class="text-secondary small">
+                                            EGP
+                                        </span>
+
+                                    </td>
+
+
+                                    <td class="text-end">
+
+                                        @invoice.PaidAmount.ToString("N2")
+                                        <span class="text-secondary small">
+                                            EGP
+                                        </span>
+
+                                    </td>
+
+
+                                    <td class="text-end">
+
+                                        <span class="@(invoice.RemainingAmount > 0 ? "text-danger fw-bold" : "text-success fw-medium")">
+
+                                            @invoice.RemainingAmount.ToString("N2")
+                                            <span class="text-secondary small">
+                                                EGP
+                                            </span>
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        <div class="btn-list flex-nowrap">
+
+                                            <a asp-action="Details"
+                                               asp-route-id="@invoice.InvoiceId"
+                                               class="btn btn-sm btn-outline-secondary"
+                                               title="Details">
+
+                                                <i class="bi bi-eye"></i>
+
+                                            </a>
+
+
+                                            <a asp-action="Edit"
+                                               asp-route-id="@invoice.InvoiceId"
+                                               class="btn btn-sm btn-outline-primary"
+                                               title="Edit">
+
+                                                <i class="bi bi-pencil"></i>
+
+                                            </a>
+
+                                        </div>
+
+                                    </td>
+
+                                </tr>
+                            }
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <div class="card-footer">
+
+                        <ul class="pagination mb-0 justify-content-center">
+
+                            @for (int i = 1; i <= Model.TotalPages; i++)
+                            {
+                                <li class="page-item @(i == Model.Page ? "active" : "")">
+
+                                    <a class="page-link"
+                                       asp-action="Index"
+                                       asp-route-page="@i"
+                                       asp-route-search="@Model.Search"
+                                       asp-route-invoiceStatus="@Model.InvoiceStatus"
+                                       asp-route-dateFrom="@Model.DateFrom?.ToString("yyyy-MM-dd")"
+                                       asp-route-dateTo="@Model.DateTo?.ToString("yyyy-MM-dd")"
+                                       asp-route-sortBy="@Model.SortBy"
+                                       asp-route-sortDirection="@Model.SortDirection">
+
+                                        @i
+
+                                    </a>
+
+                                </li>
+                            }
+
+                        </ul>
+
+                    </div>
+                }
+
+            }
+            else
+            {
+                <div class="empty py-5">
+
+                    <div class="empty-icon">
+                        <i class="bi bi-receipt fs-1"></i>
+                    </div>
+
+                    <p class="empty-title">
+                        No invoices found
+                    </p>
+
+                    <p class="empty-subtitle text-secondary">
+                        Try changing your filters or create an invoice from an appointment.
+                    </p>
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+</div>

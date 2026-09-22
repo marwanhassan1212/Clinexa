@@ -40,6 +40,21 @@ namespace Clinexa.Configurations
                 .HasForeignKey(i => i.PatientId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            builder.HasIndex(i => i.PatientId);
+
+            builder.HasIndex(i => i.AppointmentId)
+                .IsUnique();
+
+            builder.HasOne(i => i.Patient)
+                .WithMany(p => p.Invoices)
+                .HasForeignKey(i => i.PatientId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(i => i.Appointment)
+                .WithOne()
+                .HasForeignKey<Invoice>(i => i.AppointmentId)
+                .OnDelete(DeleteBehavior.Restrict);
+
         }
     }
 }

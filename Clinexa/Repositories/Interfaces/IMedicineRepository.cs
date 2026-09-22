@@ -15,7 +15,8 @@ namespace Clinexa.Repositories.Interfaces
             int? excludedMedicineId = null);
 
         Task AddAsync(Medicine medicine);
-
+        Task<(List<Medicine> Medicines, int TotalCount)> FilterAsync(string? search, bool? isActive,
+                int page, int pageSize);
         void Update(Medicine medicine);
 
         Task SaveChangesAsync();

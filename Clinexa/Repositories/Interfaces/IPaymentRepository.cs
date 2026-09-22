@@ -1,4 +1,5 @@
-﻿using Clinexa.Models.Entities;
+﻿using Clinexa.Enums;
+using Clinexa.Models.Entities;
 
 namespace Clinexa.Repositories.Interfaces
 {
@@ -13,6 +14,16 @@ namespace Clinexa.Repositories.Interfaces
         Task<Invoice?> GetInvoiceByIdAsync(int invoiceId);
 
         Task<bool> InvoiceExistsAsync(int invoiceId);
+        Task<(List<Payment> Payments, int TotalCount)> FilterAsync(
+                string? search,
+                int? invoiceId,
+                PaymentMethod? paymentMethod,
+                DateTime? paymentDateFrom,
+                DateTime? paymentDateTo,
+                decimal? minAmount,
+                decimal? maxAmount,
+                int page,
+                int pageSize);
 
         Task<decimal> GetTotalPaidForInvoiceAsync(int invoiceId);
 

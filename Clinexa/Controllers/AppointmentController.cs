@@ -11,13 +11,15 @@ namespace Clinexa.Controllers
         private readonly IAppointmentService appointmentService;
         private readonly IPatientService patientService;
         private readonly IDoctorService doctorService;
+        private readonly IInvoiceService invoiceService;
 
         public AppointmentController(IAppointmentService appointmentService
-            , IPatientService patientService , IDoctorService doctorService)
+            , IPatientService patientService, IDoctorService doctorService, IInvoiceService invoiceService)
         {
             this.appointmentService = appointmentService;
             this.patientService = patientService;
             this.doctorService = doctorService;
+            this.invoiceService = invoiceService;
         }
         public async Task<IActionResult> Index(AppointmentFilterViewModel model)
         {
@@ -51,14 +53,25 @@ namespace Clinexa.Controllers
 
         public async Task<IActionResult> Details(int id)
         {
-            var appointment = await appointmentService.GetByIdAsync(id);
+            var appointment =
+                await appointmentService.GetByIdAsync(id);
 
             if (appointment == null)
             {
                 return NotFound();
             }
 
-            return View(appointment);
+            var invoice =
+                await invoiceService
+                    .GetByAppointmentIdAsync(id);
+
+            var model = new AppointmentDetailsViewModel
+            {
+                Appointment = appointment,
+                Invoice = invoice
+            };
+
+            return View(model);
         }
 
         [HttpGet]

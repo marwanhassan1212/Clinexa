@@ -101,7 +101,7 @@ namespace Clinexa.Services.Implementations
             }
 
             if (prescription.PrescriptionDate >
-               DateTime.Now)
+               DateTime.UtcNow)
             {
                 return false;
             }
@@ -113,6 +113,36 @@ namespace Clinexa.Services.Implementations
                 .SaveChangesAsync();
 
             return true;
+        }
+
+
+        public async Task<(List<Prescription> Prescriptions, int TotalCount)> FilterAsync(
+            string? search, DateTime? dateFrom, DateTime? dateTo, int? medicalRecordId,
+            string sortBy, string sortDirection, int page, int pageSize)
+
+        {
+            return await prescriptionRepository
+                .FilterAsync(
+                    search,
+                    dateFrom,
+                    dateTo,
+                    medicalRecordId,
+                    sortBy,
+                    sortDirection,
+                    page,
+                    pageSize);
+        }
+
+        public async Task<List<MedicalRecord>> GetMedicalRecordsAsync()
+        {
+            return await prescriptionRepository
+                .GetMedicalRecordsAsync();
+        }
+
+        public async Task<List<MedicalRecord>> SearchMedicalRecordsAsync(string? search, int take = 10)
+        {
+            return await prescriptionRepository
+                .SearchMedicalRecordsAsync(search, take);
         }
     }
 }

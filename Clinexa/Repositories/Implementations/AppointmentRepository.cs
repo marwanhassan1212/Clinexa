@@ -81,7 +81,7 @@ namespace Clinexa.Repositories.Implementations
             var totalCount = await query.CountAsync();
 
             var appointments = await query
-                .OrderByDescending(x => x.CreatedAt)
+                .OrderByDescending(x => x.AppointmentDate)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
@@ -93,7 +93,7 @@ namespace Clinexa.Repositories.Implementations
         {
             return await _db.Appointments
                  .AsNoTracking()
-                 .OrderByDescending(x => x.CreatedAt)
+                 .OrderByDescending(x => x.AppointmentDate)
                  .ToListAsync();
         }
 
@@ -109,7 +109,14 @@ namespace Clinexa.Repositories.Implementations
 
         public async Task<Appointment?> GetByIdAsync(int id)
         {
-            return await _db.Appointments.FirstOrDefaultAsync(x => x.AppointmentId == id);
+            return await _db.Appointments
+                .AsNoTracking()
+                .Include(x => x.Patient)
+                .Include(x => x.Doctor)
+                    .ThenInclude(x => x.User)
+                .Include(x => x.Doctor)
+                    .ThenInclude(x => x.Speciality)
+                .FirstOrDefaultAsync(x => x.AppointmentId == id);
         }
 
         public async Task<List<Appointment>> GetByPatientIdAsync(int patientId)

@@ -8,18 +8,42 @@ namespace Clinexa.Controllers
     public class PaymentController : Controller
     {
         private readonly IPaymentService paymentService;
+        private readonly IInvoiceService invoiceService;
 
-        public PaymentController(IPaymentService paymentService)
+        public PaymentController(IPaymentService paymentService , IInvoiceService invoiceService)
         {
             this.paymentService = paymentService;
+            this.invoiceService = invoiceService;
         }
 
         // GET: Payment
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(PaymentFilterViewModel model)
         {
-            var payments = await paymentService.GetAllAsync();
+            if (model.Page < 1)
+            {
+                model.Page = 1;
+            }
 
-            return View(payments);
+            if (model.PageSize <= 0)
+            {
+                model.PageSize = 10;
+            }
+
+            var result = await paymentService.FilterAsync(
+                model.Search,
+                model.InvoiceId,
+                model.PaymentMethod,
+                model.PaymentDateFrom,
+                model.PaymentDateTo,
+                model.MinAmount,
+                model.MaxAmount,
+                model.Page,
+                model.PageSize);
+
+            model.Payments = result.Payments;
+            model.TotalCount = result.TotalCount;
+
+            return View(model);
         }
 
         // GET: Payment/Details/5
@@ -34,16 +58,29 @@ namespace Clinexa.Controllers
         }
 
         // GET: Payment/Create
-        public IActionResult Create()
+        [HttpGet]
+        public async Task<IActionResult> Create(int invoiceId)
         {
-            return View();
+            var invoice = await invoiceService.GetByIdAsync(invoiceId);
+
+            if (invoice == null)
+            {
+                return NotFound();
+            }
+
+            var model = new PaymentCreateViewModel
+            {
+                InvoiceId = invoiceId,
+                PaymentDate = DateTime.Today
+            };
+
+            return View(model);
         }
 
         // POST: Payment/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(
-            PaymentCreateViewModel model)
+        public async Task<IActionResult> Create(PaymentCreateViewModel model)
         {
             if (!ModelState.IsValid)
                 return View(model);
@@ -64,15 +101,18 @@ namespace Clinexa.Controllers
             {
                 ModelState.AddModelError(
                     "",
-                    "Unable to create payment. Please check the invoice and payment amount.");
+                    "Unable to create payment. Please check the invoice and payment amount."
+                );
 
                 return View(model);
             }
 
-            TempData["Success"] =
-                "Payment created successfully.";
+            TempData["Success"] = "Payment created successfully.";
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(
+                "Details",
+                "Invoice",
+                new { id = model.InvoiceId });
         }
 
         // GET: Payment/Edit/5
@@ -112,7 +152,6 @@ namespace Clinexa.Controllers
             if (payment == null)
                 return NotFound();
 
-            payment.InvoiceId = model.InvoiceId;
             payment.Amount = model.Amount;
             payment.PaymentDate = model.PaymentDate;
             payment.PaymentMethod = model.PaymentMethod;

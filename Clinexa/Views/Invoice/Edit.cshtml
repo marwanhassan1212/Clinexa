@@ -1,0 +1,197 @@
+﻿@model Clinexa.Models.ViewModels.Invoice.InvoiceEditViewModel
+
+@{
+    ViewData["Title"] = "Edit Invoice";
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+
+        <div class="row align-items-center">
+
+            <div class="col">
+
+                <div class="page-pretitle">
+                    Billing
+                </div>
+
+                <h2 class="page-title">
+                    Edit Invoice #@Model.InvoiceId
+                </h2>
+
+            </div>
+
+            <div class="col-auto ms-auto">
+
+                <a asp-action="Details"
+                   asp-route-id="@Model.InvoiceId"
+                   class="btn btn-outline-secondary">
+
+                    <i class="bi bi-arrow-left me-1"></i>
+                    Back
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+
+        <div class="row">
+
+            <div class="col-lg-8">
+
+                <form asp-action="Edit"
+                      method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <input type="hidden"
+                           asp-for="InvoiceId" />
+
+                    <div asp-validation-summary="ModelOnly"
+                         class="text-danger mb-3">
+                    </div>
+
+                    <div class="card">
+
+                        <div class="card-header">
+
+                            <h3 class="card-title">
+                                Invoice Information
+                            </h3>
+
+                        </div>
+
+                        <div class="card-body">
+
+                            <div class="mb-3">
+
+                                <label asp-for="InvoiceDate"
+                                       class="form-label">
+                                </label>
+
+                                <input asp-for="InvoiceDate"
+                                       class="form-control" />
+
+                                <span asp-validation-for="InvoiceDate"
+                                      class="text-danger">
+                                </span>
+
+                            </div>
+
+                            <div class="row">
+
+                                <div class="col-md-6">
+
+                                    <div class="mb-3">
+
+                                        <label asp-for="Discount"
+                                               class="form-label">
+                                        </label>
+
+                                        <input asp-for="Discount"
+                                               class="form-control"
+                                               type="number"
+                                               min="0"
+                                               step="0.01" />
+
+                                        <span asp-validation-for="Discount"
+                                              class="text-danger">
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                                <div class="col-md-6">
+
+                                    <div class="mb-3">
+
+                                        <label asp-for="Tax"
+                                               class="form-label">
+                                        </label>
+
+                                        <input asp-for="Tax"
+                                               class="form-control"
+                                               type="number"
+                                               min="0"
+                                               step="0.01" />
+
+                                        <span asp-validation-for="Tax"
+                                              class="text-danger">
+                                        </span>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="card-footer d-flex justify-content-end gap-2">
+
+                            <a asp-action="Details"
+                               asp-route-id="@Model.InvoiceId"
+                               class="btn btn-outline-secondary">
+                                Cancel
+                            </a>
+
+                            <button type="submit"
+                                    class="btn btn-primary">
+
+                                <i class="bi bi-check-lg me-1"></i>
+                                Save Changes
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+            <div class="col-lg-4">
+
+                <div class="card">
+
+                    <div class="card-header">
+
+                        <h3 class="card-title">
+                            Important
+                        </h3>
+
+                    </div>
+
+                    <div class="card-body">
+
+                        <p class="text-secondary mb-0">
+                            Invoice items determine the subtotal.
+                            Payments determine the paid amount.
+                        </p>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync(
+            "_ValidationScriptsPartial");
+    }
+}

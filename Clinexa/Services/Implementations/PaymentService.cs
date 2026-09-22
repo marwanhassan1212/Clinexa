@@ -1,4 +1,5 @@
-﻿using Clinexa.Models.Entities;
+﻿using Clinexa.Enums;
+using Clinexa.Models.Entities;
 using Clinexa.Repositories.Interfaces;
 using Clinexa.Services.Interfaces;
 
@@ -78,6 +79,29 @@ namespace Clinexa.Services.Implementations
             await paymentRepository.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<(List<Payment> Payments, int TotalCount)> FilterAsync(
+                  string? search,
+                  int? invoiceId,
+                  PaymentMethod? paymentMethod,
+                  DateTime? paymentDateFrom,
+                  DateTime? paymentDateTo,
+                  decimal? minAmount,
+                  decimal? maxAmount,
+                  int page,
+                  int pageSize)
+        {
+            return await paymentRepository.FilterAsync(
+                search,
+                invoiceId,
+                paymentMethod,
+                paymentDateFrom,
+                paymentDateTo,
+                minAmount,
+                maxAmount,
+                page,
+                pageSize);
         }
 
         public async Task<List<Payment>> GetAllAsync()

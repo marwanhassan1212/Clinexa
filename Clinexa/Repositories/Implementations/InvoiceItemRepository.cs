@@ -54,5 +54,10 @@ namespace Clinexa.Repositories.Implementations
         {
             _db.InvoiceItems.Update(invoiceItem);
         }
+
+        public void Delete(InvoiceItem invoiceItem)
+        {
+            _db.InvoiceItems.Remove(invoiceItem);
+        }
     }
 }

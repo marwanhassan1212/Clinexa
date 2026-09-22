@@ -11,10 +11,11 @@ namespace Clinexa.Services.Interfaces
         Task<MedicalRecord?> GetByAppointmentIdAsync(int appointmentId);
 
         Task<List<MedicalRecord>> GetByDoctorIdAsync(int doctorId);
-
+        Task<Appointment?> GetAppointmentByIdAsync(int appointmentId);
         Task<List<MedicalRecord>> GetByPatientIdAsync(int patientId);
 
         Task<bool> CreateAsync(MedicalRecord medicalRecord);
+        Task<List<Appointment>> GetAvailableAppointmentsAsync();
 
         Task<bool> UpdateAsync(MedicalRecord medicalRecord);
     }

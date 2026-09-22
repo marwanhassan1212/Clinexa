@@ -1,0 +1,363 @@
+﻿@model Clinexa.Models.ViewModels.Prescription.PrescriptionCreateViewModel
+
+@{
+    ViewData["Title"] = "Create Prescription";
+}
+
+@section PageActions {
+    <a asp-action="Index"
+       class="btn btn-outline-secondary">
+
+        <i class="bi bi-arrow-left me-1"></i>
+        Back to Prescriptions
+
+    </a>
+}
+
+<div class="row justify-content-center">
+
+    <div class="col-lg-8 col-xl-7">
+
+        <div class="card">
+
+            <div class="card-header">
+
+                <div>
+
+                    <h3 class="card-title mb-1">
+                        Create Prescription
+                    </h3>
+
+                    <div class="text-secondary">
+                        Create a prescription for a patient's medical record.
+                    </div>
+
+                </div>
+
+            </div>
+
+            <form asp-action="Create"
+                  method="post">
+
+                @Html.AntiForgeryToken()
+
+                <div class="card-body">
+
+                    <div asp-validation-summary="ModelOnly"
+                         class="text-danger mb-3">
+                    </div>
+
+
+                    <!-- Medical Record -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Medical Record
+                        </label>
+
+                        <input asp-for="MedicalRecordId"
+                               type="hidden"
+                               id="MedicalRecordId" />
+
+                        <div class="input-group">
+
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+
+                            <input type="text"
+                                   id="medicalRecordSearch"
+                                   class="form-control"
+                                   placeholder="Search patient, doctor or record..."
+                                   autocomplete="off" />
+
+                        </div>
+
+
+                        <!-- Search Results -->
+
+                        <div id="medicalRecordResults"
+                             class="list-group mt-2">
+                        </div>
+
+
+                        <!-- Selected Medical Record -->
+
+                        <div id="selectedMedicalRecord"
+                             class="alert alert-success mt-2 d-none">
+
+                            <div class="d-flex align-items-center">
+
+                                <i class="bi bi-check-circle me-2"></i>
+
+                                <div>
+                                    <strong>
+                                        Selected Medical Record
+                                    </strong>
+
+                                    <div id="selectedMedicalRecordText"
+                                         class="small">
+                                    </div>
+                                </div>
+
+                                <button type="button"
+                                        id="clearMedicalRecord"
+                                        class="btn btn-sm btn-outline-danger ms-auto">
+
+                                    <i class="bi bi-x"></i>
+
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <span class="form-hint">
+                            Search by patient name, doctor name, or medical record ID.
+                        </span>
+
+                        <span asp-validation-for="MedicalRecordId"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <!-- Prescription Date -->
+
+                    <div class="mb-3">
+
+                        <label asp-for="PrescriptionDate"
+                               class="form-label">
+
+                            Prescription Date
+
+                        </label>
+
+                        <input asp-for="PrescriptionDate"
+                               class="form-control"
+                               type="date"
+                               max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+
+                        <span asp-validation-for="PrescriptionDate"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+
+                    <!-- Notes -->
+
+                    <div class="mb-0">
+
+                        <label asp-for="Notes"
+                               class="form-label">
+
+                            Notes
+
+                        </label>
+
+                        <textarea asp-for="Notes"
+                                  class="form-control"
+                                  rows="5"
+                                  placeholder="Add any notes related to this prescription..."></textarea>
+
+                        <span asp-validation-for="Notes"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Footer -->
+
+                <div class="card-footer d-flex justify-content-end gap-2">
+
+                    <a asp-action="Index"
+                       class="btn btn-outline-secondary">
+
+                        Cancel
+
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        <i class="bi bi-prescription2 me-1"></i>
+
+                        Create Prescription
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <partial name="_ValidationScriptsPartial" />
+
+
+    <script>
+
+        const searchInput =
+            document.getElementById("medicalRecordSearch");
+
+        const resultsContainer =
+            document.getElementById("medicalRecordResults");
+
+        const medicalRecordId =
+            document.getElementById("MedicalRecordId");
+
+        const selectedContainer =
+            document.getElementById("selectedMedicalRecord");
+
+        const selectedText =
+            document.getElementById("selectedMedicalRecordText");
+
+        const clearButton =
+            document.getElementById("clearMedicalRecord");
+
+
+        let searchTimeout;
+
+
+        searchInput.addEventListener("input", function () {
+
+            const search = this.value.trim();
+
+            clearTimeout(searchTimeout);
+
+            resultsContainer.innerHTML = "";
+
+
+            if (search.length < 2) {
+
+                return;
+
+            }
+
+
+            searchTimeout = setTimeout(async function () {
+
+                try {
+
+                    const response =
+                        await fetch(
+                            '@Url.Action("SearchMedicalRecords", "Prescription")?search='
+                            + encodeURIComponent(search)
+                        );
+
+
+                    if (!response.ok) {
+
+                        throw new Error(
+                            "Failed to search medical records."
+                        );
+
+                    }
+
+
+                    const records =
+                        await response.json();
+
+
+                    resultsContainer.innerHTML = "";
+
+
+                    if (records.length === 0) {
+
+                        resultsContainer.innerHTML = `
+                            <div class="list-group-item text-secondary">
+                                No medical records found.
+                            </div>
+                        `;
+
+                        return;
+
+                    }
+
+
+                    records.forEach(function (record) {
+
+                        const item =
+                            document.createElement("button");
+
+                        item.type = "button";
+
+                        item.className =
+                            "list-group-item list-group-item-action";
+
+
+                        item.textContent =
+                            record.text;
+
+
+                        item.addEventListener("click", function () {
+
+                            medicalRecordId.value =
+                                record.id;
+
+                            searchInput.value =
+                                "";
+
+                            resultsContainer.innerHTML =
+                                "";
+
+                            selectedText.textContent =
+                                record.text;
+
+                            selectedContainer.classList.remove(
+                                "d-none"
+                            );
+
+                        });
+
+
+                        resultsContainer.appendChild(item);
+
+                    });
+
+                }
+                catch (error) {
+
+                    console.error(error);
+
+                    resultsContainer.innerHTML = `
+                        <div class="list-group-item text-danger">
+                            Unable to search medical records.
+                        </div>
+                    `;
+
+                }
+
+            }, 300);
+
+        });
+
+
+        clearButton.addEventListener("click", function () {
+
+            medicalRecordId.value = "";
+
+            selectedText.textContent = "";
+
+            selectedContainer.classList.add("d-none");
+
+            searchInput.focus();
+
+        });
+
+    </script>
+}

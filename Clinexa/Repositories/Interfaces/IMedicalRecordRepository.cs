@@ -25,6 +25,9 @@ namespace Clinexa.Repositories.Interfaces
         Task AddAsync(MedicalRecord medicalRecord);
 
         void Update(MedicalRecord medicalRecord);
+        Task<List<Appointment>> GetAvailableAppointmentsAsync();
+        Task<Appointment?> GetAppointmentByIdAsync(int appointmentId);
+
 
         Task SaveChangesAsync();
 

@@ -28,16 +28,18 @@ namespace Clinexa.Repositories.Implementations
         public async Task<PrescriptionItem?> GetByIdAsync(int id)
         {
             return await _db.PrescriptionItems
-                .FirstOrDefaultAsync(x => x.PrescriptionItemId == id);
+                  .Include(x => x.Medicine)
+                  .FirstOrDefaultAsync(x => x.PrescriptionItemId == id);
         }
 
         public async Task<List<PrescriptionItem>> GetByPrescriptionIdAsync(int prescriptionId)
         {
             return await _db.PrescriptionItems
-                .AsNoTracking()
-                .Where(x => x.PrescriptionId == prescriptionId)
-                .OrderBy(x => x.PrescriptionItemId)
-                .ToListAsync();   
+               .AsNoTracking()
+               .Include(x => x.Medicine)
+               .Where(x => x.PrescriptionId == prescriptionId)
+               .OrderBy(x => x.PrescriptionItemId)
+               .ToListAsync();
         }
 
         public async Task<bool> MedicineExistsAsync(int medicineId)
@@ -58,6 +60,27 @@ namespace Clinexa.Repositories.Implementations
         public void Update(PrescriptionItem prescriptionItem)
         {
             _db.PrescriptionItems.Update(prescriptionItem);
+        }
+
+        public async Task<bool> ExistsForPrescriptionAsync(
+                  int prescriptionId,
+                  int medicineId,
+                  int? excludedPrescriptionItemId = null)
+        {
+            return await _db.PrescriptionItems
+                .AnyAsync(x =>
+                    x.PrescriptionId == prescriptionId &&
+                    x.MedicineId == medicineId &&
+                    (!excludedPrescriptionItemId.HasValue ||
+                     x.PrescriptionItemId != excludedPrescriptionItemId.Value));
+        }
+
+        public async Task<bool> ActiveMedicineExistsAsync(int medicineId)
+        {
+            return await _db.Medicines
+                .AnyAsync(x =>
+                    x.MedicineId == medicineId &&
+                    x.IsActive);
         }
     }
 }

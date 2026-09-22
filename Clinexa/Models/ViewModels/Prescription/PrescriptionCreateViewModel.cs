@@ -5,12 +5,15 @@ namespace Clinexa.Models.ViewModels.Prescription
     public class PrescriptionCreateViewModel
     {
         [Required]
-        public DateTime PrescriptionDate { get; set; }
-
-        [MaxLength(1000)]
-        public string? Notes { get; set; }
+        [Display(Name = "Medical Record")]
+        public int MedicalRecordId { get; set; }
 
         [Required]
-        public int MedicalRecordId { get; set; }
+        [DataType(DataType.Date)]
+        public DateTime PrescriptionDate { get; set; }
+
+        [StringLength(1000)]
+        public string? Notes { get; set; }
+
     }
 }

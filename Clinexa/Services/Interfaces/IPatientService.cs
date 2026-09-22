@@ -18,8 +18,9 @@ namespace Clinexa.Services.Interfaces
         Task<bool> UpdateAsync(Patient patient);
 
         Task<bool> DeactivateAsync(int id);
-        Task<bool> ActivateAsync(int id);
 
+   
+        Task<bool> ActivateAsync(int id);
 
     }
 }

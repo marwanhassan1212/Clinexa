@@ -18,7 +18,7 @@ namespace Clinexa.Configurations
             {
                 x.MedicineId,
                 x.PrescriptionId
-            });
+            }).IsUnique();
 
             builder.HasOne(pi => pi.Prescription)
            .WithMany(p => p.PrescriptionItems)

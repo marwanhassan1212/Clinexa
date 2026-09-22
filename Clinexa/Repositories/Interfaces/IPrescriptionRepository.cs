@@ -18,6 +18,11 @@ namespace Clinexa.Repositories.Interfaces
         Task<bool> ExistsForMedicalRecordAsync(
             int medicalRecordId,
             int? excludedPrescriptionId = null);
+        Task<List<MedicalRecord>> SearchMedicalRecordsAsync(string? search, int take = 10);
+        Task<(List<Prescription> Prescriptions, int TotalCount)> FilterAsync(string? search,
+        DateTime? dateFrom, DateTime? dateTo, int? medicalRecordId, string sortBy, string sortDirection,
+                       int page, int pageSize);
+        Task<List<MedicalRecord>> GetMedicalRecordsAsync();
 
         Task AddAsync(Prescription prescription);
 

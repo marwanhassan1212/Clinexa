@@ -16,6 +16,7 @@ namespace Clinexa.Repositories.Interfaces
 
         void Update(InvoiceItem invoiceItem);
 
+        void Delete(InvoiceItem invoiceItem);
         Task SaveChangesAsync();
     }
 }

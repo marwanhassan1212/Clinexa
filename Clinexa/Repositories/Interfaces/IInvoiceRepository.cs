@@ -14,6 +14,17 @@ namespace Clinexa.Repositories.Interfaces
 
         Task<bool> PatientExistsAsync(int patientId);
 
+
+        Task<(List<Invoice> Invoices, int TotalCount)> FilterAsync(
+         string? search,
+         int? patientId,
+         string? invoiceStatus,
+         DateTime? dateFrom,
+         DateTime? dateTo,
+         string sortBy,
+         string sortDirection,
+         int page,
+         int pageSize);
         Task<bool> AppointmentExistsAsync(int appointmentId);
 
         Task<bool> ExistsForAppointmentAsync(

@@ -1,0 +1,519 @@
+﻿@model Clinexa.Models.ViewModels.Invoice.InvoiceDetailsViewModel
+
+@{
+    ViewData["Title"] = "Invoice Details";
+}
+
+<div class="page-header d-print-none">
+    <div class="container-xl">
+        <div class="row align-items-center">
+
+            <div class="col">
+                <div class="page-pretitle">
+                    Billing
+                </div>
+
+                <h2 class="page-title">
+                    Invoice #@Model.Invoice.InvoiceId
+                </h2>
+            </div>
+
+            <div class="col-auto ms-auto">
+                <div class="btn-list">
+
+                    <a asp-action="Index"
+                       class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left me-1"></i>
+                        Back
+                    </a>
+
+                    <a asp-action="Edit"
+                       asp-route-id="@Model.Invoice.InvoiceId"
+                       class="btn btn-primary">
+                        <i class="bi bi-pencil me-1"></i>
+                        Edit Invoice
+                    </a>
+
+                    <button type="button"
+                            class="btn btn-outline-secondary"
+                            onclick="window.print()">
+                        <i class="bi bi-printer me-1"></i>
+                        Print
+                    </button>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<div class="page-body">
+    <div class="container-xl">
+
+        <div class="row row-cards">
+
+            <!-- Invoice Information -->
+            <div class="col-12">
+
+                <div class="card">
+
+                    <div class="card-header">
+
+                        <h3 class="card-title">
+                            Invoice Information
+                        </h3>
+
+                        <div class="card-actions">
+
+                            @switch (Model.Invoice.InvoiceStatus)
+                            {
+                                case Clinexa.Enums.InvoiceStatus.Paid:
+
+                                    <span class="badge bg-green-lt">
+                                        <i class="bi bi-check-circle me-1"></i>
+                                        Paid
+                                    </span>
+
+                                    break;
+
+                                case Clinexa.Enums.InvoiceStatus.PartiallyPaid:
+
+                                    <span class="badge bg-yellow-lt">
+                                        <i class="bi bi-clock me-1"></i>
+                                        Partially Paid
+                                    </span>
+
+                                    break;
+
+                                default:
+
+                                    <span class="badge bg-red-lt">
+                                        <i class="bi bi-exclamation-circle me-1"></i>
+                                        Unpaid
+                                    </span>
+
+                                    break;
+                            }
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="card-body">
+
+                        <div class="row g-4">
+
+                            <!-- Invoice Number -->
+                            <div class="col-md-3">
+
+                                <div class="text-secondary small mb-1">
+                                    Invoice Number
+                                </div>
+
+                                <div class="fw-bold">
+                                    #@Model.Invoice.InvoiceId
+                                </div>
+
+                            </div>
+
+
+                            <!-- Invoice Date -->
+                            <div class="col-md-3">
+
+                                <div class="text-secondary small mb-1">
+                                    Invoice Date
+                                </div>
+
+                                <div class="fw-bold">
+                                    @Model.Invoice.InvoiceDate.ToString("dd MMM yyyy")
+                                </div>
+
+                            </div>
+
+
+                            <!-- Patient -->
+                            <div class="col-md-3">
+
+                                <div class="text-secondary small mb-1">
+                                    Patient
+                                </div>
+
+                                <a asp-controller="Patient"
+                                   asp-action="Details"
+                                   asp-route-id="@Model.Invoice.PatientId"
+                                   class="text-reset text-decoration-none">
+
+                                    <div class="fw-bold">
+                                        @Model.Invoice.Patient.FirstName
+                                        @Model.Invoice.Patient.LastName
+
+                                        <i class="bi bi-box-arrow-up-right ms-1 small"></i>
+                                    </div>
+
+                                </a>
+
+                            </div>
+
+
+                            <!-- Appointment -->
+                            <div class="col-md-3">
+
+                                <div class="text-secondary small mb-1">
+                                    Appointment
+                                </div>
+
+                                <div class="fw-bold">
+                                    #@Model.Invoice.AppointmentId
+                                </div>
+
+                                <div class="text-secondary small">
+
+                                    @Model.Invoice.Appointment.AppointmentDate.ToString("dd MMM yyyy")
+
+                                    ·
+
+                                    Dr.
+                                    @Model.Invoice.Appointment.Doctor.User.FirstName
+                                    @Model.Invoice.Appointment.Doctor.User.LastName
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Invoice Items -->
+            <div class="col-lg-8">
+
+                <div class="card">
+
+                    <div class="card-header">
+
+                        <h3 class="card-title">
+                            Invoice Items
+
+                            <span class="badge bg-secondary-lt ms-2">
+                                @Model.InvoiceItems.Count
+                            </span>
+                        </h3>
+
+                        <div class="card-actions">
+
+                            <a asp-controller="InvoiceItem"
+                               asp-action="Create"
+                               asp-route-invoiceId="@Model.Invoice.InvoiceId"
+                               class="btn btn-primary btn-sm">
+
+                                <i class="bi bi-plus-lg me-1"></i>
+                                Add Item
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="table-responsive">
+
+                        @if (Model.InvoiceItems.Any())
+                        {
+                            <table class="table table-vcenter card-table">
+
+                                <thead>
+                                    <tr>
+
+                                        <th>
+                                            Description
+                                        </th>
+
+                                        <th class="text-center">
+                                            Qty
+                                        </th>
+
+                                        <th class="text-end">
+                                            Unit Price
+                                        </th>
+
+                                        <th class="text-end">
+                                            Total
+                                        </th>
+
+                                        <th class="w-1">
+                                        </th>
+
+                                    </tr>
+                                </thead>
+
+
+                                <tbody>
+
+                                    @foreach (var item in Model.InvoiceItems)
+                                    {
+                                        <tr>
+
+                                            <td>
+                                                <div class="fw-medium">
+                                                    @item.Description
+                                                </div>
+                                            </td>
+
+
+                                            <td class="text-center">
+                                                @item.Quantity
+                                            </td>
+
+
+                                            <td class="text-end">
+                                                @item.UnitPrice.ToString("N2")
+                                                <span class="text-secondary small">
+                                                    EGP
+                                                </span>
+                                            </td>
+
+
+                                            <td class="text-end">
+
+                                                <div class="fw-bold">
+                                                    @item.TotalPrice.ToString("N2")
+                                                </div>
+
+                                                <div class="text-secondary small">
+                                                    EGP
+                                                </div>
+
+                                            </td>
+
+
+                                            <td>
+
+                                                <div class="btn-list flex-nowrap">
+
+                                                    <a asp-controller="InvoiceItem"
+                                                       asp-action="Edit"
+                                                       asp-route-id="@item.InvoiceItemId"
+                                                       class="btn btn-sm btn-outline-primary"
+                                                       title="Edit">
+
+                                                        <i class="bi bi-pencil"></i>
+
+                                                    </a>
+
+
+                                                    <form asp-controller="InvoiceItem"
+                                                          asp-action="Delete"
+                                                          asp-route-id="@item.InvoiceItemId"
+                                                          method="post"
+                                                          class="d-inline">
+
+                                                        @Html.AntiForgeryToken()
+
+                                                        <button type="submit"
+                                                                class="btn btn-sm btn-outline-danger"
+                                                                title="Delete"
+                                                                onclick="return confirm('Are you sure you want to delete this item?');">
+
+                                                            <i class="bi bi-trash"></i>
+
+                                                        </button>
+
+                                                    </form>
+
+                                                </div>
+
+                                            </td>
+
+                                        </tr>
+                                    }
+
+                                </tbody>
+
+                            </table>
+                        }
+                        else
+                        {
+                            <div class="empty py-5">
+
+                                <div class="empty-icon">
+                                    <i class="bi bi-receipt fs-1"></i>
+                                </div>
+
+                                <p class="empty-title">
+                                    No invoice items yet
+                                </p>
+
+                                <p class="empty-subtitle text-secondary">
+                                    Add services, medicines, or other charges to this invoice.
+                                </p>
+
+                                <div class="empty-action">
+
+                                    <a asp-controller="InvoiceItem"
+                                       asp-action="Create"
+                                       asp-route-invoiceId="@Model.Invoice.InvoiceId"
+                                       class="btn btn-primary">
+
+                                        <i class="bi bi-plus-lg me-1"></i>
+                                        Add Item
+
+                                    </a>
+
+                                </div>
+
+                            </div>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Financial Summary -->
+            <div class="col-lg-4">
+
+                <div class="card">
+
+                    <div class="card-header">
+
+                        <h3 class="card-title">
+                            Financial Summary
+                        </h3>
+
+                    </div>
+
+
+                    <div class="card-body">
+
+                        <!-- Subtotal -->
+                        <div class="d-flex justify-content-between mb-3">
+
+                            <span class="text-secondary">
+                                Subtotal
+                            </span>
+
+                            <span class="fw-medium">
+                                @Model.Invoice.SubTotal.ToString("N2")
+                                EGP
+                            </span>
+
+                        </div>
+
+
+                        <!-- Discount -->
+                        <div class="d-flex justify-content-between mb-3">
+
+                            <span class="text-secondary">
+                                Discount
+                            </span>
+
+                            <span class="fw-medium">
+                                - @Model.Invoice.Discount.ToString("N2")
+                                EGP
+                            </span>
+
+                        </div>
+
+
+                        <!-- Tax -->
+                        <div class="d-flex justify-content-between mb-3">
+
+                            <span class="text-secondary">
+                                Tax
+                            </span>
+
+                            <span class="fw-medium">
+                                @Model.Invoice.Tax.ToString("N2")
+                                EGP
+                            </span>
+
+                        </div>
+
+
+                        <div class="hr my-3"></div>
+
+
+                        <!-- Total -->
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+
+                            <span class="fw-bold">
+                                Total
+                            </span>
+
+                            <span class="fw-bold fs-2">
+                                @Model.Invoice.TotalAmount.ToString("N2")
+                                <span class="fs-5">
+                                    EGP
+                                </span>
+                            </span>
+
+                        </div>
+
+
+                        <!-- Paid -->
+                        <div class="d-flex justify-content-between mb-3">
+
+                            <span class="text-secondary">
+                                Paid
+                            </span>
+
+                            <span class="text-success fw-medium">
+                                @Model.Invoice.PaidAmount.ToString("N2")
+                                EGP
+                            </span>
+
+                        </div>
+
+
+                        <!-- Remaining -->
+                        <div class="d-flex justify-content-between">
+
+                            <span class="text-secondary">
+                                Remaining
+                            </span>
+
+                            <span class="text-danger fw-bold">
+                                @Model.Invoice.RemainingAmount.ToString("N2")
+                                EGP
+                            </span>
+
+                        </div>
+
+                        <div class="border-top mt-3 pt-3">
+
+                            <a asp-controller="Payment"
+                               asp-action="Create"
+                               asp-route-invoiceId="@Model.Invoice.InvoiceId"
+                               class="btn btn-primary w-100">
+
+                                <i class="bi bi-cash-stack me-1"></i>
+                                Add Payment
+
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+        </div>
+
+    </div>
+
+</div>

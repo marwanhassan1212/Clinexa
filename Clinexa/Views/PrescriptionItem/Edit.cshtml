@@ -1,0 +1,191 @@
+﻿@model Clinexa.Models.ViewModels.PrescriptionItem.PrescriptionItemEditViewModel
+
+@{
+    ViewData["Title"] = "Edit Medicine";
+}
+
+@section PageActions {
+
+    <a asp-controller="Prescription"
+       asp-action="Details"
+       asp-route-id="@Model.PrescriptionId"
+       class="btn btn-outline-secondary">
+
+        <i class="bi bi-arrow-left me-1"></i>
+        Back to Prescription
+
+    </a>
+
+}
+
+<div class="row justify-content-center">
+
+    <div class="col-lg-8 col-xl-7">
+
+        <div class="card">
+
+            <div class="card-header">
+
+                <div>
+                    <h3 class="card-title mb-1">
+                        Edit Medicine
+                    </h3>
+
+                    <div class="text-secondary">
+                        Update medicine instructions and dosage.
+                    </div>
+                </div>
+
+            </div>
+
+            <form asp-action="Edit" method="post">
+
+                @Html.AntiForgeryToken()
+
+                <input asp-for="PrescriptionItemId"
+                       type="hidden" />
+
+                <input asp-for="PrescriptionId"
+                       type="hidden" />
+
+                <div class="card-body">
+
+                    <div asp-validation-summary="ModelOnly"
+                         class="text-danger mb-3">
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label asp-for="MedicineId"
+                               class="form-label">
+                            Medicine
+                        </label>
+
+                        <select asp-for="MedicineId"
+                                class="form-select">
+
+                            @foreach (var medicine in Model.Medicines)
+                            {
+                                <option value="@medicine.MedicineId">
+
+                                    @medicine.Name
+
+                                    @if (!string.IsNullOrWhiteSpace(medicine.GenericName))
+                                    {
+                                        <text> — @medicine.GenericName</text>
+                                    }
+
+                                </option>
+                            }
+
+                        </select>
+
+                        <span class="form-hint">
+                            Only active medicines are available.
+                        </span>
+
+                        <span asp-validation-for="MedicineId"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label asp-for="Dosage"
+                               class="form-label">
+                            Dosage
+                        </label>
+
+                        <input asp-for="Dosage"
+                               class="form-control" />
+
+                        <span asp-validation-for="Dosage"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label asp-for="Frequency"
+                               class="form-label">
+                            Frequency
+                        </label>
+
+                        <input asp-for="Frequency"
+                               class="form-control" />
+
+                        <span asp-validation-for="Frequency"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+                    <div class="mb-3">
+
+                        <label asp-for="Duration"
+                               class="form-label">
+                            Duration
+                        </label>
+
+                        <input asp-for="Duration"
+                               class="form-control" />
+
+                        <span asp-validation-for="Duration"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+                    <div>
+
+                        <label asp-for="Instructions"
+                               class="form-label">
+                            Instructions
+                        </label>
+
+                        <textarea asp-for="Instructions"
+                                  class="form-control"
+                                  rows="4"></textarea>
+
+                        <span asp-validation-for="Instructions"
+                              class="text-danger">
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="card-footer d-flex justify-content-end gap-2">
+
+                    <a asp-controller="Prescription"
+                       asp-action="Details"
+                       asp-route-id="@Model.PrescriptionId"
+                       class="btn btn-outline-secondary">
+
+                        Cancel
+
+                    </a>
+
+                    <button type="submit"
+                            class="btn btn-primary">
+
+                        <i class="bi bi-check-lg me-1"></i>
+                        Save Changes
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

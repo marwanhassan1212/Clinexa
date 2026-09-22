@@ -12,8 +12,12 @@ namespace Clinexa.Services.Interfaces
 
         Task<bool> CreateAsync(Medicine medicine);
 
+        Task<(List<Medicine> Medicines, int TotalCount)> FilterAsync(string? search, bool? isActive,
+                    int page, int pageSize);
         Task<bool> UpdateAsync(Medicine medicine);
 
         Task<bool> DeactivateAsync(int id);
+        Task<bool> ActivateAsync(int id);
+
     }
 }

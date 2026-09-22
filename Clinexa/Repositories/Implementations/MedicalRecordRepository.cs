@@ -41,6 +41,10 @@ namespace Clinexa.Repositories.Implementations
         {
             return await _db.MedicalRecords
                 .AsNoTracking()
+                .Include(x => x.Patient)
+                .Include(x => x.Doctor)
+                    .ThenInclude(x => x.User)
+                .Include(x => x.Appointment)
                 .OrderByDescending(x => x.MedicalRecordId)
                 .ToListAsync();
         }
@@ -59,9 +63,16 @@ namespace Clinexa.Repositories.Implementations
                 .ToListAsync();
         }
 
+
         public async Task<MedicalRecord?> GetByIdAsync(int id)
         {
-            return await _db.MedicalRecords.FirstOrDefaultAsync(x => x.MedicalRecordId == id);
+            return await _db.MedicalRecords
+                    .Include(x => x.Patient)
+                    .Include(x => x.Doctor)
+                        .ThenInclude(x => x.User)
+                    .Include(x => x.Appointment)
+                    .FirstOrDefaultAsync(
+                        x => x.MedicalRecordId == id);
         }
 
         public async Task<List<MedicalRecord>> GetByPatientIdAsync(int patientId)
@@ -87,6 +98,29 @@ namespace Clinexa.Repositories.Implementations
                 .AnyAsync(x =>
                     x.AppointmentId == appointmentId &&
                     x.DoctorId == doctorId);
+        }
+
+        public async Task<List<Appointment>> GetAvailableAppointmentsAsync()
+        {
+            return await _db.Appointments
+                .AsNoTracking()
+                .Include(x => x.Patient)
+                .Include(x => x.Doctor)
+                    .ThenInclude(x => x.User)
+                .Where(x =>
+                    x.MedicalRecord == null &&
+                    x.AppointmentDate <= DateTime.Today)
+                .OrderByDescending(x => x.AppointmentDate)
+                .ThenByDescending(x => x.StartTime)
+                .ToListAsync();
+        }
+
+        public async Task<Appointment?> GetAppointmentByIdAsync(int appointmentId)
+        {
+            return await _db.Appointments
+                .AsNoTracking()
+                .FirstOrDefaultAsync(
+                    x => x.AppointmentId == appointmentId);
         }
     }
 }

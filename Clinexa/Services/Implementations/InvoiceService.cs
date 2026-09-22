@@ -105,6 +105,29 @@ namespace Clinexa.Services.Implementations
             return true;
         }
 
+        public async Task<(List<Invoice> Invoices, int TotalCount)> FilterAsync(
+                   string? search,
+                   int? patientId,
+                   string? invoiceStatus,
+                   DateTime? dateFrom,
+                   DateTime? dateTo,
+                   string sortBy,
+                   string sortDirection,
+                   int page,
+                   int pageSize)
+        {
+            return await invoiceRepository.FilterAsync(
+                        search,
+                        patientId,
+                        invoiceStatus,
+                        dateFrom,
+                        dateTo,
+                        sortBy,
+                        sortDirection,
+                        page,
+                        pageSize);
+        }
+
         public async Task<List<Invoice>> GetAllAsync()
         {
             return await invoiceRepository.GetAllAsync();
@@ -188,19 +211,19 @@ namespace Clinexa.Services.Implementations
                 - invoice.Discount
                 + invoice.Tax;
 
-            // 7. Validate paid amount
-            if (invoice.PaidAmount < 0 ||
-                invoice.PaidAmount > invoice.TotalAmount)
+            if (existingInvoice.PaidAmount < 0 ||
+            existingInvoice.PaidAmount > invoice.TotalAmount)
             {
                 return false;
             }
 
-            // 8. Recalculate remaining amount
+            invoice.PaidAmount =
+                existingInvoice.PaidAmount;
+
             invoice.RemainingAmount =
                 invoice.TotalAmount
                 - invoice.PaidAmount;
 
-            // 9. Recalculate status
             if (invoice.PaidAmount == 0)
             {
                 invoice.InvoiceStatus =
