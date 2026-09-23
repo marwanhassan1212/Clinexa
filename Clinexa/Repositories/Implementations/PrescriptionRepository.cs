@@ -38,7 +38,20 @@ namespace Clinexa.Repositories.Implementations
         public async Task<Prescription?> GetByIdAsync(int id)
         {
             return await _db.Prescriptions
-                .FirstOrDefaultAsync(x => x.PrescriptionId == id);
+           .Include(x => x.MedicalRecord)
+               .ThenInclude(x => x.Patient)
+
+           .Include(x => x.MedicalRecord)
+               .ThenInclude(x => x.Doctor)
+                   .ThenInclude(x => x.User)
+
+           .Include(x => x.MedicalRecord)
+               .ThenInclude(x => x.Appointment)
+
+           .Include(x => x.PrescriptionItems)
+               .ThenInclude(x => x.Medicine)
+
+           .FirstOrDefaultAsync(x => x.PrescriptionId == id);
         }
 
         public async Task<Prescription?> GetByMedicalRecordIdAsync(int medicalRecordId)

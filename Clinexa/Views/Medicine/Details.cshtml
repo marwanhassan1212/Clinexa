@@ -18,11 +18,11 @@
         <i class="bi bi-pencil me-1"></i>
         Edit Medicine
     </a>
+
 }
 
 <div class="row g-4">
 
-    <!-- Medicine Overview -->
     <div class="col-lg-8">
 
         <div class="card">
@@ -42,6 +42,7 @@
                     </span>
 
                     <div>
+
                         <h2 class="mb-1">
                             @Model.Name
                         </h2>
@@ -49,6 +50,7 @@
                         <div class="text-secondary">
                             Medicine #@Model.MedicineId
                         </div>
+
                     </div>
 
                 </div>
@@ -117,16 +119,16 @@
 
     </div>
 
-
-    <!-- Status -->
     <div class="col-lg-4">
 
         <div class="card">
 
             <div class="card-header">
+
                 <h3 class="card-title">
                     Status
                 </h3>
+
             </div>
 
             <div class="card-body">
@@ -157,7 +159,7 @@
                     </div>
 
                     <div class="fw-semibold">
-                        @Model.CreatedAt.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")
+                        @Model.CreatedAt.ToLocalTime()
                     </div>
 
                 </div>
@@ -221,5 +223,4 @@
         </div>
 
     </div>
-
 </div>

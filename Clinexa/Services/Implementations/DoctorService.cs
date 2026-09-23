@@ -8,9 +8,11 @@ namespace Clinexa.Services.Implementations
     public class DoctorService : IDoctorService
     {
         private readonly IDoctorRepository doctorRepository;
-        public DoctorService(IDoctorRepository doctorRepository)
+        private readonly IDoctorScheduleRepository doctorScheduleRepository;
+        public DoctorService(IDoctorRepository doctorRepository , IDoctorScheduleRepository doctorScheduleRepository)
         {
             this.doctorRepository = doctorRepository;
+            this.doctorScheduleRepository = doctorScheduleRepository;
         }
 
         public async Task<bool> CreateAsync(Doctor doctor)
@@ -39,18 +41,23 @@ namespace Clinexa.Services.Implementations
 
         public async Task<bool> DeactivateAsync(int id)
         {
-            var doctorExists = await doctorRepository.GetByIdAsync(id);
-            if(doctorExists == null)
+            var doctor = await doctorRepository.GetByIdAsync(id);
+
+            if (doctor == null)
             {
                 return false;
             }
-            else
-            {
-                doctorExists.IsActive = false;
-                doctorRepository.UpdateAsync(doctorExists);
-                await doctorRepository.SaveChangesAsync();
-                return true;
-            }
+
+            doctor.IsActive = false;
+
+            doctorRepository.UpdateAsync(doctor);
+
+            await doctorScheduleRepository.DeactivateByDoctorIdAsync(
+                doctor.DoctorId);
+
+            await doctorRepository.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task<List<Doctor>> GetAllAsync()
@@ -100,16 +107,23 @@ namespace Clinexa.Services.Implementations
 
         public async Task<bool> ActivateAsync(int id)
         {
-            var doctorExists = await doctorRepository.GetByIdAsync(id);
-            if(doctorExists == null)
+            var doctor = await doctorRepository.GetByIdAsync(id);
+
+            if (doctor == null)
             {
                 return false;
             }
-            doctorExists.IsActive = true;
-            doctorRepository.UpdateAsync(doctorExists);
-            await doctorRepository.SaveChangesAsync();
-            return true;
 
+            doctor.IsActive = true;
+
+            doctorRepository.UpdateAsync(doctor);
+
+            await doctorScheduleRepository.ActivateByDoctorIdAsync(
+                doctor.DoctorId);
+
+            await doctorRepository.SaveChangesAsync();
+
+            return true;
         }
 
         public async Task<List<User>> GetAvailableUsersAsync()

@@ -23,9 +23,7 @@
 
     <div class="row row-cards">
 
-        <!-- ========================= -->
         <!-- Visit Information -->
-        <!-- ========================= -->
 
         <div class="col-12">
 
@@ -40,7 +38,7 @@
                         </h3>
 
                         <div class="text-secondary">
-                            Select the completed appointment for this medical record.
+                            Select the appointment for this medical record.
                         </div>
 
                     </div>
@@ -114,7 +112,8 @@
 
                     </div>
 
-                    <!-- Selected appointment preview -->
+
+                    <!-- Selected Appointment Preview -->
 
                     <div id="appointmentPreview"
                          class="mt-4 d-none">
@@ -138,6 +137,7 @@
                                     <div class="text-secondary">
 
                                         <span id="previewPatient"></span>
+
                                         <span class="mx-1">•</span>
 
                                         <span id="previewDoctor"></span>
@@ -147,6 +147,7 @@
                                     <div class="text-secondary">
 
                                         <span id="previewDate"></span>
+
                                         <span class="mx-1">•</span>
 
                                         <span id="previewTime"></span>
@@ -168,9 +169,7 @@
         </div>
 
 
-        <!-- ========================= -->
         <!-- Clinical Information -->
-        <!-- ========================= -->
 
         <div class="col-md-8">
 
@@ -204,8 +203,7 @@
                         <textarea asp-for="Symptoms"
                                   class="form-control"
                                   rows="4"
-                                  placeholder="Describe the patient's symptoms...">
-                        </textarea>
+                                  placeholder="Describe the patient's symptoms..."></textarea>
 
                         <span asp-validation-for="Symptoms"
                               class="text-danger">
@@ -224,8 +222,7 @@
                         <textarea asp-for="Diagnosis"
                                   class="form-control"
                                   rows="4"
-                                  placeholder="Enter the diagnosis...">
-                        </textarea>
+                                  placeholder="Enter the diagnosis..."></textarea>
 
                         <span asp-validation-for="Diagnosis"
                               class="text-danger">
@@ -244,8 +241,7 @@
                         <textarea asp-for="Treatment"
                                   class="form-control"
                                   rows="4"
-                                  placeholder="Describe the treatment plan...">
-                        </textarea>
+                                  placeholder="Describe the treatment plan..."></textarea>
 
                         <span asp-validation-for="Treatment"
                               class="text-danger">
@@ -264,8 +260,7 @@
                         <textarea asp-for="Notes"
                                   class="form-control"
                                   rows="4"
-                                  placeholder="Add additional clinical notes...">
-                        </textarea>
+                                  placeholder="Add additional clinical notes..."></textarea>
 
                         <span asp-validation-for="Notes"
                               class="text-danger">
@@ -280,9 +275,7 @@
         </div>
 
 
-        <!-- ========================= -->
         <!-- Follow-up -->
-        <!-- ========================= -->
 
         <div class="col-md-4">
 
@@ -300,9 +293,7 @@
 
                     <label asp-for="FollowUpDate"
                            class="form-label">
-
                         Follow-up Date
-
                     </label>
 
                     <input asp-for="FollowUpDate"
@@ -326,9 +317,7 @@
         </div>
 
 
-        <!-- ========================= -->
         <!-- Actions -->
-        <!-- ========================= -->
 
         <div class="col-12">
 
@@ -387,6 +376,9 @@
             const time =
                 document.getElementById("previewTime");
 
+            if (!select || !preview) {
+                return;
+            }
 
             function updatePreview() {
 
@@ -401,30 +393,29 @@
                 }
 
                 patient.textContent =
-                    option.dataset.patient;
+                    option.dataset.patient || "";
 
                 doctor.textContent =
-                    option.dataset.doctor;
+                    option.dataset.doctor || "";
 
                 date.textContent =
-                    option.dataset.date;
+                    option.dataset.date || "";
 
                 time.textContent =
-                    option.dataset.time;
+                    option.dataset.time || "";
 
                 preview.classList.remove("d-none");
             }
-
 
             select.addEventListener(
                 "change",
                 updatePreview
             );
 
-
             updatePreview();
 
         });
 
     </script>
+
 }

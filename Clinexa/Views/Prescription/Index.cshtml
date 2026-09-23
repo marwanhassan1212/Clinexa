@@ -4,22 +4,9 @@
     ViewData["Title"] = "Prescriptions";
 }
 
-@section PageActions {
-
-    <a asp-action="Create"
-       class="btn btn-primary">
-
-        <i class="bi bi-plus-lg me-1"></i>
-        New Prescription
-
-    </a>
-
-}
-
 <div class="card">
 
     <!-- Header -->
-
     <div class="card-header">
 
         <div>
@@ -36,7 +23,6 @@
 
 
     <!-- Filters -->
-
     <div class="card-body border-bottom">
 
         <form asp-action="Index"
@@ -45,10 +31,10 @@
             <div class="row g-2">
 
                 <!-- Search -->
-
                 <div class="col-md-4">
 
-                    <label class="form-label">
+                    <label asp-for="Search"
+                           class="form-label">
                         Search
                     </label>
 
@@ -60,7 +46,6 @@
 
 
                 <!-- Date From -->
-
                 <div class="col-md-2">
 
                     <label asp-for="DateFrom"
@@ -76,7 +61,6 @@
 
 
                 <!-- Date To -->
-
                 <div class="col-md-2">
 
                     <label asp-for="DateTo"
@@ -92,7 +76,6 @@
 
 
                 <!-- Medical Record -->
-
                 <div class="col-md-3">
 
                     <label asp-for="MedicalRecordId"
@@ -110,10 +93,7 @@
                         @foreach (var record in Model.MedicalRecords)
                         {
                             <option value="@record.MedicalRecordId">
-
-                                Medical Record
-                                #@record.MedicalRecordId
-
+                                Medical Record #@record.MedicalRecordId
                             </option>
                         }
 
@@ -122,8 +102,7 @@
                 </div>
 
 
-                <!-- Search Button -->
-
+                <!-- Search -->
                 <div class="col-md-1 d-flex align-items-end">
 
                     <button type="submit"
@@ -144,7 +123,6 @@
 
 
     <!-- Table -->
-
     <div class="table-responsive">
 
         <table class="table table-vcenter card-table">
@@ -187,7 +165,6 @@
                         <tr>
 
                             <!-- ID -->
-
                             <td>
 
                                 <span class="fw-bold">
@@ -198,40 +175,43 @@
 
 
                             <!-- Date -->
-
                             <td>
 
-                                @prescription.PrescriptionDate
-                                .ToString("dd MMM yyyy")
+                                @prescription.PrescriptionDate.ToString("dd MMM yyyy")
 
                             </td>
 
 
                             <!-- Medical Record -->
-
                             <td>
 
-                                <span class="badge bg-blue-lt">
+                                <a asp-controller="MedicalRecord"
+                                   asp-action="Details"
+                                   asp-route-id="@prescription.MedicalRecordId"
+                                   class="badge bg-blue-lt text-decoration-none">
 
                                     Medical Record
                                     #@prescription.MedicalRecordId
 
-                                </span>
+                                </a>
 
                             </td>
 
 
                             <!-- Notes -->
-
                             <td>
 
-                                @if (!string.IsNullOrWhiteSpace(
-                                                        prescription.Notes))
+                                @if (!string.IsNullOrWhiteSpace(prescription.Notes))
                                 {
-                                    @(prescription.Notes.Length > 60
-                                                            ? prescription.Notes.Substring(0, 60) + "..."
-                                                            : prescription.Notes)
-                                                }
+                                    if (prescription.Notes.Length > 60)
+                                    {
+                                        @($"{prescription.Notes.Substring(0, 60)}...")
+                                    }
+                                    else
+                                    {
+                                        @prescription.Notes
+                                    }
+                                }
                                 else
                                 {
                                     <span class="text-secondary">
@@ -243,9 +223,10 @@
 
 
                             <!-- Actions -->
-
                             <td>
-                                <div class="btn-list flex-nowrap" style="margin-left: 20px;">
+
+                                <div class="btn-list flex-nowrap"
+                                     style="margin-left: 20px;">
 
                                     <a asp-controller="Prescription"
                                        asp-action="Details"
@@ -268,6 +249,7 @@
                                     </a>
 
                                 </div>
+
                             </td>
 
                         </tr>
@@ -275,8 +257,6 @@
                 }
                 else
                 {
-                    <!-- Empty State -->
-
                     <tr>
 
                         <td colspan="5">
@@ -294,20 +274,8 @@
                                 </p>
 
                                 <p class="empty-subtitle text-secondary">
-                                    Try adjusting your filters or create a new prescription.
+                                    No prescriptions match the current filters.
                                 </p>
-
-                                <div class="empty-action">
-
-                                    <a asp-action="Create"
-                                       class="btn btn-primary">
-
-                                        <i class="bi bi-plus-lg me-1"></i>
-                                        Create Prescription
-
-                                    </a>
-
-                                </div>
 
                             </div>
 
@@ -355,7 +323,6 @@
 
 
                 <!-- Current Page -->
-
                 <li class="page-item active">
 
                     <span class="page-link">

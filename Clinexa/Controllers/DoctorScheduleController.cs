@@ -1,5 +1,6 @@
 ﻿using Clinexa.Models.Entities;
 using Clinexa.Models.ViewModels.DoctorSchedule;
+using Clinexa.Repositories.Implementations;
 using Clinexa.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -16,8 +17,19 @@ namespace Clinexa.Controllers
             this.doctorScheduleService = doctorScheduleService;
             this.doctorService = doctorService;
         }
-        public async Task<IActionResult> Index(DoctorScheduleFilterViewModel model)
+        public async Task<IActionResult> Index(
+     DoctorScheduleFilterViewModel model)
         {
+            if (model.Page < 1)
+            {
+                model.Page = 1;
+            }
+
+            if (model.PageSize <= 0)
+            {
+                model.PageSize = 10;
+            }
+
             var result = await doctorScheduleService.FilterAsync(
                 model.Search,
                 model.DoctorId,
@@ -42,7 +54,7 @@ namespace Clinexa.Controllers
             {
                 return NotFound();
             }
-            await doctorService.GetByIdAsync(id);
+
             return View(schedule);
         }
 
@@ -170,10 +182,14 @@ namespace Clinexa.Controllers
 
             if (!result)
             {
-                return NotFound();
+                TempData["Error"] =
+                    "Unable to activate schedule. The doctor may be inactive or the schedule may overlap with another schedule.";
+
+                return RedirectToAction(nameof(Index));
             }
 
-            TempData["Success"] = "Doctor schedule activated successfully.";
+            TempData["Success"] =
+                "Doctor schedule activated successfully.";
 
             return RedirectToAction(nameof(Index));
         }

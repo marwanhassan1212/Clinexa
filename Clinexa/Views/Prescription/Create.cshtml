@@ -5,13 +5,17 @@
 }
 
 @section PageActions {
-    <a asp-action="Index"
+
+    <a asp-controller="MedicalRecord"
+       asp-action="Details"
+       asp-route-id="@Model.MedicalRecordId"
        class="btn btn-outline-secondary">
 
         <i class="bi bi-arrow-left me-1"></i>
-        Back to Prescriptions
+        Back to Medical Record
 
     </a>
+
 }
 
 <div class="row justify-content-center">
@@ -20,6 +24,7 @@
 
         <div class="card">
 
+            <!-- Header -->
             <div class="card-header">
 
                 <div>
@@ -29,18 +34,24 @@
                     </h3>
 
                     <div class="text-secondary">
-                        Create a prescription for a patient's medical record.
+                        Create a prescription for this medical record.
                     </div>
 
                 </div>
 
             </div>
 
+
             <form asp-action="Create"
                   method="post">
 
                 @Html.AntiForgeryToken()
 
+                <input asp-for="MedicalRecordId"
+                       type="hidden" />
+
+
+                <!-- Body -->
                 <div class="card-body">
 
                     <div asp-validation-summary="ModelOnly"
@@ -48,85 +59,40 @@
                     </div>
 
 
-                    <!-- Medical Record -->
-
-                    <div class="mb-3">
+                    <!-- Medical Record Context -->
+                    <div class="mb-4">
 
                         <label class="form-label">
                             Medical Record
                         </label>
 
-                        <input asp-for="MedicalRecordId"
-                               type="hidden"
-                               id="MedicalRecordId" />
-
-                        <div class="input-group">
-
-                            <span class="input-group-text">
-                                <i class="bi bi-search"></i>
-                            </span>
-
-                            <input type="text"
-                                   id="medicalRecordSearch"
-                                   class="form-control"
-                                   placeholder="Search patient, doctor or record..."
-                                   autocomplete="off" />
-
-                        </div>
-
-
-                        <!-- Search Results -->
-
-                        <div id="medicalRecordResults"
-                             class="list-group mt-2">
-                        </div>
-
-
-                        <!-- Selected Medical Record -->
-
-                        <div id="selectedMedicalRecord"
-                             class="alert alert-success mt-2 d-none">
+                        <div class="alert alert-info mb-0">
 
                             <div class="d-flex align-items-center">
 
-                                <i class="bi bi-check-circle me-2"></i>
+                                <i class="bi bi-file-medical fs-2 me-3"></i>
 
                                 <div>
-                                    <strong>
-                                        Selected Medical Record
-                                    </strong>
 
-                                    <div id="selectedMedicalRecordText"
-                                         class="small">
+                                    <div class="fw-bold">
+                                        Medical Record #@Model.MedicalRecordId
                                     </div>
+
+                                    <div class="text-secondary small">
+                                        This prescription will be permanently associated
+                                        with this medical record.
+                                    </div>
+
                                 </div>
-
-                                <button type="button"
-                                        id="clearMedicalRecord"
-                                        class="btn btn-sm btn-outline-danger ms-auto">
-
-                                    <i class="bi bi-x"></i>
-
-                                </button>
 
                             </div>
 
                         </div>
 
-
-                        <span class="form-hint">
-                            Search by patient name, doctor name, or medical record ID.
-                        </span>
-
-                        <span asp-validation-for="MedicalRecordId"
-                              class="text-danger">
-                        </span>
-
                     </div>
 
 
                     <!-- Prescription Date -->
-
                     <div class="mb-3">
 
                         <label asp-for="PrescriptionDate"
@@ -149,7 +115,6 @@
 
 
                     <!-- Notes -->
-
                     <div class="mb-0">
 
                         <label asp-for="Notes"
@@ -174,10 +139,11 @@
 
 
                 <!-- Footer -->
-
                 <div class="card-footer d-flex justify-content-end gap-2">
 
-                    <a asp-action="Index"
+                    <a asp-controller="MedicalRecord"
+                       asp-action="Details"
+                       asp-route-id="@Model.MedicalRecordId"
                        class="btn btn-outline-secondary">
 
                         Cancel
@@ -203,161 +169,8 @@
 
 </div>
 
-
 @section Scripts {
 
     <partial name="_ValidationScriptsPartial" />
 
-
-    <script>
-
-        const searchInput =
-            document.getElementById("medicalRecordSearch");
-
-        const resultsContainer =
-            document.getElementById("medicalRecordResults");
-
-        const medicalRecordId =
-            document.getElementById("MedicalRecordId");
-
-        const selectedContainer =
-            document.getElementById("selectedMedicalRecord");
-
-        const selectedText =
-            document.getElementById("selectedMedicalRecordText");
-
-        const clearButton =
-            document.getElementById("clearMedicalRecord");
-
-
-        let searchTimeout;
-
-
-        searchInput.addEventListener("input", function () {
-
-            const search = this.value.trim();
-
-            clearTimeout(searchTimeout);
-
-            resultsContainer.innerHTML = "";
-
-
-            if (search.length < 2) {
-
-                return;
-
-            }
-
-
-            searchTimeout = setTimeout(async function () {
-
-                try {
-
-                    const response =
-                        await fetch(
-                            '@Url.Action("SearchMedicalRecords", "Prescription")?search='
-                            + encodeURIComponent(search)
-                        );
-
-
-                    if (!response.ok) {
-
-                        throw new Error(
-                            "Failed to search medical records."
-                        );
-
-                    }
-
-
-                    const records =
-                        await response.json();
-
-
-                    resultsContainer.innerHTML = "";
-
-
-                    if (records.length === 0) {
-
-                        resultsContainer.innerHTML = `
-                            <div class="list-group-item text-secondary">
-                                No medical records found.
-                            </div>
-                        `;
-
-                        return;
-
-                    }
-
-
-                    records.forEach(function (record) {
-
-                        const item =
-                            document.createElement("button");
-
-                        item.type = "button";
-
-                        item.className =
-                            "list-group-item list-group-item-action";
-
-
-                        item.textContent =
-                            record.text;
-
-
-                        item.addEventListener("click", function () {
-
-                            medicalRecordId.value =
-                                record.id;
-
-                            searchInput.value =
-                                "";
-
-                            resultsContainer.innerHTML =
-                                "";
-
-                            selectedText.textContent =
-                                record.text;
-
-                            selectedContainer.classList.remove(
-                                "d-none"
-                            );
-
-                        });
-
-
-                        resultsContainer.appendChild(item);
-
-                    });
-
-                }
-                catch (error) {
-
-                    console.error(error);
-
-                    resultsContainer.innerHTML = `
-                        <div class="list-group-item text-danger">
-                            Unable to search medical records.
-                        </div>
-                    `;
-
-                }
-
-            }, 300);
-
-        });
-
-
-        clearButton.addEventListener("click", function () {
-
-            medicalRecordId.value = "";
-
-            selectedText.textContent = "";
-
-            selectedContainer.classList.add("d-none");
-
-            searchInput.focus();
-
-        });
-
-    </script>
 }

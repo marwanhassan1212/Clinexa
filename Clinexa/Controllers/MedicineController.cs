@@ -2,30 +2,38 @@
 using Clinexa.Models.ViewModels.Medicine;
 using Clinexa.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 
 namespace Clinexa.Controllers
 {
     public class MedicineController : Controller
     {
         private readonly IMedicineService medicineService;
+
         public MedicineController(IMedicineService medicineService)
         {
             this.medicineService = medicineService;
         }
+
         // GET: Medicine
-        public async Task<IActionResult> Index(MedicineFilterViewModel model)
+        public async Task<IActionResult> Index(
+            MedicineFilterViewModel model)
         {
             if (model.Page < 1)
             {
                 model.Page = 1;
             }
 
-            var result = await medicineService.FilterAsync(
-                model.Search,
-                model.IsActive,
-                model.Page,
-                model.PageSize);
+            if (model.PageSize <= 0)
+            {
+                model.PageSize = 10;
+            }
+
+            var result =
+                await medicineService.FilterAsync(
+                    model.Search,
+                    model.IsActive,
+                    model.Page,
+                    model.PageSize);
 
             model.Medicines = result.Medicines;
             model.TotalCount = result.TotalCount;
@@ -48,6 +56,7 @@ namespace Clinexa.Controllers
         }
 
         // GET: Medicine/Create
+        [HttpGet]
         public IActionResult Create()
         {
             return View();
@@ -79,8 +88,7 @@ namespace Clinexa.Controllers
             {
                 ModelState.AddModelError(
                     "",
-                    "Unable to create medicine. A medicine with the same name may already exist."
-                );
+                    "Unable to create medicine. A medicine with the same name may already exist.");
 
                 return View(model);
             }
@@ -92,6 +100,7 @@ namespace Clinexa.Controllers
         }
 
         // GET: Medicine/Edit/5
+        [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
             var medicine =
@@ -105,23 +114,16 @@ namespace Clinexa.Controllers
 
             var model = new MedicineEditViewModel
             {
-                MedicineId =
-                    medicine.MedicineId,
-
-                Name =
-                    medicine.Name,
-
-                GenericName =
-                    medicine.GenericName,
-
-                Description =
-                    medicine.Description
+                MedicineId = medicine.MedicineId,
+                Name = medicine.Name,
+                GenericName = medicine.GenericName,
+                Description = medicine.Description
             };
 
             return View(model);
         }
 
-      
+        // POST: Medicine/Edit
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
@@ -134,22 +136,18 @@ namespace Clinexa.Controllers
 
             var medicine =
                 await medicineService
-                    .GetByIdAsync(
-                        model.MedicineId);
+                    .GetByIdAsync(model.MedicineId);
 
             if (medicine == null)
             {
                 return NotFound();
             }
 
-            medicine.Name =
-                model.Name;
-
-            medicine.GenericName =
-                model.GenericName;
-
-            medicine.Description =
-                model.Description;
+            // Edit only medicine information.
+            // IsActive is controlled by Activate/Deactivate.
+            medicine.Name = model.Name;
+            medicine.GenericName = model.GenericName;
+            medicine.Description = model.Description;
 
             var result =
                 await medicineService
@@ -159,8 +157,7 @@ namespace Clinexa.Controllers
             {
                 ModelState.AddModelError(
                     "",
-                    "Unable to update medicine. A medicine with the same name may already exist."
-                );
+                    "Unable to update medicine. A medicine with the same name may already exist.");
 
                 return View(model);
             }
@@ -171,9 +168,10 @@ namespace Clinexa.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // POST: Medicine/Deactivate
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeActivate(int id)
+        public async Task<IActionResult> Deactivate(int id)
         {
             var result =
                 await medicineService
@@ -190,11 +188,14 @@ namespace Clinexa.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        // POST: Medicine/Activate
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Activate(int id)
         {
-            var result = await medicineService.ActivateAsync(id);
+            var result =
+                await medicineService
+                    .ActivateAsync(id);
 
             if (!result)
             {
@@ -206,6 +207,5 @@ namespace Clinexa.Controllers
 
             return RedirectToAction(nameof(Index));
         }
-
     }
 }

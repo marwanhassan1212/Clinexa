@@ -8,7 +8,7 @@ namespace Clinexa.Services.Implementations
     {
         private readonly IPrescriptionItemRepository prescriptionItemRepository;
  
-        public PrescriptionItemService(IPrescriptionItemRepository prescriptionItemRepository , IMedicineRepository medicineRepository)
+        public PrescriptionItemService(IPrescriptionItemRepository prescriptionItemRepository)
         {
             this.prescriptionItemRepository = prescriptionItemRepository;
         }

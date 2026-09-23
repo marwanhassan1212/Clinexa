@@ -11,6 +11,7 @@ namespace Clinexa.Repositories.Interfaces
         Task<MedicalRecord?> GetByAppointmentIdAsync(int appointmentId);
 
         Task<List<MedicalRecord>> GetByDoctorIdAsync(int doctorId);
+        Task<bool> IsPatientAssignedToAppointmentAsync(int appointmentId, int patientId);
 
         Task<List<MedicalRecord>> GetByPatientIdAsync(int patientId);
 

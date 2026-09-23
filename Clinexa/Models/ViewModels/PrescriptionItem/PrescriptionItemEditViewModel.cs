@@ -8,9 +8,6 @@ namespace Clinexa.Models.ViewModels.PrescriptionItem
         public int PrescriptionItemId { get; set; }
 
         [Required]
-        public int PrescriptionId { get; set; }
-
-        [Required]
         public int MedicineId { get; set; }
 
         [Required]

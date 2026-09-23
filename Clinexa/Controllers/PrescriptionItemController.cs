@@ -7,30 +7,36 @@ namespace Clinexa.Controllers
 {
     public class PrescriptionItemController : Controller
     {
-        private async Task LoadMedicinesAsync(PrescriptionItemCreateViewModel model)
+        private readonly IPrescriptionItemService prescriptionItemService;
+        private readonly IMedicineService medicineService;
+
+        public PrescriptionItemController(
+            IPrescriptionItemService prescriptionItemService,
+            IMedicineService medicineService)
+        {
+            this.prescriptionItemService = prescriptionItemService;
+            this.medicineService = medicineService;
+        }
+
+        private async Task LoadMedicinesAsync(
+            PrescriptionItemCreateViewModel model)
         {
             model.Medicines =
                 await medicineService.GetActiveAsync();
         }
 
-        private readonly IPrescriptionItemService
-               prescriptionItemService;
-
-        private readonly IMedicineService medicineService;
-
-        public PrescriptionItemController(
-            IPrescriptionItemService prescriptionItemService , IMedicineService medicineService)
+        private async Task LoadMedicinesAsync(
+            PrescriptionItemEditViewModel model)
         {
-            this.prescriptionItemService = prescriptionItemService;
-            this.medicineService = medicineService;
+            model.Medicines =
+                await medicineService.GetActiveAsync();
         }
 
         // GET: PrescriptionItem
         public async Task<IActionResult> Index()
         {
             var prescriptionItems =
-                await prescriptionItemService
-                    .GetAllAsync();
+                await prescriptionItemService.GetAllAsync();
 
             return View(prescriptionItems);
         }
@@ -39,25 +45,24 @@ namespace Clinexa.Controllers
         public async Task<IActionResult> Details(int id)
         {
             var prescriptionItem =
-                await prescriptionItemService
-                    .GetByIdAsync(id);
+                await prescriptionItemService.GetByIdAsync(id);
 
             if (prescriptionItem == null)
-            {
                 return NotFound();
-            }
 
             return View(prescriptionItem);
         }
 
-        // GET: PrescriptionItem/Create
+        // GET: PrescriptionItem/Create?prescriptionId=5
+        [HttpGet]
         public async Task<IActionResult> Create(int prescriptionId)
         {
             var model = new PrescriptionItemCreateViewModel
             {
-                PrescriptionId = prescriptionId,
-                Medicines = await medicineService.GetActiveAsync()
+                PrescriptionId = prescriptionId
             };
+
+            await LoadMedicinesAsync(model);
 
             return View(model);
         }
@@ -92,8 +97,8 @@ namespace Clinexa.Controllers
             {
                 ModelState.AddModelError(
                     "",
-                    "Unable to create prescription item. Please check the prescription or medicine."
-                );
+                    "Unable to create prescription item. Please check the prescription or medicine.");
+
                 await LoadMedicinesAsync(model);
                 return View(model);
             }
@@ -102,30 +107,25 @@ namespace Clinexa.Controllers
                 "Prescription item created successfully.";
 
             return RedirectToAction(
-                    "Details",
-                    "Prescription",
-                    new { id = model.PrescriptionId });
+                "Details",
+                "Prescription",
+                new { id = prescriptionItem.PrescriptionId });
         }
 
         // GET: PrescriptionItem/Edit/5
+        [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
             var prescriptionItem =
-        await prescriptionItemService
-            .GetByIdAsync(id);
+                await prescriptionItemService.GetByIdAsync(id);
 
             if (prescriptionItem == null)
-            {
                 return NotFound();
-            }
 
             var model = new PrescriptionItemEditViewModel
             {
                 PrescriptionItemId =
                     prescriptionItem.PrescriptionItemId,
-
-                PrescriptionId =
-                    prescriptionItem.PrescriptionId,
 
                 MedicineId =
                     prescriptionItem.MedicineId,
@@ -140,11 +140,10 @@ namespace Clinexa.Controllers
                     prescriptionItem.Duration,
 
                 Instructions =
-                    prescriptionItem.Instructions,
-
-                Medicines =
-                    await medicineService.GetActiveAsync()
+                    prescriptionItem.Instructions
             };
+
+            await LoadMedicinesAsync(model);
 
             return View(model);
         }
@@ -153,13 +152,11 @@ namespace Clinexa.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
-    PrescriptionItemEditViewModel model)
+            PrescriptionItemEditViewModel model)
         {
             if (!ModelState.IsValid)
             {
-                model.Medicines =
-                    await medicineService.GetActiveAsync();
-
+                await LoadMedicinesAsync(model);
                 return View(model);
             }
 
@@ -168,10 +165,11 @@ namespace Clinexa.Controllers
                     .GetByIdAsync(model.PrescriptionItemId);
 
             if (prescriptionItem == null)
-            {
                 return NotFound();
-            }
 
+            // PrescriptionId is intentionally NOT taken
+            // from the ViewModel.
+            // The item must remain inside its original Prescription.
             prescriptionItem.MedicineId =
                 model.MedicineId;
 
@@ -195,12 +193,9 @@ namespace Clinexa.Controllers
             {
                 ModelState.AddModelError(
                     "",
-                    "Unable to update prescription item. Please check the prescription or medicine."
-                );
+                    "Unable to update prescription item. Please check the prescription or medicine.");
 
-                model.Medicines =
-                    await medicineService.GetActiveAsync();
-
+                await LoadMedicinesAsync(model);
                 return View(model);
             }
 
@@ -210,7 +205,7 @@ namespace Clinexa.Controllers
             return RedirectToAction(
                 "Details",
                 "Prescription",
-                new { id = model.PrescriptionId });
+                new { id = prescriptionItem.PrescriptionId });
         }
     }
 }

@@ -5,29 +5,41 @@
 }
 
 <div class="page-header d-print-none mb-3">
+
     <div class="row align-items-center">
 
         <div class="col">
+
             <div class="page-pretitle">
                 Doctor Schedules
             </div>
 
             <h2 class="page-title">
+
                 <i class="bi bi-pencil-square me-2"></i>
                 Edit Schedule
+
             </h2>
+
         </div>
 
+
         <div class="col-auto ms-auto">
+
             <a asp-action="Index"
                class="btn btn-outline-secondary">
+
                 <i class="bi bi-arrow-left me-1"></i>
                 Back
+
             </a>
+
         </div>
 
     </div>
+
 </div>
+
 
 <div class="row row-cards">
 
@@ -36,16 +48,22 @@
         <div class="card">
 
             <div class="card-header">
+
                 <h3 class="card-title">
                     Schedule Information
                 </h3>
+
             </div>
 
-            <form asp-action="Edit" method="post">
+
+            <form asp-action="Edit"
+                  method="post">
 
                 @Html.AntiForgeryToken()
 
-                <input asp-for="DoctorScheduleId" type="hidden" />
+                <input asp-for="DoctorScheduleId"
+                       type="hidden" />
+
 
                 <div class="card-body">
 
@@ -53,22 +71,36 @@
                          class="text-danger mb-3">
                     </div>
 
+
+                    <!-- Doctor -->
+
                     <div class="mb-3">
 
-                        <label asp-for="DoctorId" class="form-label">
+                        <label asp-for="DoctorId"
+                               class="form-label">
+
                             Doctor
+
                         </label>
 
                         <select asp-for="DoctorId"
-                                class="form-select">
+                                class="form-select"
+                                required>
 
-                            <option value="">Select Doctor</option>
+                            <option value="">
+                                Select Doctor
+                            </option>
 
                             @foreach (var doctor in ViewBag.Doctors)
                             {
                                 <option value="@doctor.DoctorId">
-                                    Dr. @doctor.User.FirstName @doctor.User.LastName
-                                    — @doctor.Speciality.Name
+
+                                    Dr.
+                                    @doctor.User.FirstName
+                                    @doctor.User.LastName
+                                    —
+                                    @doctor.Speciality.Name
+
                                 </option>
                             }
 
@@ -80,23 +112,49 @@
 
                     </div>
 
+
+                    <!-- Day -->
+
                     <div class="mb-3">
 
                         <label asp-for="DayOfWeek"
                                class="form-label">
+
                             Day
+
                         </label>
 
                         <select asp-for="DayOfWeek"
-                                class="form-select">
+                                class="form-select"
+                                required>
 
-                            <option value="Saturday">Saturday</option>
-                            <option value="Sunday">Sunday</option>
-                            <option value="Monday">Monday</option>
-                            <option value="Tuesday">Tuesday</option>
-                            <option value="Wednesday">Wednesday</option>
-                            <option value="Thursday">Thursday</option>
-                            <option value="Friday">Friday</option>
+                            <option value="Saturday">
+                                Saturday
+                            </option>
+
+                            <option value="Sunday">
+                                Sunday
+                            </option>
+
+                            <option value="Monday">
+                                Monday
+                            </option>
+
+                            <option value="Tuesday">
+                                Tuesday
+                            </option>
+
+                            <option value="Wednesday">
+                                Wednesday
+                            </option>
+
+                            <option value="Thursday">
+                                Thursday
+                            </option>
+
+                            <option value="Friday">
+                                Friday
+                            </option>
 
                         </select>
 
@@ -106,18 +164,24 @@
 
                     </div>
 
+
+                    <!-- Time -->
+
                     <div class="row">
 
                         <div class="col-md-6 mb-3">
 
                             <label asp-for="StartTime"
                                    class="form-label">
+
                                 Start Time
+
                             </label>
 
                             <input asp-for="StartTime"
                                    type="time"
-                                   class="form-control" />
+                                   class="form-control"
+                                   required />
 
                             <span asp-validation-for="StartTime"
                                   class="text-danger">
@@ -125,16 +189,20 @@
 
                         </div>
 
+
                         <div class="col-md-6 mb-3">
 
                             <label asp-for="EndTime"
                                    class="form-label">
+
                                 End Time
+
                             </label>
 
                             <input asp-for="EndTime"
                                    type="time"
-                                   class="form-control" />
+                                   class="form-control"
+                                   required />
 
                             <span asp-validation-for="EndTime"
                                   class="text-danger">
@@ -146,17 +214,22 @@
 
                 </div>
 
+
                 <div class="card-footer d-flex justify-content-end gap-2">
 
                     <a asp-action="Index"
                        class="btn btn-outline-secondary">
+
                         Cancel
+
                     </a>
 
                     <button type="submit"
                             class="btn btn-primary">
+
                         <i class="bi bi-check-lg me-1"></i>
                         Save Changes
+
                     </button>
 
                 </div>
@@ -167,51 +240,78 @@
 
     </div>
 
+
+    <!-- Rules -->
+
     <div class="col-lg-4">
 
         <div class="card">
 
             <div class="card-header">
+
                 <h3 class="card-title">
                     Schedule Rules
                 </h3>
+
             </div>
 
+
             <div class="card-body">
+
+                <!-- Working Hours -->
 
                 <div class="d-flex mb-3">
 
                     <div class="me-3">
+
                         <span class="avatar bg-blue-lt">
+
                             <i class="bi bi-clock"></i>
+
                         </span>
+
                     </div>
 
                     <div>
-                        <strong>Working Hours</strong>
+
+                        <strong>
+                            Working Hours
+                        </strong>
 
                         <div class="text-secondary">
                             End time must be later than start time.
                         </div>
+
                     </div>
 
                 </div>
 
+
+                <!-- Overlap -->
+
                 <div class="d-flex">
 
                     <div class="me-3">
+
                         <span class="avatar bg-yellow-lt">
+
                             <i class="bi bi-exclamation-circle"></i>
+
                         </span>
+
                     </div>
 
                     <div>
-                        <strong>Duplicate Schedule</strong>
+
+                        <strong>
+                            Schedule Conflicts
+                        </strong>
 
                         <div class="text-secondary">
-                            A doctor cannot have another schedule
-                            starting at the same time on the same day.
+                            A doctor cannot have overlapping schedules
+                            on the same day.
                         </div>
+
                     </div>
 
                 </div>
@@ -224,6 +324,9 @@
 
 </div>
 
+
 @section Scripts {
+
     <partial name="_ValidationScriptsPartial" />
+
 }

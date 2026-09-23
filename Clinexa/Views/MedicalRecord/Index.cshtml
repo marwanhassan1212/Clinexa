@@ -21,6 +21,7 @@
     <div class="card-header">
 
         <div>
+
             <h3 class="card-title mb-1">
                 Medical Records
             </h3>
@@ -28,6 +29,7 @@
             <div class="text-secondary">
                 Manage patient clinical records and medical history.
             </div>
+
         </div>
 
     </div>
@@ -47,7 +49,8 @@
                     <input type="text"
                            id="medicalRecordSearch"
                            class="form-control"
-                           placeholder="Search by patient, doctor, or record ID..." />
+                           autocomplete="off"
+                           placeholder="Search by patient, doctor, appointment, or record ID..." />
 
                 </div>
 
@@ -67,7 +70,7 @@
                                         .Select(x => new
                                         {
                                             Id = x.DoctorId,
-                                            Name = $"{x.Doctor.User.FirstName} {x.Doctor.User.LastName}"
+                                            Name = $"Dr. {x.Doctor.User.FirstName} {x.Doctor.User.LastName}"
                                         })
                                         .DistinctBy(x => x.Id)
                                         .OrderBy(x => x.Name))
@@ -149,14 +152,19 @@
                 {
                     foreach (var record in Model)
                     {
+                        var patientName =
+                        record.Patient != null
+                        ? $"{record.Patient.FirstName} {record.Patient.LastName}"
+                        : "Unknown patient";
+
+                        var doctorName =
+                        record.Doctor?.User != null
+                        ? $"Dr. {record.Doctor.User.FirstName} {record.Doctor.User.LastName}"
+                        : "Unknown doctor";
+
                         <tr class="medical-record-row"
                             data-doctor="@record.DoctorId"
-                            data-search="
-                                        @record.MedicalRecordId
-                                        @record.Patient?.FirstName
-                                        @record.Patient?.LastName
-                                        @record.Doctor?.User?.FirstName
-                                        @record.Doctor?.User?.LastName">
+                            data-search="@($"{record.MedicalRecordId} {record.PatientId} {patientName} {doctorName} {record.AppointmentId}")">
 
                             <td>
 
@@ -170,10 +178,21 @@
 
                                 @if (record.Patient != null)
                                 {
-                                    <div class="fw-semibold">
-                                        @record.Patient.FirstName
-                                        @record.Patient.LastName
-                                    </div>
+                                    <a asp-controller="Patient"
+                                       asp-action="Details"
+                                       asp-route-id="@record.PatientId"
+                                       class="text-reset text-decoration-none">
+
+                                        <div class="fw-semibold">
+                                            @record.Patient.FirstName
+                                            @record.Patient.LastName
+                                        </div>
+
+                                        <div class="text-secondary small">
+                                            Patient #@record.PatientId
+                                        </div>
+
+                                    </a>
                                 }
                                 else
                                 {
@@ -188,11 +207,22 @@
 
                                 @if (record.Doctor?.User != null)
                                 {
-                                    <div class="fw-semibold">
-                                        Dr.
-                                        @record.Doctor.User.FirstName
-                                        @record.Doctor.User.LastName
-                                    </div>
+                                    <a asp-controller="Doctor"
+                                       asp-action="Details"
+                                       asp-route-id="@record.DoctorId"
+                                       class="text-reset text-decoration-none">
+
+                                        <div class="fw-semibold">
+                                            Dr.
+                                            @record.Doctor.User.FirstName
+                                            @record.Doctor.User.LastName
+                                        </div>
+
+                                        <div class="text-secondary small">
+                                            Doctor #@record.DoctorId
+                                        </div>
+
+                                    </a>
                                 }
                                 else
                                 {
@@ -204,22 +234,26 @@
                             </td>
 
                             <td>
+
                                 @if (record.Appointment != null)
                                 {
-                                    <div>
-                                        <strong>
-                                            @record.Appointment.AppointmentDate.ToString("dd MMM yyyy")
-                                        </strong>
+                                    <div class="fw-semibold">
+                                        #@record.AppointmentId
+                                    </div>
 
-                                        <div class="text-secondary small">
-                                            @record.Appointment.StartTime.ToString(@"hh\:mm")
-                                        </div>
+                                    <div class="text-secondary small">
+                                        @record.Appointment.AppointmentDate.ToString("dd MMM yyyy")
+                                        ·
+                                        @record.Appointment.StartTime.ToString(@"hh\:mm")
                                     </div>
                                 }
                                 else
                                 {
-                                    <span class="text-secondary">—</span>
+                                    <span class="text-secondary">
+                                        —
+                                    </span>
                                 }
+
                             </td>
 
                             <td>
@@ -236,8 +270,7 @@
                                 {
                                     <span class="badge bg-yellow-lt">
 
-                                        @record.FollowUpDate.Value
-                                        
+                                        @record.FollowUpDate.Value.ToString("dd MMM yyyy")
 
                                     </span>
                                 }
@@ -251,7 +284,9 @@
                             </td>
 
                             <td>
-                                <div class="btn-list flex-nowrap" style="margin-left: 20px;">
+
+                                <div class="btn-list flex-nowrap"
+                                     style="margin-left: 20px;">
 
                                     <a asp-controller="MedicalRecord"
                                        asp-action="Details"
@@ -274,6 +309,7 @@
                                     </a>
 
                                 </div>
+
                             </td>
 
                         </tr>
@@ -298,7 +334,7 @@
                                 </p>
 
                                 <p class="empty-subtitle text-secondary">
-                                    Create a medical record after completing a patient appointment.
+                                    Medical records are created from completed or eligible appointments.
                                 </p>
 
                                 <div class="empty-action">
@@ -353,6 +389,14 @@
             const tbody =
                 table.querySelector("tbody");
 
+            function getRows() {
+
+                return Array.from(
+                    tbody.querySelectorAll(".medical-record-row")
+                );
+
+            }
+
             function filterRecords() {
 
                 const search =
@@ -363,21 +407,14 @@
                 const doctor =
                     doctorFilter.value;
 
-                const rows =
-                    Array.from(
-                        tbody.querySelectorAll(
-                            ".medical-record-row"
-                        )
-                    );
-
-                rows.forEach(row => {
+                getRows().forEach(row => {
 
                     const rowSearch =
-                        row.dataset.search
+                        (row.dataset.search || "")
                             .toLowerCase();
 
                     const rowDoctor =
-                        row.dataset.doctor;
+                        row.dataset.doctor || "";
 
                     const matchesSearch =
                         !search ||
@@ -396,6 +433,42 @@
 
             }
 
+            function sortRecordsTable() {
+
+                const rows = getRows();
+
+                rows.sort(function (a, b) {
+
+                    const idA =
+                        parseInt(
+                            a.querySelector("td:first-child")
+                                .innerText
+                                .replace("#", "")
+                                .trim()
+                        );
+
+                    const idB =
+                        parseInt(
+                            b.querySelector("td:first-child")
+                                .innerText
+                                .replace("#", "")
+                                .trim()
+                        );
+
+                    return sortRecords.value === "newest"
+                        ? idB - idA
+                        : idA - idB;
+
+                });
+
+                rows.forEach(row => {
+                    tbody.appendChild(row);
+                });
+
+                filterRecords();
+
+            }
+
             searchInput.addEventListener(
                 "input",
                 filterRecords
@@ -408,46 +481,13 @@
 
             sortRecords.addEventListener(
                 "change",
-                function () {
+                sortRecordsTable
+            );
 
-                    const rows =
-                        Array.from(
-                            tbody.querySelectorAll(
-                                ".medical-record-row"
-                            )
-                        );
-
-                    rows.sort(function (a, b) {
-
-                        const idA =
-                            parseInt(
-                                a.querySelector("td:first-child")
-                                    .innerText
-                                    .replace("#", "")
-                            );
-
-                        const idB =
-                            parseInt(
-                                b.querySelector("td:first-child")
-                                    .innerText
-                                    .replace("#", "")
-                            );
-
-                        return sortRecords.value === "newest"
-                            ? idB - idA
-                            : idA - idB;
-
-                    });
-
-                    rows.forEach(row =>
-                        tbody.appendChild(row)
-                    );
-
-                    filterRecords();
-
-                });
+            sortRecordsTable();
 
         });
 
     </script>
+
 }

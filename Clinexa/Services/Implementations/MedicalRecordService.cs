@@ -54,6 +54,17 @@ namespace Clinexa.Services.Implementations
                 return false;
             }
 
+            bool patientAssigned =
+            await medicalRecordRepository
+                .IsPatientAssignedToAppointmentAsync(
+                    medicalRecord.AppointmentId,
+                    medicalRecord.PatientId);
+
+            if (!patientAssigned)
+            {
+                return false;
+            }
+
             await medicalRecordRepository
                .AddAsync(medicalRecord);
 
@@ -137,7 +148,18 @@ namespace Clinexa.Services.Implementations
                 return false;
             }
 
-         
+            bool patientAssigned =
+                await medicalRecordRepository
+                    .IsPatientAssignedToAppointmentAsync(
+                        medicalRecord.AppointmentId,
+                        medicalRecord.PatientId);
+
+            if (!patientAssigned)
+            {
+                return false;
+            }
+
+
             bool duplicate =
                 await medicalRecordRepository
                     .ExistsForAppointmentAsync(

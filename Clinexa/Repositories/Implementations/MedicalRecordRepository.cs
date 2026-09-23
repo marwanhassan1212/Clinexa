@@ -107,9 +107,10 @@ namespace Clinexa.Repositories.Implementations
                 .Include(x => x.Patient)
                 .Include(x => x.Doctor)
                     .ThenInclude(x => x.User)
-                .Where(x =>
+                 .Where(x =>
                     x.MedicalRecord == null &&
-                    x.AppointmentDate <= DateTime.Today)
+                    x.AppointmentDate <= DateTime.Today &&
+                    x.AppointmentStatus != Enums.AppointmentStatus.Cancelled)
                 .OrderByDescending(x => x.AppointmentDate)
                 .ThenByDescending(x => x.StartTime)
                 .ToListAsync();
@@ -121,6 +122,14 @@ namespace Clinexa.Repositories.Implementations
                 .AsNoTracking()
                 .FirstOrDefaultAsync(
                     x => x.AppointmentId == appointmentId);
+        }
+
+        public async Task<bool> IsPatientAssignedToAppointmentAsync(int appointmentId, int patientId)
+        {
+            return await _db.Appointments
+                .AnyAsync(x =>
+                    x.AppointmentId == appointmentId &&
+                    x.PatientId == patientId);
         }
     }
 }

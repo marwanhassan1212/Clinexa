@@ -22,13 +22,12 @@
 
     @Html.AntiForgeryToken()
 
-    <input asp-for="MedicalRecordId" type="hidden" />
+    <input asp-for="MedicalRecordId"
+           type="hidden" />
 
     <div class="row row-cards">
 
-        <!-- ========================= -->
         <!-- Record Information -->
-        <!-- ========================= -->
 
         <div class="col-12">
 
@@ -63,9 +62,7 @@
         </div>
 
 
-        <!-- ========================= -->
         <!-- Clinical Information -->
-        <!-- ========================= -->
 
         <div class="col-md-8">
 
@@ -85,7 +82,6 @@
                          class="text-danger mb-3">
                     </div>
 
-
                     <div class="mb-3">
 
                         <label asp-for="Symptoms"
@@ -96,15 +92,13 @@
                         <textarea asp-for="Symptoms"
                                   class="form-control"
                                   rows="4"
-                                  placeholder="Describe the patient's symptoms...">
-                        </textarea>
+                                  placeholder="Describe the patient's symptoms..."></textarea>
 
                         <span asp-validation-for="Symptoms"
                               class="text-danger">
                         </span>
 
                     </div>
-
 
                     <div class="mb-3">
 
@@ -116,15 +110,13 @@
                         <textarea asp-for="Diagnosis"
                                   class="form-control"
                                   rows="4"
-                                  placeholder="Enter the diagnosis...">
-                        </textarea>
+                                  placeholder="Enter the diagnosis..."></textarea>
 
                         <span asp-validation-for="Diagnosis"
                               class="text-danger">
                         </span>
 
                     </div>
-
 
                     <div class="mb-3">
 
@@ -136,15 +128,13 @@
                         <textarea asp-for="Treatment"
                                   class="form-control"
                                   rows="4"
-                                  placeholder="Describe the treatment plan...">
-                        </textarea>
+                                  placeholder="Describe the treatment plan..."></textarea>
 
                         <span asp-validation-for="Treatment"
                               class="text-danger">
                         </span>
 
                     </div>
-
 
                     <div>
 
@@ -156,8 +146,7 @@
                         <textarea asp-for="Notes"
                                   class="form-control"
                                   rows="4"
-                                  placeholder="Add additional clinical notes...">
-                        </textarea>
+                                  placeholder="Add additional clinical notes..."></textarea>
 
                         <span asp-validation-for="Notes"
                               class="text-danger">
@@ -172,9 +161,7 @@
         </div>
 
 
-        <!-- ========================= -->
         <!-- Follow-up -->
-        <!-- ========================= -->
 
         <div class="col-md-4">
 
@@ -207,7 +194,7 @@
 
                     <div class="text-secondary small mt-2">
 
-                        Update the next planned follow-up date.
+                        Leave empty if no follow-up is required.
 
                     </div>
 
@@ -218,9 +205,7 @@
         </div>
 
 
-        <!-- ========================= -->
         <!-- Actions -->
-        <!-- ========================= -->
 
         <div class="col-12">
 

@@ -1,43 +1,63 @@
-﻿```cshtml
-@model Clinexa.Models.Entities.Prescription
+﻿@model Clinexa.Models.Entities.Prescription
 
 @{
     ViewData["Title"] = "Prescription Details";
 
-    var prescriptionItems =
-        ViewBag.PrescriptionItems
-        as List<Clinexa.Models.Entities.PrescriptionItem>
-        ?? new List<Clinexa.Models.Entities.PrescriptionItem>();
+
+var prescriptionItems =
+    ViewBag.PrescriptionItems
+    as List<Clinexa.Models.Entities.PrescriptionItem>
+    ?? new List<Clinexa.Models.Entities.PrescriptionItem>();
+
+
 }
 
 @section PageActions {
 
+
     <a asp-action="Index"
        class="btn btn-outline-secondary">
+
         <i class="bi bi-arrow-left me-1"></i>
         Back to Prescriptions
+
     </a>
 
     <a asp-action="Edit"
        asp-route-id="@Model.PrescriptionId"
-       class="btn btn-primary">
+       class="btn btn-outline-primary">
+
         <i class="bi bi-pencil me-1"></i>
         Edit
+
     </a>
+
+    <a asp-action="Print"
+       asp-route-id="@Model.PrescriptionId"
+       class="btn btn-primary"
+       target="_blank">
+
+        <i class="bi bi-printer me-1"></i>
+        Print Prescription
+
+    </a>
+
 
 }
 
 <div class="row row-cards">
 
-    <!-- Prescription Information -->
 
+    <!-- Main Prescription -->
     <div class="col-lg-8">
 
-        <div class="card">
+        <!-- Prescription Information -->
+        <div class="card mb-3">
 
             <div class="card-header">
 
                 <div>
+
                     <h3 class="card-title mb-1">
                         Prescription #@Model.PrescriptionId
                     </h3>
@@ -45,6 +65,7 @@
                     <div class="text-secondary">
                         Prescription information
                     </div>
+
                 </div>
 
             </div>
@@ -53,6 +74,7 @@
 
                 <div class="row g-4">
 
+                    <!-- Prescription ID -->
                     <div class="col-md-6">
 
                         <div class="text-secondary mb-1">
@@ -65,6 +87,7 @@
 
                     </div>
 
+                    <!-- Date -->
                     <div class="col-md-6">
 
                         <div class="text-secondary mb-1">
@@ -77,6 +100,7 @@
 
                     </div>
 
+                    <!-- Medical Record -->
                     <div class="col-md-6">
 
                         <div class="text-secondary mb-1">
@@ -84,13 +108,99 @@
                         </div>
 
                         <div>
-                            <span class="badge bg-blue-lt">
+
+                            <a asp-controller="MedicalRecord"
+                               asp-action="Details"
+                               asp-route-id="@Model.MedicalRecordId"
+                               class="badge bg-blue-lt text-decoration-none">
+
                                 Medical Record #@Model.MedicalRecordId
-                            </span>
+
+                            </a>
+
                         </div>
 
                     </div>
 
+                    <!-- Patient -->
+                    @if (Model.MedicalRecord?.Patient != null)
+                    {
+                        <div class="col-md-6">
+
+                            <div class="text-secondary mb-1">
+                                Patient
+                            </div>
+
+                            <div>
+
+                                <a asp-controller="Patient"
+                                   asp-action="Details"
+                                   asp-route-id="@Model.MedicalRecord.PatientId"
+                                   class="text-decoration-none fw-semibold">
+
+                                    @Model.MedicalRecord.Patient.FirstName
+                                    @Model.MedicalRecord.Patient.LastName
+
+                                </a>
+
+                            </div>
+
+                        </div>
+                    }
+
+                    <!-- Doctor -->
+                    @if (Model.MedicalRecord?.Doctor?.User != null)
+                    {
+                        <div class="col-md-6">
+
+                            <div class="text-secondary mb-1">
+                                Doctor
+                            </div>
+
+                            <div>
+
+                                <a asp-controller="Doctor"
+                                   asp-action="Details"
+                                   asp-route-id="@Model.MedicalRecord.DoctorId"
+                                   class="text-decoration-none fw-semibold">
+
+                                    Dr.
+                                    @Model.MedicalRecord.Doctor.User.FirstName
+                                    @Model.MedicalRecord.Doctor.User.LastName
+
+                                </a>
+
+                            </div>
+
+                        </div>
+                    }
+
+                    <!-- Appointment -->
+                    @if (Model.MedicalRecord?.Appointment != null)
+                    {
+                        <div class="col-md-6">
+
+                            <div class="text-secondary mb-1">
+                                Appointment
+                            </div>
+
+                            <div>
+
+                                <a asp-controller="Appointment"
+                                   asp-action="Details"
+                                   asp-route-id="@Model.MedicalRecord.AppointmentId"
+                                   class="text-decoration-none fw-semibold">
+
+                                    @Model.MedicalRecord.Appointment.AppointmentDate.ToString("dd MMM yyyy")
+
+                                </a>
+
+                            </div>
+
+                        </div>
+                    }
+
+                    <!-- Notes -->
                     <div class="col-12">
 
                         <div class="text-secondary mb-1">
@@ -99,7 +209,7 @@
 
                         @if (!string.IsNullOrWhiteSpace(Model.Notes))
                         {
-                            <div>
+                            <div class="text-body">
                                 @Model.Notes
                             </div>
                         }
@@ -118,11 +228,65 @@
 
         </div>
 
+        <!-- Clinical Context -->
+        @if (Model.MedicalRecord != null)
+        {
+            <div class="card">
+
+                <div class="card-header">
+
+                    <h3 class="card-title">
+                        Medical Record
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row g-4">
+
+                        @if (!string.IsNullOrWhiteSpace(
+                                            Model.MedicalRecord.Diagnosis))
+                        {
+                            <div class="col-md-6">
+
+                                <div class="text-secondary mb-1">
+                                    Diagnosis
+                                </div>
+
+                                <div>
+                                    @Model.MedicalRecord.Diagnosis
+                                </div>
+
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(
+                                            Model.MedicalRecord.Treatment))
+                        {
+                            <div class="col-md-6">
+
+                                <div class="text-secondary mb-1">
+                                    Treatment
+                                </div>
+
+                                <div>
+                                    @Model.MedicalRecord.Treatment
+                                </div>
+
+                            </div>
+                        }
+
+                    </div>
+
+                </div>
+
+            </div>
+        }
+
     </div>
 
-
     <!-- Prescription Items -->
-
     <div class="col-lg-4">
 
         <div class="card">
@@ -149,7 +313,6 @@
 
             </div>
 
-
             <div class="card-body p-0">
 
                 @if (prescriptionItems.Any())
@@ -162,40 +325,28 @@
 
                                 <div class="d-flex align-items-start justify-content-between gap-3">
 
-                                    <div>
+                                    <div class="min-w-0">
 
                                         <div class="fw-bold">
                                             @item.Medicine.Name
                                         </div>
 
-                                        @if (!string.IsNullOrWhiteSpace(item.Medicine.GenericName))
+                                        @if (!string.IsNullOrWhiteSpace(
+                                                                        item.Medicine.GenericName))
                                         {
                                             <div class="text-secondary small">
                                                 @item.Medicine.GenericName
                                             </div>
                                         }
-                                        <div class="text-secondary small">
-                                            @item.Dosage
-                                        </div>
 
                                     </div>
 
                                     <div class="btn-list flex-nowrap">
 
                                         <a asp-controller="PrescriptionItem"
-                                           asp-action="Details"
-                                           asp-route-id="@item.PrescriptionItemId"
-                                           class="btn btn-icon btn-ghost-primary"
-                                           title="View Details">
-
-                                            <i class="bi bi-eye"></i>
-
-                                        </a>
-
-                                        <a asp-controller="PrescriptionItem"
                                            asp-action="Edit"
                                            asp-route-id="@item.PrescriptionItemId"
-                                           class="btn btn-icon btn-ghost-secondary"
+                                           class="btn btn-sm btn-outline-primary"
                                            title="Edit">
 
                                             <i class="bi bi-pencil"></i>
@@ -206,23 +357,34 @@
 
                                 </div>
 
-                                <div class="mt-2">
+                                <div class="mt-3">
 
-                                    <div class="text-secondary small">
+                                    <div class="text-secondary small mb-1">
+                                        <strong>Dosage:</strong>
+                                        @item.Dosage
+                                    </div>
+
+                                    <div class="text-secondary small mb-1">
                                         <strong>Frequency:</strong>
                                         @item.Frequency
                                     </div>
 
-                                    <div class="text-secondary small">
+                                    <div class="text-secondary small mb-1">
                                         <strong>Duration:</strong>
                                         @item.Duration
                                     </div>
 
-                                    @if (!string.IsNullOrWhiteSpace(item.Instructions))
+                                    @if (!string.IsNullOrWhiteSpace(
+                                                                item.Instructions))
                                     {
-                                        <div class="text-secondary small mt-1">
-                                            <strong>Instructions:</strong>
+                                        <div class="text-secondary small mt-2">
+
+                                            <strong>
+                                                Instructions:
+                                            </strong>
+
                                             @item.Instructions
+
                                         </div>
                                     }
 
@@ -238,7 +400,9 @@
                     <div class="empty py-5">
 
                         <div class="empty-icon">
+
                             <i class="bi bi-capsule fs-1"></i>
+
                         </div>
 
                         <p class="empty-title">
@@ -272,5 +436,5 @@
 
     </div>
 
+
 </div>
-```

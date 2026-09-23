@@ -25,8 +25,23 @@
 
             <div class="row g-3 align-items-end">
 
-                <!-- Doctor -->
+                <!-- Search -->
                 <div class="col-md-4">
+
+                    <label asp-for="Search"
+                           class="form-label">
+                        Search Doctor
+                    </label>
+
+                    <input asp-for="Search"
+                           class="form-control"
+                           placeholder="Doctor name..." />
+
+                </div>
+
+
+                <!-- Doctor -->
+                <div class="col-md-3">
 
                     <label asp-for="DoctorId"
                            class="form-label">
@@ -53,7 +68,7 @@
 
 
                 <!-- Day -->
-                <div class="col-md-3">
+                <div class="col-md-2">
 
                     <label asp-for="DayOfWeek"
                            class="form-label">
@@ -81,7 +96,7 @@
 
 
                 <!-- Status -->
-                <div class="col-md-3">
+                <div class="col-md-2">
 
                     <label asp-for="IsAvailable"
                            class="form-label">
@@ -92,7 +107,7 @@
                             class="form-select">
 
                         <option value="">
-                            All Statuses
+                            All
                         </option>
 
                         <option value="true">
@@ -109,13 +124,13 @@
 
 
                 <!-- Actions -->
-                <div class="col-md-2">
+                <div class="col-md-1">
 
                     <div class="d-flex gap-2">
 
                         <a asp-controller="DoctorSchedule"
                            asp-action="Index"
-                           class="btn btn-outline-secondary flex-fill"
+                           class="btn btn-outline-secondary"
                            title="Reset">
 
                             <i class="bi bi-arrow-counterclockwise"></i>
@@ -123,7 +138,7 @@
                         </a>
 
                         <button type="submit"
-                                class="btn btn-primary flex-fill"
+                                class="btn btn-primary"
                                 title="Apply Filters">
 
                             <i class="bi bi-search"></i>
@@ -251,7 +266,7 @@
                                 else
                                 {
                                     <span class="badge bg-red-lt">
-                                        UnAvailable
+                                        Unavailable
                                     </span>
                                 }
 
@@ -384,10 +399,12 @@
 
                 <ul class="pagination mb-0">
 
+                    <!-- Previous -->
                     <li class="page-item @(Model.Page <= 1 ? "disabled" : "")">
 
                         <a class="page-link"
                            asp-action="Index"
+                           asp-route-Search="@Model.Search"
                            asp-route-DoctorId="@Model.DoctorId"
                            asp-route-DayOfWeek="@Model.DayOfWeek"
                            asp-route-IsAvailable="@Model.IsAvailable"
@@ -400,12 +417,14 @@
                     </li>
 
 
+                    <!-- Pages -->
                     @for (int i = 1; i <= Model.TotalPages; i++)
                     {
                         <li class="page-item @(i == Model.Page ? "active" : "")">
 
                             <a class="page-link"
                                asp-action="Index"
+                               asp-route-Search="@Model.Search"
                                asp-route-DoctorId="@Model.DoctorId"
                                asp-route-DayOfWeek="@Model.DayOfWeek"
                                asp-route-IsAvailable="@Model.IsAvailable"
@@ -419,10 +438,12 @@
                     }
 
 
+                    <!-- Next -->
                     <li class="page-item @(Model.Page >= Model.TotalPages ? "disabled" : "")">
 
                         <a class="page-link"
                            asp-action="Index"
+                           asp-route-Search="@Model.Search"
                            asp-route-DoctorId="@Model.DoctorId"
                            asp-route-DayOfWeek="@Model.DayOfWeek"
                            asp-route-IsAvailable="@Model.IsAvailable"

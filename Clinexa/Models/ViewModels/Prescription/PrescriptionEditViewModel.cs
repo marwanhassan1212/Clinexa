@@ -12,8 +12,5 @@ namespace Clinexa.Models.ViewModels.Prescription
 
         [MaxLength(1000)]
         public string? Notes { get; set; }
-
-        [Required]
-        public int MedicalRecordId { get; set; }
     }
 }

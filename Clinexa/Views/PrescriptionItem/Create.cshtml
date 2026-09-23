@@ -5,27 +5,21 @@
 }
 
 @section PageActions {
-
     <a asp-controller="Prescription"
        asp-action="Details"
        asp-route-id="@Model.PrescriptionId"
        class="btn btn-outline-secondary">
-
         <i class="bi bi-arrow-left me-1"></i>
         Back to Prescription
-
     </a>
-
 }
 
 <div class="row justify-content-center">
-
     <div class="col-lg-8 col-xl-7">
 
         <div class="card">
 
             <div class="card-header">
-
                 <div>
                     <h3 class="card-title mb-1">
                         Add Medicine
@@ -35,11 +29,9 @@
                         Add a medicine to Prescription #@Model.PrescriptionId
                     </div>
                 </div>
-
             </div>
 
             <form asp-action="Create" method="post">
-
                 @Html.AntiForgeryToken()
 
                 <input asp-for="PrescriptionId" type="hidden" />
@@ -88,7 +80,6 @@
                     </div>
 
                     <div class="mb-3">
-
                         <label asp-for="Dosage"
                                class="form-label">
                             Dosage
@@ -101,11 +92,9 @@
                         <span asp-validation-for="Dosage"
                               class="text-danger">
                         </span>
-
                     </div>
 
                     <div class="mb-3">
-
                         <label asp-for="Frequency"
                                class="form-label">
                             Frequency
@@ -118,11 +107,9 @@
                         <span asp-validation-for="Frequency"
                               class="text-danger">
                         </span>
-
                     </div>
 
                     <div class="mb-3">
-
                         <label asp-for="Duration"
                                class="form-label">
                             Duration
@@ -135,11 +122,9 @@
                         <span asp-validation-for="Duration"
                               class="text-danger">
                         </span>
-
                     </div>
 
                     <div>
-
                         <label asp-for="Instructions"
                                class="form-label">
                             Instructions
@@ -153,7 +138,6 @@
                         <span asp-validation-for="Instructions"
                               class="text-danger">
                         </span>
-
                     </div>
 
                 </div>
@@ -164,17 +148,13 @@
                        asp-action="Details"
                        asp-route-id="@Model.PrescriptionId"
                        class="btn btn-outline-secondary">
-
                         Cancel
-
                     </a>
 
                     <button type="submit"
                             class="btn btn-primary">
-
                         <i class="bi bi-plus-lg me-1"></i>
                         Add Medicine
-
                     </button>
 
                 </div>
@@ -184,7 +164,6 @@
         </div>
 
     </div>
-
 </div>
 
 @section Scripts {

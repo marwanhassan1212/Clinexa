@@ -1,17 +1,20 @@
-﻿```cshtml
-@model Clinexa.Models.ViewModels.Prescription.PrescriptionEditViewModel
+﻿@model Clinexa.Models.ViewModels.Prescription.PrescriptionEditViewModel
 
 @{
     ViewData["Title"] = "Edit Prescription";
 }
 
 @section PageActions {
+
     <a asp-action="Details"
        asp-route-id="@Model.PrescriptionId"
        class="btn btn-outline-secondary">
+
         <i class="bi bi-arrow-left me-1"></i>
         Back to Details
+
     </a>
+
 }
 
 <div class="row justify-content-center">
@@ -20,9 +23,11 @@
 
         <div class="card">
 
+            <!-- Header -->
             <div class="card-header">
 
                 <div>
+
                     <h3 class="card-title mb-1">
                         Edit Prescription #@Model.PrescriptionId
                     </h3>
@@ -30,48 +35,37 @@
                     <div class="text-secondary">
                         Update prescription information.
                     </div>
+
                 </div>
 
             </div>
 
-            <form asp-action="Edit" method="post">
+
+            <form asp-action="Edit"
+                  method="post">
 
                 @Html.AntiForgeryToken()
 
-                <input asp-for="PrescriptionId" type="hidden" />
+                <input asp-for="PrescriptionId"
+                       type="hidden" />
 
+
+                <!-- Body -->
                 <div class="card-body">
 
                     <div asp-validation-summary="ModelOnly"
                          class="text-danger mb-3">
                     </div>
 
-                    <div class="mb-3">
 
-                        <label asp-for="MedicalRecordId"
-                               class="form-label">
-                            Medical Record ID
-                        </label>
-
-                        <input asp-for="MedicalRecordId"
-                               class="form-control"
-                               readonly />
-
-                        <span class="form-hint">
-                            The medical record associated with this prescription.
-                        </span>
-
-                        <span asp-validation-for="MedicalRecordId"
-                              class="text-danger">
-                        </span>
-
-                    </div>
-
+                    <!-- Prescription Date -->
                     <div class="mb-3">
 
                         <label asp-for="PrescriptionDate"
                                class="form-label">
+
                             Prescription Date
+
                         </label>
 
                         <input asp-for="PrescriptionDate"
@@ -85,11 +79,15 @@
 
                     </div>
 
+
+                    <!-- Notes -->
                     <div class="mb-0">
 
                         <label asp-for="Notes"
                                class="form-label">
+
                             Notes
+
                         </label>
 
                         <textarea asp-for="Notes"
@@ -105,18 +103,23 @@
 
                 </div>
 
+
+                <!-- Footer -->
                 <div class="card-footer d-flex justify-content-end gap-2">
 
                     <a asp-action="Details"
                        asp-route-id="@Model.PrescriptionId"
                        class="btn btn-outline-secondary">
+
                         Cancel
+
                     </a>
 
                     <button type="submit"
                             class="btn btn-primary">
 
                         <i class="bi bi-check-lg me-1"></i>
+
                         Save Changes
 
                     </button>
@@ -132,6 +135,7 @@
 </div>
 
 @section Scripts {
+
     <partial name="_ValidationScriptsPartial" />
+
 }
-```

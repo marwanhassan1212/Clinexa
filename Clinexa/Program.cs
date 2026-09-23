@@ -3,7 +3,9 @@ using Clinexa.Repositories.Implementations;
 using Clinexa.Repositories.Interfaces;
 using Clinexa.Services.Implementations;
 using Clinexa.Services.Interfaces;
+using Clinexa.Services.PDF;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Infrastructure;
 
 namespace Clinexa
 {
@@ -11,6 +13,9 @@ namespace Clinexa
     {
         public static  void Main(string[] args)
         {
+
+            QuestPDF.Settings.License = LicenseType.Community;
+
             var builder = WebApplication.CreateBuilder(args);
 
             // Repositories
@@ -44,6 +49,10 @@ namespace Clinexa
             builder.Services.AddScoped<IInvoiceService, InvoiceService>();
             builder.Services.AddScoped<IInvoiceItemService, InvoiceItemService>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
+
+
+            //PDF
+            builder.Services.AddScoped<IPrescriptionPdfService, PrescriptionPdfService>();
 
 
             builder.Services.AddDbContext<AppDbContext>(options =>

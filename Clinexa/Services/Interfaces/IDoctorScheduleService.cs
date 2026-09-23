@@ -18,6 +18,8 @@ namespace Clinexa.Services.Interfaces
                 int page,
                 int pageSize);
 
+        
+
         Task<bool> CreateAsync(DoctorSchedule schedule);
 
         Task<bool> UpdateAsync(DoctorSchedule schedule);

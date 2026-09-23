@@ -34,7 +34,10 @@ namespace Clinexa.Configurations
                .HasForeignKey<Prescription>(p => p.MedicalRecordId)
                .OnDelete(DeleteBehavior.Cascade);
 
-
+            builder.HasOne(m => m.Appointment)
+                .WithOne(a => a.MedicalRecord)
+                .HasForeignKey<MedicalRecord>(m => m.AppointmentId)
+                .OnDelete(DeleteBehavior.Restrict);
 
 
         }

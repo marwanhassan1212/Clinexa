@@ -25,6 +25,13 @@ namespace Clinexa.Services.Implementations
 
             medicine.IsActive = true;
             medicine.CreatedAt = DateTime.UtcNow;
+            medicine.Name = medicine.Name.Trim();
+
+            if (!string.IsNullOrWhiteSpace(medicine.GenericName))
+                medicine.GenericName = medicine.GenericName.Trim();
+
+            if (!string.IsNullOrWhiteSpace(medicine.Description))
+                medicine.Description = medicine.Description.Trim();
 
             await medicineRepository
                 .AddAsync(medicine);
@@ -96,6 +103,13 @@ namespace Clinexa.Services.Implementations
             }
 
             medicineRepository.Update(medicine);
+            medicine.Name = medicine.Name.Trim();
+
+            if (!string.IsNullOrWhiteSpace(medicine.GenericName))
+                medicine.GenericName = medicine.GenericName.Trim();
+
+            if (!string.IsNullOrWhiteSpace(medicine.Description))
+                medicine.Description = medicine.Description.Trim();
 
             await medicineRepository
                 .SaveChangesAsync();

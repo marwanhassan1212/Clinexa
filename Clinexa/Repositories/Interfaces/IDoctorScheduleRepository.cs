@@ -25,6 +25,23 @@ namespace Clinexa.Repositories.Interfaces
                 int page,
                 int pageSize);
 
+        Task<bool> HasOverlapAsync(
+                int doctorId,
+                DayOfWeek dayOfWeek,
+                TimeSpan startTime,
+                TimeSpan endTime,
+                int? excludedScheduleId = null);
+
+        Task<bool> HasDuplicateStartTimeAsync(
+                int doctorId,
+                DayOfWeek dayOfWeek,
+                TimeSpan startTime,
+                int? excludedScheduleId = null);
+
+        Task DeactivateByDoctorIdAsync(int doctorId);
+
+        Task ActivateByDoctorIdAsync(int doctorId);
+
         Task AddAsync(DoctorSchedule schedule);
 
         void Update(DoctorSchedule schedule);

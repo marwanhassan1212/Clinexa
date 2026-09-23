@@ -27,9 +27,7 @@
 
 <div class="row row-cards">
 
-    <!-- ========================= -->
     <!-- Patient / Visit Summary -->
-    <!-- ========================= -->
 
     <div class="col-12">
 
@@ -55,6 +53,8 @@
 
                 <div class="row g-4">
 
+                    <!-- Patient -->
+
                     <div class="col-md-4">
 
                         <div class="text-secondary mb-1">
@@ -63,29 +63,35 @@
 
                         @if (Model.Patient != null)
                         {
-                            <div class="d-flex align-items-center">
+                            <a asp-controller="Patient"
+                               asp-action="Details"
+                               asp-route-id="@Model.PatientId"
+                               class="text-reset text-decoration-none">
 
-                                <span class="avatar avatar-sm me-2">
-                                    @Model.Patient.FirstName
-                                    .Substring(0, 1)
-                                </span>
+                                <div class="d-flex align-items-center">
 
-                                <div>
+                                    <span class="avatar avatar-sm me-2">
+                                        @Model.Patient.FirstName.Substring(0, 1).ToUpper()
+                                    </span>
 
-                                    <div class="fw-semibold">
+                                    <div>
 
-                                        @Model.Patient.FirstName
-                                        @Model.Patient.LastName
+                                        <div class="fw-semibold">
 
-                                    </div>
+                                            @Model.Patient.FirstName
+                                            @Model.Patient.LastName
 
-                                    <div class="text-secondary">
-                                        Patient #@Model.PatientId
+                                        </div>
+
+                                        <div class="text-secondary">
+                                            Patient #@Model.PatientId
+                                        </div>
+
                                     </div>
 
                                 </div>
 
-                            </div>
+                            </a>
                         }
                         else
                         {
@@ -96,6 +102,9 @@
 
                     </div>
 
+
+                    <!-- Doctor -->
+
                     <div class="col-md-4">
 
                         <div class="text-secondary mb-1">
@@ -104,17 +113,24 @@
 
                         @if (Model.Doctor?.User != null)
                         {
-                            <div class="fw-semibold">
+                            <a asp-controller="Doctor"
+                               asp-action="Details"
+                               asp-route-id="@Model.DoctorId"
+                               class="text-reset text-decoration-none">
 
-                                Dr.
-                                @Model.Doctor.User.FirstName
-                                @Model.Doctor.User.LastName
+                                <div class="fw-semibold">
 
-                            </div>
+                                    Dr.
+                                    @Model.Doctor.User.FirstName
+                                    @Model.Doctor.User.LastName
 
-                            <div class="text-secondary">
-                                Doctor #@Model.DoctorId
-                            </div>
+                                </div>
+
+                                <div class="text-secondary">
+                                    Doctor #@Model.DoctorId
+                                </div>
+
+                            </a>
                         }
                         else
                         {
@@ -125,26 +141,33 @@
 
                     </div>
 
+
+                    <!-- Appointment -->
+
                     <div class="col-md-4">
 
                         <div class="text-secondary mb-1">
                             Appointment
                         </div>
 
-                        <div class="fw-semibold">
+                        <a asp-controller="Appointment"
+                           asp-action="Details"
+                           asp-route-id="@Model.AppointmentId"
+                           class="text-decoration-none">
 
                             <span class="badge bg-blue-lt">
                                 Appointment #@Model.AppointmentId
                             </span>
 
-                        </div>
+                        </a>
 
                         @if (Model.Appointment != null)
                         {
-                            <div class="text-secondary mt-1">
+                            <div class="text-secondary mt-2">
 
-                                @Model.Appointment.AppointmentDate
-                                .ToString("dd MMM yyyy")
+                                @Model.Appointment.AppointmentDate.ToString("dd MMM yyyy")
+                                ·
+                                @Model.Appointment.StartTime.ToString(@"hh\:mm")
 
                             </div>
                         }
@@ -160,9 +183,7 @@
     </div>
 
 
-    <!-- ========================= -->
     <!-- Clinical Information -->
-    <!-- ========================= -->
 
     <div class="col-md-8">
 
@@ -186,7 +207,7 @@
 
                     @if (!string.IsNullOrWhiteSpace(Model.Symptoms))
                     {
-                        <div class="text-body">
+                        <div>
                             @Model.Symptoms
                         </div>
                     }
@@ -208,7 +229,7 @@
 
                     @if (!string.IsNullOrWhiteSpace(Model.Diagnosis))
                     {
-                        <div class="text-body">
+                        <div>
                             @Model.Diagnosis
                         </div>
                     }
@@ -230,7 +251,7 @@
 
                     @if (!string.IsNullOrWhiteSpace(Model.Treatment))
                     {
-                        <div class="text-body">
+                        <div>
                             @Model.Treatment
                         </div>
                     }
@@ -252,7 +273,7 @@
 
                     @if (!string.IsNullOrWhiteSpace(Model.Notes))
                     {
-                        <div class="text-body">
+                        <div>
                             @Model.Notes
                         </div>
                     }
@@ -272,9 +293,7 @@
     </div>
 
 
-    <!-- ========================= -->
     <!-- Follow-up -->
-    <!-- ========================= -->
 
     <div class="col-md-4">
 
@@ -306,8 +325,7 @@
 
                         <div class="h3 mt-1 mb-0">
 
-                            @Model.FollowUpDate.Value
-                            .ToString("dd MMM yyyy")
+                            @Model.FollowUpDate.Value.ToString("dd MMM yyyy")
 
                         </div>
 
@@ -341,9 +359,7 @@
     </div>
 
 
-    <!-- ========================= -->
     <!-- Prescription -->
-    <!-- ========================= -->
 
     <div class="col-12">
 
@@ -405,8 +421,7 @@
 
                             <div class="text-secondary">
 
-                                @Model.Prescription.PrescriptionDate
-                                .ToString("dd MMM yyyy")
+                                @Model.Prescription.PrescriptionDate.ToString("dd MMM yyyy")
 
                             </div>
 
@@ -456,9 +471,7 @@
     </div>
 
 
-    <!-- ========================= -->
     <!-- Record Metadata -->
-    <!-- ========================= -->
 
     <div class="col-12">
 
@@ -490,7 +503,7 @@
 
                             @if (Model.UpdatedAt.HasValue)
                             {
-                            @Model.UpdatedAt.Value.ToString("dd MMM yyyy, hh:mm tt")
+                                @Model.UpdatedAt.Value.ToString("dd MMM yyyy, hh:mm tt")
                             }
                             else
                             {

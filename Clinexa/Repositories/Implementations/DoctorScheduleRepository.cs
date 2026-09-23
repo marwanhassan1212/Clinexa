@@ -19,7 +19,10 @@ namespace Clinexa.Repositories.Implementations
 
         public async Task<bool> DoctorExistsAsync(int doctorId)
         {
-            return await _db.Doctors.AnyAsync(x => x.DoctorId == doctorId);
+            return await _db.Doctors
+                 .AnyAsync(x =>
+                     x.DoctorId == doctorId &&
+                     x.IsActive);
         }
 
         public async Task<bool> ExistsAsync(int doctorId, DayOfWeek dayOfWeek, TimeSpan startTime)
@@ -59,7 +62,13 @@ namespace Clinexa.Repositories.Implementations
 
         public async Task<DoctorSchedule?> GetByIdAsync(int id)
         {
-            return await _db.DoctorSchedules.FirstOrDefaultAsync(x => x.DoctorScheduleId == id);
+            return await _db.DoctorSchedules
+                .AsNoTracking()
+                 .Include(x => x.Doctor)
+                   .ThenInclude(x => x.User)
+               .Include(x => x.Doctor)
+                   .ThenInclude(x => x.Speciality)
+                   .FirstOrDefaultAsync(x => x.DoctorScheduleId == id);
         }
 
         public async Task SaveChangesAsync()
@@ -126,6 +135,72 @@ namespace Clinexa.Repositories.Implementations
                 .ToListAsync();
 
             return (schedules, totalCount);
+        }
+
+        public async Task<bool> HasOverlapAsync(int doctorId, DayOfWeek dayOfWeek,
+        TimeSpan startTime, TimeSpan endTime, int? excludedScheduleId = null)
+        {
+            var query = _db.DoctorSchedules
+                .Where(x =>
+                    x.DoctorId == doctorId &&
+                    x.DayOfWeek == dayOfWeek &&
+                    x.IsAvailable &&
+                    x.StartTime < endTime &&
+                    x.EndTime > startTime);
+
+            if (excludedScheduleId.HasValue)
+            {
+                query = query.Where(x =>
+                    x.DoctorScheduleId != excludedScheduleId.Value);
+            }
+
+            return await query.AnyAsync();
+        }
+
+        public async Task<bool> HasDuplicateStartTimeAsync(int doctorId, DayOfWeek dayOfWeek,
+        TimeSpan startTime, int? excludedScheduleId = null)
+        {
+            var query = _db.DoctorSchedules
+                .Where(x =>
+                    x.DoctorId == doctorId &&
+                    x.DayOfWeek == dayOfWeek &&
+                    x.StartTime == startTime);
+
+            if (excludedScheduleId.HasValue)
+            {
+                query = query.Where(x =>
+                    x.DoctorScheduleId != excludedScheduleId.Value);
+            }
+
+            return await query.AnyAsync();
+        }
+
+        public async Task DeactivateByDoctorIdAsync(int doctorId)
+        {
+            var schedules = await _db.DoctorSchedules
+                .Where(x =>
+                    x.DoctorId == doctorId &&
+                    x.IsAvailable)
+                .ToListAsync();
+
+            foreach (var schedule in schedules)
+            {
+                schedule.IsAvailable = false;
+            }
+        }
+
+        public async Task ActivateByDoctorIdAsync(int doctorId)
+        {
+            var schedules = await _db.DoctorSchedules
+                .Where(x =>
+                    x.DoctorId == doctorId &&
+                    !x.IsAvailable)
+                .ToListAsync();
+
+            foreach (var schedule in schedules)
+            {
+                schedule.IsAvailable = true;
+            }
         }
     }
 }
