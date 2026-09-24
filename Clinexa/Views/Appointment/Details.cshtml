@@ -3,6 +3,45 @@
 
 @{
     ViewData["Title"] = "Appointment Details";
+
+    var status = Model.Appointment.AppointmentStatus;
+
+    // Clinexa stores workflow timestamps in UTC.
+    // Convert them explicitly to Egypt time for display.
+    var egyptTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Egypt Standard Time");
+
+    bool canEdit =
+        status == AppointmentStatus.Scheduled ||
+        status == AppointmentStatus.Confirmed;
+
+    bool canCancel =
+        status == AppointmentStatus.Scheduled ||
+        status == AppointmentStatus.Confirmed ||
+        status == AppointmentStatus.CheckedIn;
+
+    bool canConfirm =
+        status == AppointmentStatus.Scheduled;
+
+    bool canCheckIn =
+        status == AppointmentStatus.Confirmed;
+
+    bool canStartConsultation =
+        status == AppointmentStatus.CheckedIn;
+
+    bool canComplete =
+        status == AppointmentStatus.InConsultation;
+
+    bool canMarkNoShow =
+        status == AppointmentStatus.Scheduled ||
+        status == AppointmentStatus.Confirmed;
+
+    bool hasWorkflowAction =
+        canConfirm ||
+        canCheckIn ||
+        canStartConsultation ||
+        canComplete ||
+        canMarkNoShow ||
+        canCancel;
 }
 
 <div class="container-fluid">
@@ -29,8 +68,7 @@
 
             </a>
 
-            @if (Model.Appointment.AppointmentStatus != AppointmentStatus.Cancelled &&
-                        Model.Appointment.AppointmentStatus != AppointmentStatus.Completed)
+            @if (canEdit)
             {
                 <a asp-action="Edit"
                    asp-route-id="@Model.Appointment.AppointmentId"
@@ -154,7 +192,7 @@
                                 Status
                             </div>
 
-                            @switch (Model.Appointment.AppointmentStatus)
+                            @switch (status)
                             {
                                 case AppointmentStatus.Scheduled:
 
@@ -180,6 +218,14 @@
 
                                     break;
 
+                                case AppointmentStatus.InConsultation:
+
+                                    <span class="badge bg-purple-lt">
+                                        In Consultation
+                                    </span>
+
+                                    break;
+
                                 case AppointmentStatus.Completed:
 
                                     <span class="badge bg-green-lt">
@@ -196,10 +242,18 @@
 
                                     break;
 
+                                case AppointmentStatus.NoShow:
+
+                                    <span class="badge bg-secondary-lt">
+                                        No Show
+                                    </span>
+
+                                    break;
+
                                 default:
 
                                     <span class="badge bg-secondary-lt">
-                                        @Model.Appointment.AppointmentStatus
+                                        @status
                                     </span>
 
                                     break;
@@ -217,8 +271,7 @@
 
                             <div>
 
-                                @(string.IsNullOrWhiteSpace(
-                                                                Model.Appointment.Reason)
+                                @(string.IsNullOrWhiteSpace(Model.Appointment.Reason)
                                                                 ? "No reason provided."
                                                                 : Model.Appointment.Reason)
 
@@ -236,14 +289,170 @@
 
                             <div class="text-wrap">
 
-                                @(string.IsNullOrWhiteSpace(
-                                                                Model.Appointment.Notes)
+                                @(string.IsNullOrWhiteSpace(Model.Appointment.Notes)
                                                                 ? "No additional notes."
                                                                 : Model.Appointment.Notes)
 
                             </div>
 
                         </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Appointment Timeline -->
+            <div class="card mt-3">
+
+                <div class="card-header">
+
+                    <h3 class="card-title">
+                        Appointment Timeline
+                    </h3>
+
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row g-3">
+
+                        <!-- Created -->
+                        <div class="col-md-6">
+
+                            <div class="text-secondary small mb-1">
+                                Created
+                            </div>
+
+                            <div class="fw-semibold">
+
+                                @TimeZoneInfo.ConvertTimeFromUtc(Model.Appointment.CreatedAt, egyptTimeZone)
+                            </div>
+
+                        </div>
+
+
+                        <!-- Confirmed -->
+                        @if (Model.Appointment.ConfirmedAt.HasValue)
+                        {
+                            <div class="col-md-6">
+
+                                <div class="text-secondary small mb-1">
+                                    Confirmed
+                                </div>
+
+                                <div class="fw-semibold">
+
+                                    @TimeZoneInfo.ConvertTimeFromUtc(
+                                    Model.Appointment.ConfirmedAt.Value,egyptTimeZone)
+                            </div>
+
+                            </div>
+                                                }
+
+
+                        <!-- Checked In -->
+                        @if (Model.Appointment.CheckedInAt.HasValue)
+                        {
+                            <div class="col-md-6">
+
+                                <div class="text-secondary small mb-1">
+                                    Checked In
+                                </div>
+
+                                <div class="fw-semibold">
+
+                                    @TimeZoneInfo.ConvertTimeFromUtc(
+                                    Model.Appointment.CheckedInAt.Value,egyptTimeZone )
+                                                            
+                                                               
+
+                            </div>
+
+                            </div>
+                                                }
+
+
+                        <!-- Consultation Started -->
+                        @if (Model.Appointment.ConsultationStartedAt.HasValue)
+                        {
+                            <div class="col-md-6">
+
+                                <div class="text-secondary small mb-1">
+                                    Consultation Started
+                                </div>
+
+                                <div class="fw-semibold">
+
+                                    @TimeZoneInfo.ConvertTimeFromUtc(
+                                    Model.Appointment.ConsultationStartedAt.Value,egyptTimeZone)
+                                                           
+                                                             
+
+                            </div>
+
+                            </div>
+                                                }
+
+
+                        <!-- Completed -->
+                        @if (Model.Appointment.CompletedAt.HasValue)
+                        {
+                            <div class="col-md-6">
+
+                                <div class="text-secondary small mb-1">
+                                    Completed
+                                </div>
+
+                                <div class="fw-semibold">
+
+                                    @TimeZoneInfo.ConvertTimeFromUtc(Model.Appointment.CompletedAt.Value,egyptTimeZone)
+                                  
+                                                                
+
+                            </div>
+
+                            </div>
+                                                }
+
+
+                        <!-- Cancelled -->
+                        @if (Model.Appointment.CancelledAt.HasValue)
+                        {
+                            <div class="col-md-6">
+
+                                <div class="text-secondary small mb-1">
+                                    Cancelled
+                                </div>
+
+                                <div class="fw-semibold">
+
+                                    @TimeZoneInfo.ConvertTimeFromUtc(
+                                    Model.Appointment.CancelledAt.Value, egyptTimeZone)
+                            </div>
+
+                            </div>
+                                                }
+
+
+                        <!-- Cancellation Reason -->
+                        @if (!string.IsNullOrWhiteSpace(
+                                                Model.Appointment.CancellationReason))
+                        {
+                            <div class="col-12">
+
+                                <div class="text-secondary small mb-1">
+                                    Cancellation Reason
+                                </div>
+
+                                <div>
+                                    @Model.Appointment.CancellationReason
+                                </div>
+
+                            </div>
+                        }
 
                     </div>
 
@@ -269,39 +478,175 @@
 
                 <div class="card-body">
 
-                    @if (Model.Appointment.AppointmentStatus != AppointmentStatus.Cancelled &&
-                                        Model.Appointment.AppointmentStatus != AppointmentStatus.Completed)
+                    @if (hasWorkflowAction)
                     {
-                        <a asp-action="Edit"
-                           asp-route-id="@Model.Appointment.AppointmentId"
-                           class="btn btn-primary w-100 mb-2">
+                        <div class="d-grid gap-2">
 
-                            <i class="bi bi-pencil me-1"></i>
-                            Edit Appointment
+                            <!-- Confirm -->
+                            @if (canConfirm)
+                            {
+                                <form asp-action="Confirm"
+                                      asp-route-id="@Model.Appointment.AppointmentId"
+                                      method="post">
 
-                        </a>
+                                    @Html.AntiForgeryToken()
 
-                        <form asp-action="Cancel"
-                              asp-route-id="@Model.Appointment.AppointmentId"
-                              method="post">
+                                    <button type="submit"
+                                            class="btn btn-success w-100">
 
-                            @Html.AntiForgeryToken()
+                                        <i class="bi bi-check-circle me-1"></i>
+                                        Confirm Appointment
 
-                            <button type="submit"
-                                    class="btn btn-outline-danger w-100"
-                                    onclick="return confirm('Are you sure you want to cancel this appointment?');">
+                                    </button>
 
-                                <i class="bi bi-x-circle me-1"></i>
-                                Cancel Appointment
+                                </form>
+                            }
 
-                            </button>
 
-                        </form>
+                            <!-- Check In -->
+                            @if (canCheckIn)
+                            {
+                                <form asp-action="CheckIn"
+                                      asp-route-id="@Model.Appointment.AppointmentId"
+                                      method="post">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <button type="submit"
+                                            class="btn btn-primary w-100">
+
+                                        <i class="bi bi-person-check me-1"></i>
+                                        Check In Patient
+
+                                    </button>
+
+                                </form>
+                            }
+
+
+                            <!-- Start Consultation -->
+                            @if (canStartConsultation)
+                            {
+                                <form asp-action="StartConsultation"
+                                      asp-route-id="@Model.Appointment.AppointmentId"
+                                      method="post">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <button type="submit"
+                                            class="btn btn-primary w-100">
+
+                                        <i class="bi bi-activity me-1"></i>
+                                        Start Consultation
+
+                                    </button>
+
+                                </form>
+                            }
+
+
+                            <!-- Complete -->
+                            @if (canComplete)
+                            {
+                                <form asp-action="Complete"
+                                      asp-route-id="@Model.Appointment.AppointmentId"
+                                      method="post">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <button type="submit"
+                                            class="btn btn-success w-100"
+                                            onclick="return confirm('Are you sure you want to complete this appointment?');">
+
+                                        <i class="bi bi-check2-circle me-1"></i>
+                                        Complete Appointment
+
+                                    </button>
+
+                                </form>
+                            }
+
+
+                            <!-- No Show -->
+                            @if (canMarkNoShow)
+                            {
+                                <form asp-action="NoShow"
+                                      asp-route-id="@Model.Appointment.AppointmentId"
+                                      method="post">
+
+                                    @Html.AntiForgeryToken()
+
+                                    <button type="submit"
+                                            class="btn btn-outline-secondary w-100"
+                                            onclick="return confirm('Are you sure you want to mark this appointment as no-show?');">
+
+                                        <i class="bi bi-person-x me-1"></i>
+                                        Mark as No Show
+
+                                    </button>
+
+                                </form>
+                            }
+
+
+                            <!-- Cancel -->
+                            @if (canCancel)
+                            {
+                                <button type="button"
+                                        class="btn btn-outline-danger w-100"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#cancelAppointmentModal">
+
+                                    <i class="bi bi-x-circle me-1"></i>
+                                    Cancel Appointment
+
+                                </button>
+                            }
+
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-secondary text-center py-2">
+
+                            <i class="bi bi-check2-circle fs-1 d-block mb-2"></i>
+
+                            <div class="fw-semibold">
+                                No further actions available
+                            </div>
+
+                            <div class="small mt-1">
+                                This appointment has reached a final status.
+                            </div>
+
+                        </div>
                     }
 
 
-                    <!-- Invoice -->
-                    @if (Model.Appointment.AppointmentStatus != AppointmentStatus.Cancelled)
+                    <!-- Edit -->
+                    @if (canEdit)
+                    {
+                        <div class="border-top mt-3 pt-3">
+
+                            <div class="text-secondary small mb-2">
+                                Appointment
+                            </div>
+
+                            <a asp-action="Edit"
+                               asp-route-id="@Model.Appointment.AppointmentId"
+                               class="btn btn-outline-primary w-100">
+
+                                <i class="bi bi-pencil me-1"></i>
+                                Edit Appointment
+
+                            </a>
+
+                        </div>
+                    }
+
+
+                    <!-- Billing -->
+                    @if (status != AppointmentStatus.Cancelled)
                     {
                         <div class="border-top mt-3 pt-3">
 
@@ -346,3 +691,102 @@
     </div>
 
 </div>
+
+
+<!-- Cancel Appointment Modal -->
+@if (canCancel)
+{
+    <div class="modal modal-blur fade"
+         id="cancelAppointmentModal"
+         tabindex="-1"
+         aria-hidden="true">
+
+        <div class="modal-dialog modal-dialog-centered">
+
+            <div class="modal-content">
+
+                <div class="modal-header">
+
+                    <h5 class="modal-title">
+                        Cancel Appointment
+                    </h5>
+
+                    <button type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                            aria-label="Close">
+                    </button>
+
+                </div>
+
+                <form asp-action="Cancel"
+                      asp-route-id="@Model.Appointment.AppointmentId"
+                      method="post">
+
+                    @Html.AntiForgeryToken()
+
+                    <div class="modal-body">
+
+                        <div class="alert alert-warning">
+
+                            <div class="d-flex">
+
+                                <div>
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                </div>
+
+                                <div>
+                                    Are you sure you want to cancel this appointment?
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="mb-3">
+
+                            <label for="cancellationReason"
+                                   class="form-label">
+
+                                Cancellation Reason
+
+                            </label>
+
+                            <textarea id="cancellationReason"
+                                  name="cancellationReason"
+                                  class="form-control"
+                                  rows="3"
+                                  placeholder="Enter cancellation reason..."></textarea>
+
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer">
+
+                        <button type="button"
+                                class="btn btn-outline-secondary"
+                                data-bs-dismiss="modal">
+
+                            Keep Appointment
+
+                        </button>
+
+                        <button type="submit"
+                                class="btn btn-danger">
+
+                            <i class="bi bi-x-circle me-1"></i>
+                            Cancel Appointment
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+}

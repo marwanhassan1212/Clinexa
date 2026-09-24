@@ -29,6 +29,16 @@ namespace Clinexa.Services.Interfaces
            int pageSize);
         Task<bool> UpdateAsync(Appointment appointment);
 
-        Task<bool> CancelAsync(int id);
+        Task<bool> CancelAsync(int id , string? cancellationReason);
+
+        Task<bool> ConfirmAsync(int id);
+
+        Task<bool> CheckInAsync(int id);
+
+        Task<bool> StartConsultationAsync(int id);
+
+        Task<bool> CompleteAsync(int id);
+
+        Task<bool> MarkAsNoShowAsync(int id);
     }
 }

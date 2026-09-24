@@ -30,6 +30,8 @@ namespace Clinexa.Repositories.Interfaces
         Task<bool> ExistsForAppointmentAsync(
             int appointmentId,
             int? excludedInvoiceId = null);
+        Task<bool> IsAppointmentCancelledAsync(int appointmentId);
+
 
         Task AddAsync(Invoice invoice);
 

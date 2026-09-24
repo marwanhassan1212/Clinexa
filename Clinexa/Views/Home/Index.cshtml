@@ -1,50 +1,47 @@
-﻿@{
+﻿@model Clinexa.Models.ViewModels.Dashboard.DashboardViewModel
+
+@{
     ViewData["Title"] = "Dashboard";
+
+    var hour = DateTime.Now.Hour;
+
+    var greeting =
+        hour < 12 ? "Good morning" :
+        hour < 18 ? "Good afternoon" :
+        "Good evening";
 }
 
-<!-- =========================================================
-     WELCOME
-========================================================= -->
+<!-- Page Header -->
+<div class="page-header d-print-none mb-4">
 
-<div class="row row-cards mb-4">
+    <div class="row align-items-center">
 
-    <div class="col-12">
+        <div class="col">
 
-        <div class="card">
-
-            <div class="card-body">
-
-                <div class="row align-items-center">
-
-                    <div class="col">
-
-                        <div class="h2 mb-1">
-                            Good afternoon 👋
-                        </div>
-
-                        <div class="text-secondary">
-                            Here's what's happening in your clinic today.
-                        </div>
-
-                    </div>
-
-                    <div class="col-auto">
-
-                        <a asp-controller="Appointment"
-                           asp-action="Index"
-                           class="btn btn-primary">
-
-                            <i class="bi bi-calendar-plus me-1"></i>
-
-                            New Appointment
-
-                        </a>
-
-                    </div>
-
-                </div>
-
+            <div class="page-pretitle">
+                Clinic Overview
             </div>
+
+            <h2 class="page-title">
+                @greeting
+            </h2>
+
+            <div class="text-secondary mt-1">
+                Monitor appointments, patients, doctors, and billing activity.
+            </div>
+
+        </div>
+
+        <div class="col-auto ms-auto">
+
+            <a asp-controller="Appointment"
+               asp-action="Create"
+               class="btn btn-primary">
+
+                <i class="bi bi-calendar-plus me-1"></i>
+                New Appointment
+
+            </a>
 
         </div>
 
@@ -53,16 +50,11 @@
 </div>
 
 
-<!-- =========================================================
-     KEY METRICS
-========================================================= -->
-
+<!-- KPI Cards -->
 <div class="row row-cards mb-4">
 
-
     <!-- Today's Appointments -->
-
-    <div class="col-sm-6 col-lg-3">
+    <div class="col-sm-6 col-xl-3">
 
         <div class="card">
 
@@ -75,16 +67,16 @@
                     </div>
 
                     <div class="ms-auto">
-                        <i class="bi bi-calendar3 text-primary fs-2"></i>
+                        <i class="bi bi-calendar-check text-primary fs-2"></i>
                     </div>
 
                 </div>
 
-                <div class="h1 mb-1">
-                    24
+                <div class="h1 mb-0 mt-2">
+                    @Model.TodayAppointments
                 </div>
 
-                <div class="text-secondary">
+                <div class="text-secondary mt-1">
                     Scheduled for today
                 </div>
 
@@ -95,9 +87,8 @@
     </div>
 
 
-    <!-- Patients -->
-
-    <div class="col-sm-6 col-lg-3">
+    <!-- Active Patients -->
+    <div class="col-sm-6 col-xl-3">
 
         <div class="card">
 
@@ -110,16 +101,16 @@
                     </div>
 
                     <div class="ms-auto">
-                        <i class="bi bi-people text-primary fs-2"></i>
+                        <i class="bi bi-people text-success fs-2"></i>
                     </div>
 
                 </div>
 
-                <div class="h1 mb-1">
-                    1,248
+                <div class="h1 mb-0 mt-2">
+                    @Model.ActivePatients.ToString("N0")
                 </div>
 
-                <div class="text-secondary">
+                <div class="text-secondary mt-1">
                     Currently active
                 </div>
 
@@ -130,9 +121,8 @@
     </div>
 
 
-    <!-- Doctors -->
-
-    <div class="col-sm-6 col-lg-3">
+    <!-- Active Doctors -->
+    <div class="col-sm-6 col-xl-3">
 
         <div class="card">
 
@@ -141,21 +131,21 @@
                 <div class="d-flex align-items-center">
 
                     <div class="subheader">
-                        Doctors
+                        Active Doctors
                     </div>
 
                     <div class="ms-auto">
-                        <i class="bi bi-person-badge text-primary fs-2"></i>
+                        <i class="bi bi-person-badge text-info fs-2"></i>
                     </div>
 
                 </div>
 
-                <div class="h1 mb-1">
-                    12
+                <div class="h1 mb-0 mt-2">
+                    @Model.ActiveDoctors
                 </div>
 
-                <div class="text-secondary">
-                    Active doctors
+                <div class="text-secondary mt-1">
+                    Currently active
                 </div>
 
             </div>
@@ -165,9 +155,8 @@
     </div>
 
 
-    <!-- Revenue -->
-
-    <div class="col-sm-6 col-lg-3">
+    <!-- Today's Revenue -->
+    <div class="col-sm-6 col-xl-3">
 
         <div class="card">
 
@@ -180,16 +169,16 @@
                     </div>
 
                     <div class="ms-auto">
-                        <i class="bi bi-cash-stack text-primary fs-2"></i>
+                        <i class="bi bi-cash-stack text-warning fs-2"></i>
                     </div>
 
                 </div>
 
-                <div class="h1 mb-1">
-                    $4,850
+                <div class="h1 mb-0 mt-2">
+                    @Model.TodayRevenue.ToString("N2") EGP
                 </div>
 
-                <div class="text-secondary">
+                <div class="text-secondary mt-1">
                     Payments received today
                 </div>
 
@@ -202,18 +191,13 @@
 </div>
 
 
-<!-- =========================================================
-     MAIN DASHBOARD
-========================================================= -->
-
-<div class="row row-cards">
-
+<!-- Main Operations -->
+<div class="row row-cards mb-4">
 
     <!-- Today's Appointments -->
-
     <div class="col-lg-8">
 
-        <div class="card">
+        <div class="card h-100">
 
             <div class="card-header">
 
@@ -225,9 +209,9 @@
 
                     <a asp-controller="Appointment"
                        asp-action="Index"
-                       class="btn btn-sm btn-ghost-primary">
+                       class="btn btn-sm btn-outline-secondary">
 
-                        View all
+                        View All
 
                     </a>
 
@@ -236,176 +220,365 @@
             </div>
 
 
-            <div class="table-responsive">
+            @if (Model.TodayAppointmentsList.Any())
+            {
+                <div class="table-responsive">
 
-                <table class="table table-vcenter card-table clinexa-table">
+                    <table class="table table-vcenter card-table">
 
-                    <thead>
+                        <thead>
 
-                        <tr>
+                            <tr>
+                                <th>Time</th>
+                                <th>Patient</th>
+                                <th>Doctor</th>
+                                <th>Status</th>
+                                <th class="w-1"></th>
+                            </tr>
 
-                            <th>Patient</th>
+                        </thead>
 
-                            <th>Doctor</th>
+                        <tbody>
 
-                            <th>Time</th>
+                            @foreach (var appointment in Model.TodayAppointmentsList)
+                            {
+                                <tr>
 
-                            <th>Status</th>
+                                    <td>
+                                        <strong>
+                                            @DateTime.Today
+                                            .Add(appointment.StartTime)
+                                            .ToString("hh:mm tt")
+                                        </strong>
+                                    </td>
 
-                            <th class="w-1"></th>
+                                    <td>
+                                        @appointment.PatientName
+                                    </td>
 
-                        </tr>
+                                    <td>
+                                        @appointment.DoctorName
+                                    </td>
 
-                    </thead>
+                                    <td>
 
-                    <tbody>
+                                        @switch (appointment.Status)
+                                        {
+                                            case Clinexa.Enums.AppointmentStatus.Scheduled:
 
-                        <tr>
+                                                <span class="badge bg-secondary-lt">
+                                                    Scheduled
+                                                </span>
 
-                            <td>
-                                <strong>Ahmed Hassan</strong>
-                            </td>
+                                                break;
 
-                            <td>
-                                Dr. Mohamed Ali
-                            </td>
+                                            case Clinexa.Enums.AppointmentStatus.Confirmed:
 
-                            <td>
-                                09:30 AM
-                            </td>
+                                                <span class="badge bg-success-lt">
+                                                    Confirmed
+                                                </span>
 
-                            <td>
+                                                break;
 
-                                <span class="badge bg-green-lt">
-                                    Confirmed
-                                </span>
+                                            case Clinexa.Enums.AppointmentStatus.CheckedIn:
 
-                            </td>
+                                                <span class="badge bg-warning-lt">
+                                                    Checked In
+                                                </span>
 
-                            <td>
+                                                break;
 
-                                <a href="#"
-                                   class="btn btn-sm btn-ghost-secondary">
+                                            case Clinexa.Enums.AppointmentStatus.InConsultation:
 
-                                    <i class="bi bi-three-dots"></i>
+                                                <span class="badge bg-primary-lt">
+                                                    In Consultation
+                                                </span>
 
-                                </a>
+                                                break;
 
-                            </td>
+                                            case Clinexa.Enums.AppointmentStatus.Completed:
 
-                        </tr>
+                                                <span class="badge bg-success-lt">
+                                                    Completed
+                                                </span>
 
+                                                break;
 
-                        <tr>
+                                            case Clinexa.Enums.AppointmentStatus.Cancelled:
 
-                            <td>
-                                <strong>Sara Mohamed</strong>
-                            </td>
+                                                <span class="badge bg-danger-lt">
+                                                    Cancelled
+                                                </span>
 
-                            <td>
-                                Dr. Ahmed Hassan
-                            </td>
+                                                break;
 
-                            <td>
-                                10:00 AM
-                            </td>
+                                            case Clinexa.Enums.AppointmentStatus.NoShow:
 
-                            <td>
+                                                <span class="badge bg-warning-lt">
+                                                    No Show
+                                                </span>
 
-                                <span class="badge bg-yellow-lt">
-                                    Waiting
-                                </span>
+                                                break;
+                                        }
 
-                            </td>
+                                    </td>
 
-                            <td>
+                                    <td>
 
-                                <a href="#"
-                                   class="btn btn-sm btn-ghost-secondary">
+                                        <a asp-controller="Appointment"
+                                           asp-action="Details"
+                                           asp-route-id="@appointment.AppointmentId"
+                                           class="btn btn-sm btn-outline-secondary"
+                                           title="View Details">
 
-                                    <i class="bi bi-three-dots"></i>
+                                            <i class="bi bi-eye"></i>
 
-                                </a>
+                                        </a>
 
-                            </td>
+                                    </td>
 
-                        </tr>
+                                </tr>
+                            }
 
+                        </tbody>
 
-                        <tr>
+                    </table>
 
-                            <td>
-                                <strong>Omar Khaled</strong>
-                            </td>
+                </div>
+            }
+            else
+            {
+                <div class="card-body">
 
-                            <td>
-                                Dr. Mohamed Ali
-                            </td>
+                    <div class="empty py-4">
 
-                            <td>
-                                11:30 AM
-                            </td>
+                        <div class="empty-icon">
+                            <i class="bi bi-calendar-x fs-2"></i>
+                        </div>
 
-                            <td>
+                        <p class="empty-title">
+                            No appointments today
+                        </p>
 
-                                <span class="badge bg-blue-lt">
-                                    Completed
-                                </span>
+                        <p class="empty-subtitle text-secondary">
+                            There are no appointments scheduled for today.
+                        </p>
 
-                            </td>
+                        <div class="empty-action">
 
-                            <td>
+                            <a asp-controller="Appointment"
+                               asp-action="Create"
+                               class="btn btn-primary">
 
-                                <a href="#"
-                                   class="btn btn-sm btn-ghost-secondary">
+                                <i class="bi bi-calendar-plus me-1"></i>
+                                Book Appointment
 
-                                    <i class="bi bi-three-dots"></i>
+                            </a>
 
-                                </a>
+                        </div>
 
-                            </td>
+                    </div>
 
-                        </tr>
+                </div>
+            }
 
+        </div>
 
-                        <tr>
+    </div>
 
-                            <td>
-                                <strong>Mariam Adel</strong>
-                            </td>
 
-                            <td>
-                                Dr. Ahmed Hassan
-                            </td>
+    <!-- Today's Overview -->
+    <div class="col-lg-4">
 
-                            <td>
-                                12:00 PM
-                            </td>
+        <div class="card h-100">
 
-                            <td>
+            <div class="card-header">
 
-                                <span class="badge bg-red-lt">
-                                    Cancelled
-                                </span>
+                <h3 class="card-title">
+                    Today's Overview
+                </h3>
 
-                            </td>
+            </div>
 
-                            <td>
+            <div class="card-body">
 
-                                <a href="#"
-                                   class="btn btn-sm btn-ghost-secondary">
+                <!-- Completed -->
+                <div class="d-flex align-items-center mb-4">
 
-                                    <i class="bi bi-three-dots"></i>
+                    <span class="avatar avatar-sm bg-success-lt me-3">
+                        <i class="bi bi-check-circle text-success"></i>
+                    </span>
 
-                                </a>
+                    <div class="flex-fill">
 
-                            </td>
+                        <div class="fw-semibold">
+                            Completed
+                        </div>
 
-                        </tr>
+                        <div class="text-secondary small">
+                            Finished appointments
+                        </div>
 
-                    </tbody>
+                    </div>
 
-                </table>
+                    <div class="fw-bold fs-2">
+                        @Model.CompletedAppointments
+                    </div>
+
+                </div>
+
+
+                <!-- Upcoming -->
+                <div class="d-flex align-items-center mb-4">
+
+                    <span class="avatar avatar-sm bg-primary-lt me-3">
+                        <i class="bi bi-clock text-primary"></i>
+                    </span>
+
+                    <div class="flex-fill">
+
+                        <div class="fw-semibold">
+                            Upcoming
+                        </div>
+
+                        <div class="text-secondary small">
+                            Still waiting
+                        </div>
+
+                    </div>
+
+                    <div class="fw-bold fs-2">
+                        @Model.UpcomingAppointments
+                    </div>
+
+                </div>
+
+
+                <!-- Cancelled -->
+                <div class="d-flex align-items-center mb-4">
+
+                    <span class="avatar avatar-sm bg-danger-lt me-3">
+                        <i class="bi bi-x-circle text-danger"></i>
+                    </span>
+
+                    <div class="flex-fill">
+
+                        <div class="fw-semibold">
+                            Cancelled
+                        </div>
+
+                        <div class="text-secondary small">
+                            Cancelled today
+                        </div>
+
+                    </div>
+
+                    <div class="fw-bold fs-2">
+                        @Model.CancelledAppointments
+                    </div>
+
+                </div>
+
+
+                <!-- No Show -->
+                <div class="d-flex align-items-center">
+
+                    <span class="avatar avatar-sm bg-warning-lt me-3">
+                        <i class="bi bi-person-x text-warning"></i>
+                    </span>
+
+                    <div class="flex-fill">
+
+                        <div class="fw-semibold">
+                            No Show
+                        </div>
+
+                        <div class="text-secondary small">
+                            Did not attend
+                        </div>
+
+                    </div>
+
+                    <div class="fw-bold fs-2">
+                        @Model.NoShowAppointments
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- Billing + Attention -->
+<div class="row row-cards mb-4">
+
+    <!-- Billing -->
+    <div class="col-lg-6">
+
+        <div class="card h-100">
+
+            <div class="card-header">
+
+                <h3 class="card-title">
+                    Billing
+                </h3>
+
+                <div class="card-actions">
+
+                    <a asp-controller="Invoice"
+                       asp-action="Index"
+                       class="btn btn-sm btn-outline-secondary">
+
+                        View Invoices
+
+                    </a>
+
+                </div>
+
+            </div>
+
+            <div class="card-body">
+
+                <div class="row">
+
+                    <div class="col-sm-6">
+
+                        <div class="subheader">
+                            Unpaid Invoices
+                        </div>
+
+                        <div class="h1 mb-1">
+                            @Model.UnpaidInvoices
+                        </div>
+
+                        <div class="text-secondary">
+                            Unpaid or partially paid
+                        </div>
+
+                    </div>
+
+                    <div class="col-sm-6">
+
+                        <div class="subheader">
+                            Outstanding Amount
+                        </div>
+
+                        <div class="h1 mb-1">
+                            @Model.OutstandingAmount.ToString("N2") EGP
+                        </div>
+
+                        <div class="text-secondary">
+                            Remaining balance
+                        </div>
+
+                    </div>
+
+                </div>
 
             </div>
 
@@ -414,132 +587,91 @@
     </div>
 
 
-    <!-- Quick Actions -->
+    <!-- Needs Attention -->
+    <div class="col-lg-6">
 
-    <div class="col-lg-4">
-
-        <div class="card">
+        <div class="card h-100">
 
             <div class="card-header">
 
                 <h3 class="card-title">
-                    Quick Actions
+                    Needs Attention
                 </h3>
 
             </div>
 
 
-            <div class="list-group list-group-flush">
+            @if (Model.Alerts.Any())
+            {
+                <div class="list-group list-group-flush">
 
+                    @foreach (var alert in Model.Alerts)
+                    {
+                        <a asp-controller="@alert.Controller"
+                           asp-action="@alert.Action"
+                           class="list-group-item list-group-item-action">
 
-                <a asp-controller="Patient"
-                   asp-action="Create"
-                   class="list-group-item list-group-item-action">
+                            <div class="row align-items-center">
 
-                    <div class="d-flex align-items-center">
+                                <div class="col-auto">
 
-                        <span class="avatar bg-blue-lt me-3">
-                            <i class="bi bi-person-plus"></i>
-                        </span>
+                                    <span class="avatar avatar-sm bg-secondary-lt">
 
-                        <div>
+                                        <i class="@alert.Icon @alert.CssClass"></i>
 
-                            <div class="fw-semibold">
-                                Add Patient
+                                    </span>
+
+                                </div>
+
+                                <div class="col">
+
+                                    <div class="fw-semibold">
+                                        @alert.Title
+                                    </div>
+
+                                    <div class="text-secondary small">
+                                        @alert.Description
+                                    </div>
+
+                                </div>
+
+                                <div class="col-auto">
+
+                                    <i class="bi bi-chevron-right text-secondary"></i>
+
+                                </div>
+
                             </div>
 
-                            <div class="text-secondary small">
-                                Register a new patient
-                            </div>
+                        </a>
+                    }
+
+                </div>
+            }
+            else
+            {
+                <div class="card-body">
+
+                    <div class="empty py-3">
+
+                        <div class="empty-icon">
+
+                            <i class="bi bi-check-circle text-success fs-2"></i>
 
                         </div>
 
-                    </div>
+                        <p class="empty-title mb-1">
+                            Everything looks good
+                        </p>
 
-                </a>
-
-
-                <a asp-controller="Appointment"
-                   asp-action="Create"
-                   class="list-group-item list-group-item-action">
-
-                    <div class="d-flex align-items-center">
-
-                        <span class="avatar bg-green-lt me-3">
-                            <i class="bi bi-calendar-plus"></i>
-                        </span>
-
-                        <div>
-
-                            <div class="fw-semibold">
-                                Book Appointment
-                            </div>
-
-                            <div class="text-secondary small">
-                                Schedule a patient visit
-                            </div>
-
-                        </div>
+                        <p class="empty-subtitle text-secondary">
+                            No urgent items require attention.
+                        </p>
 
                     </div>
 
-                </a>
-
-
-                <a asp-controller="MedicalRecord"
-                   asp-action="Create"
-                   class="list-group-item list-group-item-action">
-
-                    <div class="d-flex align-items-center">
-
-                        <span class="avatar bg-purple-lt me-3">
-                            <i class="bi bi-file-medical"></i>
-                        </span>
-
-                        <div>
-
-                            <div class="fw-semibold">
-                                Medical Record
-                            </div>
-
-                            <div class="text-secondary small">
-                                Create a medical record
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </a>
-
-
-                <a asp-controller="Invoice"
-                   asp-action="Create"
-                   class="list-group-item list-group-item-action">
-
-                    <div class="d-flex align-items-center">
-
-                        <span class="avatar bg-orange-lt me-3">
-                            <i class="bi bi-receipt"></i>
-                        </span>
-
-                        <div>
-
-                            <div class="fw-semibold">
-                                Create Invoice
-                            </div>
-
-                            <div class="text-secondary small">
-                                Generate a patient invoice
-                            </div>
-
-                        </div>
-
-                    </div>
-
-                </a>
-
-            </div>
+                </div>
+            }
 
         </div>
 

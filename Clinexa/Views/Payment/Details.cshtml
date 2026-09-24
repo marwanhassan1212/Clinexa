@@ -2,6 +2,9 @@
 
 @{
     ViewData["Title"] = "Payment Details";
+
+    var isInvoiceCancelled =
+        Model.Invoice?.InvoiceStatus == Clinexa.Enums.InvoiceStatus.Cancelled;
 }
 
 <div class="page-header d-print-none">
@@ -32,14 +35,17 @@
 
                     </a>
 
-                    <a asp-action="Edit"
-                       asp-route-id="@Model.PaymentId"
-                       class="btn btn-primary">
+                    @if (!isInvoiceCancelled)
+                    {
+                        <a asp-action="Edit"
+                           asp-route-id="@Model.PaymentId"
+                           class="btn btn-primary">
 
-                        <i class="bi bi-pencil me-1"></i>
-                        Edit Payment
+                            <i class="bi bi-pencil me-1"></i>
+                            Edit Payment
 
-                    </a>
+                        </a>
+                    }
 
                 </div>
 
@@ -95,7 +101,7 @@
                                 </div>
 
                                 <div class="fw-bold">
-                                    @Model.PaymentDate.ToString("dd MMM yyyy")
+                                    @Model.PaymentDate
                                 </div>
 
                             </div>
@@ -189,6 +195,67 @@
                             </div>
 
 
+                            <!-- Invoice Status -->
+                            <div class="col-md-6">
+
+                                <div class="text-secondary small mb-1">
+                                    Invoice Status
+                                </div>
+
+                                <div>
+
+                                    @switch (Model.Invoice?.InvoiceStatus)
+                                    {
+                                        case Clinexa.Enums.InvoiceStatus.Paid:
+
+                                            <span class="badge bg-success-lt">
+                                                <i class="bi bi-check-circle me-1"></i>
+                                                Paid
+                                            </span>
+
+                                            break;
+
+                                        case Clinexa.Enums.InvoiceStatus.PartiallyPaid:
+
+                                            <span class="badge bg-warning-lt">
+                                                <i class="bi bi-clock-history me-1"></i>
+                                                Partially Paid
+                                            </span>
+
+                                            break;
+
+                                        case Clinexa.Enums.InvoiceStatus.Unpaid:
+
+                                            <span class="badge bg-danger-lt">
+                                                <i class="bi bi-exclamation-circle me-1"></i>
+                                                Unpaid
+                                            </span>
+
+                                            break;
+
+                                        case Clinexa.Enums.InvoiceStatus.Cancelled:
+
+                                            <span class="badge bg-secondary-lt">
+                                                <i class="bi bi-x-circle me-1"></i>
+                                                Cancelled
+                                            </span>
+
+                                            break;
+
+                                        default:
+
+                                            <span class="text-secondary">
+                                                —
+                                            </span>
+
+                                            break;
+                                    }
+
+                                </div>
+
+                            </div>
+
+
                             <!-- Notes -->
                             <div class="col-12">
 
@@ -241,11 +308,14 @@
                                 Payment Amount
                             </div>
 
-                            <div class="fw-bold fs-2">
+                            <div class="fw-bold fs-2 text-success">
+
                                 @Model.Amount.ToString("N2")
+
                                 <span class="fs-5">
                                     EGP
                                 </span>
+
                             </div>
 
                         </div>
@@ -267,6 +337,27 @@
                     </div>
 
                 </div>
+
+
+                @if (isInvoiceCancelled)
+                {
+                    <div class="alert alert-warning mt-3">
+
+                        <div class="d-flex">
+
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+
+                            <div>
+                                <strong>Invoice Cancelled</strong>
+                                <div class="small mt-1">
+                                    This payment cannot be edited because its invoice is cancelled.
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                }
 
             </div>
 

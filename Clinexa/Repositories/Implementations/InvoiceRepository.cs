@@ -172,6 +172,15 @@ namespace Clinexa.Repositories.Implementations
                 .ToListAsync();
         }
 
+        public async Task<bool> IsAppointmentCancelledAsync(int appointmentId)
+        {
+            return await _db.Appointments
+                .AsNoTracking()
+                .AnyAsync(x =>
+                    x.AppointmentId == appointmentId &&
+                    x.AppointmentStatus == AppointmentStatus.Cancelled);
+        }
+
         public async Task<bool> PatientExistsAsync(int patientId)
         {
             return await _db.Patients.AnyAsync(x => x.PatientId == patientId);

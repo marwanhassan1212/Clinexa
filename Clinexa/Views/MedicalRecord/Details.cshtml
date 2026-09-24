@@ -1,4 +1,5 @@
-﻿@model Clinexa.Models.Entities.MedicalRecord
+﻿
+@model Clinexa.Models.Entities.MedicalRecord
 
 @{
     ViewData["Title"] = "Medical Record Details";
@@ -165,9 +166,9 @@
                         {
                             <div class="text-secondary mt-2">
 
-                                @Model.Appointment.AppointmentDate.ToString("dd MMM yyyy")
+                                @Model.Appointment.AppointmentDate
                                 ·
-                                @Model.Appointment.StartTime.ToString(@"hh\:mm")
+                                @Model.Appointment.StartTime
 
                             </div>
                         }
@@ -325,7 +326,7 @@
 
                         <div class="h3 mt-1 mb-0">
 
-                            @Model.FollowUpDate.Value.ToString("dd MMM yyyy")
+                            @Model.FollowUpDate.Value
 
                         </div>
 
@@ -421,7 +422,7 @@
 
                             <div class="text-secondary">
 
-                                @Model.Prescription.PrescriptionDate.ToString("dd MMM yyyy")
+                                @Model.Prescription.PrescriptionDate
 
                             </div>
 
@@ -447,19 +448,22 @@
                             No prescription has been created for this medical record.
                         </p>
 
-                        <div class="empty-action">
+                        @if (Model.Appointment?.AppointmentStatus == Clinexa.Enums.AppointmentStatus.Completed)
+                        {
+                            <div class="empty-action">
 
-                            <a asp-controller="Prescription"
-                               asp-action="Create"
-                               asp-route-medicalRecordId="@Model.MedicalRecordId"
-                               class="btn btn-primary">
+                                <a asp-controller="Prescription"
+                                   asp-action="Create"
+                                   asp-route-medicalRecordId="@Model.MedicalRecordId"
+                                   class="btn btn-primary">
 
-                                <i class="bi bi-plus-lg me-1"></i>
-                                Create Prescription
+                                    <i class="bi bi-plus-lg me-1"></i>
+                                    Create Prescription
 
-                            </a>
+                                </a>
 
-                        </div>
+                            </div>
+                        }
 
                     </div>
                 }
@@ -488,7 +492,7 @@
                         </div>
 
                         <div class="fw-semibold">
-                            @Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")
+                            @Model.CreatedAt
                         </div>
 
                     </div>
@@ -503,7 +507,7 @@
 
                             @if (Model.UpdatedAt.HasValue)
                             {
-                                @Model.UpdatedAt.Value.ToString("dd MMM yyyy, hh:mm tt")
+                                @Model.UpdatedAt.Value
                             }
                             else
                             {

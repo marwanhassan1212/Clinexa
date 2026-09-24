@@ -33,6 +33,7 @@ namespace Clinexa
             builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
             builder.Services.AddScoped<IInvoiceItemRepository, InvoiceItemRepository>();
             builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
+            builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
 
             // Services
             builder.Services.AddScoped<IPatientService, PatientService>();
@@ -49,6 +50,7 @@ namespace Clinexa
             builder.Services.AddScoped<IInvoiceService, InvoiceService>();
             builder.Services.AddScoped<IInvoiceItemService, InvoiceItemService>();
             builder.Services.AddScoped<IPaymentService, PaymentService>();
+            builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 
             //PDF

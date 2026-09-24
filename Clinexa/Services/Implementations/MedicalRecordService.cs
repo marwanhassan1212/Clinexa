@@ -22,6 +22,15 @@ namespace Clinexa.Services.Implementations
                 return false;
             }
 
+            bool appointmentCompleted =
+                await medicalRecordRepository
+                    .IsAppointmentCompletedAsync(
+                        medicalRecord.AppointmentId);
+            if (!appointmentCompleted)
+            {
+                return false;
+            }
+
             bool doctorExists =
            await medicalRecordRepository
                .DoctorExistsAsync(

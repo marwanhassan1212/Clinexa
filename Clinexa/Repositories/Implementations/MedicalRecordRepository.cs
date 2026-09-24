@@ -1,4 +1,5 @@
 ﻿using Clinexa.Data;
+using Clinexa.Enums;
 using Clinexa.Models.Entities;
 using Clinexa.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -107,10 +108,10 @@ namespace Clinexa.Repositories.Implementations
                 .Include(x => x.Patient)
                 .Include(x => x.Doctor)
                     .ThenInclude(x => x.User)
-                 .Where(x =>
+              .Where(x =>
                     x.MedicalRecord == null &&
                     x.AppointmentDate <= DateTime.Today &&
-                    x.AppointmentStatus != Enums.AppointmentStatus.Cancelled)
+                    x.AppointmentStatus == AppointmentStatus.Completed)
                 .OrderByDescending(x => x.AppointmentDate)
                 .ThenByDescending(x => x.StartTime)
                 .ToListAsync();
@@ -130,6 +131,15 @@ namespace Clinexa.Repositories.Implementations
                 .AnyAsync(x =>
                     x.AppointmentId == appointmentId &&
                     x.PatientId == patientId);
+        }
+
+        public async Task<bool> IsAppointmentCompletedAsync(int appointmentId)
+        {
+            return await _db.Appointments
+                .AsNoTracking()
+                .AnyAsync(x =>
+                    x.AppointmentId == appointmentId &&
+                    x.AppointmentStatus == AppointmentStatus.Completed);
         }
     }
 }

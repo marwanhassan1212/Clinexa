@@ -46,7 +46,6 @@
 
         </div>
     </div>
-
 </div>
 
 <div class="page-body">
@@ -87,6 +86,15 @@
 
                                     break;
 
+                                case Clinexa.Enums.InvoiceStatus.Cancelled:
+
+                                    <span class="badge bg-secondary-lt">
+                                        <i class="bi bi-x-circle me-1"></i>
+                                        Cancelled
+                                    </span>
+
+                                    break;
+
                                 default:
 
                                     <span class="badge bg-red-lt">
@@ -100,7 +108,6 @@
                         </div>
 
                     </div>
-
 
                     <div class="card-body">
 
@@ -119,7 +126,6 @@
 
                             </div>
 
-
                             <!-- Invoice Date -->
                             <div class="col-md-3">
 
@@ -128,11 +134,10 @@
                                 </div>
 
                                 <div class="fw-bold">
-                                    @Model.Invoice.InvoiceDate.ToString("dd MMM yyyy")
+                                    @Model.Invoice.InvoiceDate
                                 </div>
 
                             </div>
-
 
                             <!-- Patient -->
                             <div class="col-md-3">
@@ -147,16 +152,17 @@
                                    class="text-reset text-decoration-none">
 
                                     <div class="fw-bold">
+
                                         @Model.Invoice.Patient.FirstName
                                         @Model.Invoice.Patient.LastName
 
                                         <i class="bi bi-box-arrow-up-right ms-1 small"></i>
+
                                     </div>
 
                                 </a>
 
                             </div>
-
 
                             <!-- Appointment -->
                             <div class="col-md-3">
@@ -165,21 +171,30 @@
                                     Appointment
                                 </div>
 
-                                <div class="fw-bold">
-                                    #@Model.Invoice.AppointmentId
-                                </div>
+                                <a asp-controller="Appointment"
+                                   asp-action="Details"
+                                   asp-route-id="@Model.Invoice.AppointmentId"
+                                   class="text-decoration-none">
 
-                                <div class="text-secondary small">
+                                    <div class="fw-bold">
+                                        #@Model.Invoice.AppointmentId
+                                    </div>
 
-                                    @Model.Invoice.Appointment.AppointmentDate.ToString("dd MMM yyyy")
+                                    <div class="text-secondary small">
 
-                                    ·
+                                        @Model.Invoice.Appointment.AppointmentDate
 
-                                    Dr.
-                                    @Model.Invoice.Appointment.Doctor.User.FirstName
-                                    @Model.Invoice.Appointment.Doctor.User.LastName
+                                        ·
 
-                                </div>
+                                        Dr.
+                                        @Model.Invoice.Appointment.Doctor.User.FirstName
+                                        @Model.Invoice.Appointment.Doctor.User.LastName
+
+                                        <i class="bi bi-box-arrow-up-right ms-1"></i>
+
+                                    </div>
+
+                                </a>
 
                             </div>
 
@@ -191,7 +206,6 @@
 
             </div>
 
-
             <!-- Invoice Items -->
             <div class="col-lg-8">
 
@@ -200,11 +214,13 @@
                     <div class="card-header">
 
                         <h3 class="card-title">
+
                             Invoice Items
 
                             <span class="badge bg-secondary-lt ms-2">
                                 @Model.InvoiceItems.Count
                             </span>
+
                         </h3>
 
                         <div class="card-actions">
@@ -223,7 +239,6 @@
 
                     </div>
 
-
                     <div class="table-responsive">
 
                         @if (Model.InvoiceItems.Any())
@@ -231,6 +246,7 @@
                             <table class="table table-vcenter card-table">
 
                                 <thead>
+
                                     <tr>
 
                                         <th>
@@ -253,8 +269,8 @@
                                         </th>
 
                                     </tr>
-                                </thead>
 
+                                </thead>
 
                                 <tbody>
 
@@ -263,24 +279,26 @@
                                         <tr>
 
                                             <td>
+
                                                 <div class="fw-medium">
                                                     @item.Description
                                                 </div>
-                                            </td>
 
+                                            </td>
 
                                             <td class="text-center">
                                                 @item.Quantity
                                             </td>
 
-
                                             <td class="text-end">
+
                                                 @item.UnitPrice.ToString("N2")
+
                                                 <span class="text-secondary small">
                                                     EGP
                                                 </span>
-                                            </td>
 
+                                            </td>
 
                                             <td class="text-end">
 
@@ -293,7 +311,6 @@
                                                 </div>
 
                                             </td>
-
 
                                             <td>
 
@@ -308,7 +325,6 @@
                                                         <i class="bi bi-pencil"></i>
 
                                                     </a>
-
 
                                                     <form asp-controller="InvoiceItem"
                                                           asp-action="Delete"
@@ -345,7 +361,9 @@
                             <div class="empty py-5">
 
                                 <div class="empty-icon">
+
                                     <i class="bi bi-receipt fs-1"></i>
+
                                 </div>
 
                                 <p class="empty-title">
@@ -379,7 +397,6 @@
 
             </div>
 
-
             <!-- Financial Summary -->
             <div class="col-lg-4">
 
@@ -393,7 +410,6 @@
 
                     </div>
 
-
                     <div class="card-body">
 
                         <!-- Subtotal -->
@@ -404,12 +420,14 @@
                             </span>
 
                             <span class="fw-medium">
+
                                 @Model.Invoice.SubTotal.ToString("N2")
+
                                 EGP
+
                             </span>
 
                         </div>
-
 
                         <!-- Discount -->
                         <div class="d-flex justify-content-between mb-3">
@@ -419,12 +437,14 @@
                             </span>
 
                             <span class="fw-medium">
+
                                 - @Model.Invoice.Discount.ToString("N2")
+
                                 EGP
+
                             </span>
 
                         </div>
-
 
                         <!-- Tax -->
                         <div class="d-flex justify-content-between mb-3">
@@ -434,15 +454,16 @@
                             </span>
 
                             <span class="fw-medium">
+
                                 @Model.Invoice.Tax.ToString("N2")
+
                                 EGP
+
                             </span>
 
                         </div>
 
-
                         <div class="hr my-3"></div>
-
 
                         <!-- Total -->
                         <div class="d-flex justify-content-between align-items-center mb-4">
@@ -452,14 +473,16 @@
                             </span>
 
                             <span class="fw-bold fs-2">
+
                                 @Model.Invoice.TotalAmount.ToString("N2")
+
                                 <span class="fs-5">
                                     EGP
                                 </span>
+
                             </span>
 
                         </div>
-
 
                         <!-- Paid -->
                         <div class="d-flex justify-content-between mb-3">
@@ -469,12 +492,14 @@
                             </span>
 
                             <span class="text-success fw-medium">
+
                                 @Model.Invoice.PaidAmount.ToString("N2")
+
                                 EGP
+
                             </span>
 
                         </div>
-
 
                         <!-- Remaining -->
                         <div class="d-flex justify-content-between">
@@ -483,26 +508,35 @@
                                 Remaining
                             </span>
 
-                            <span class="text-danger fw-bold">
+                            <span class="@(Model.Invoice.RemainingAmount > 0
+                                                                  ? "text-danger fw-bold"
+                                                                  : "text-success fw-bold")">
+
                                 @Model.Invoice.RemainingAmount.ToString("N2")
+
                                 EGP
+
                             </span>
 
                         </div>
 
-                        <div class="border-top mt-3 pt-3">
+                        @if (Model.Invoice.InvoiceStatus != Clinexa.Enums.InvoiceStatus.Cancelled
+                                                && Model.Invoice.RemainingAmount > 0)
+                        {
+                            <div class="border-top mt-3 pt-3">
 
-                            <a asp-controller="Payment"
-                               asp-action="Create"
-                               asp-route-invoiceId="@Model.Invoice.InvoiceId"
-                               class="btn btn-primary w-100">
+                                <a asp-controller="Payment"
+                                   asp-action="Create"
+                                   asp-route-invoiceId="@Model.Invoice.InvoiceId"
+                                   class="btn btn-primary w-100">
 
-                                <i class="bi bi-cash-stack me-1"></i>
-                                Add Payment
+                                    <i class="bi bi-cash-stack me-1"></i>
+                                    Add Payment
 
-                            </a>
+                                </a>
 
-                        </div>
+                            </div>
+                        }
 
                     </div>
 
@@ -510,10 +544,7 @@
 
             </div>
 
-
-
         </div>
 
     </div>
-
 </div>

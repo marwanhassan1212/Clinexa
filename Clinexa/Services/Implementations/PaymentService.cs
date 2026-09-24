@@ -32,6 +32,9 @@ namespace Clinexa.Services.Implementations
             if (invoice == null)
                 return false;
 
+            if (invoice.InvoiceStatus == InvoiceStatus.Cancelled)
+                return false;
+
             // 4. Get previous payments
             decimal totalPaid =
                 await paymentRepository.GetTotalPaidForInvoiceAsync(payment.InvoiceId);
@@ -40,25 +43,29 @@ namespace Clinexa.Services.Implementations
             decimal remainingAmount =
                 invoice.TotalAmount - totalPaid;
 
-            // 6. Payment cannot exceed remaining amount
+            // 6. Invoice is already fully paid
+            if (remainingAmount <= 0)
+                return false;
+
+            // 7. Payment cannot exceed remaining amount
             if (payment.Amount > remainingAmount)
                 return false;
 
-            // 7. Set payment date automatically if not provided
+            // 8. Set payment date automatically if not provided
             if (payment.PaymentDate == default)
                 payment.PaymentDate = DateTime.Now;
 
-            // 8. Add payment
+            // 9. Add payment
             await paymentRepository.AddAsync(payment);
 
-            // 9. Recalculate invoice financial data
+            // 10. Recalculate invoice financial data
             totalPaid += payment.Amount;
 
             invoice.PaidAmount = totalPaid;
             invoice.RemainingAmount =
                 invoice.TotalAmount - totalPaid;
 
-            // 10. Update invoice status
+            // 11. Update invoice status
             if (invoice.PaidAmount == 0)
             {
                 invoice.InvoiceStatus =
@@ -75,7 +82,7 @@ namespace Clinexa.Services.Implementations
                     Enums.InvoiceStatus.Paid;
             }
 
-            // 11. Save payment + invoice together
+            // 12. Save payment + invoice together
             await paymentRepository.SaveChangesAsync();
 
             return true;
@@ -148,6 +155,9 @@ namespace Clinexa.Services.Implementations
                 await paymentRepository.GetInvoiceByIdAsync(payment.InvoiceId);
 
             if (invoice == null)
+                return false;
+
+            if (invoice.InvoiceStatus == InvoiceStatus.Cancelled)
                 return false;
 
             // 6. Get all payments total

@@ -1,4 +1,5 @@
 ﻿using Clinexa.Data;
+using Clinexa.Enums;
 using Clinexa.Models.Entities;
 using Clinexa.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -163,9 +164,7 @@ namespace Clinexa.Repositories.Implementations
                 .ToListAsync();
         }
 
-        public async Task<List<MedicalRecord>> SearchMedicalRecordsAsync(
-    string? search,
-    int take = 10)
+        public async Task<List<MedicalRecord>> SearchMedicalRecordsAsync(string? search, int take = 10)
         {
             IQueryable<MedicalRecord> query = _db.MedicalRecords
                 .AsNoTracking()
@@ -203,6 +202,15 @@ namespace Clinexa.Repositories.Implementations
                 .OrderByDescending(x => x.MedicalRecordId)
                 .Take(take)
                 .ToListAsync();
+        }
+
+        public async Task<bool> IsMedicalRecordAppointmentCompletedAsync(int medicalRecordId)
+        {
+            return await _db.MedicalRecords
+                .AsNoTracking()
+                .AnyAsync(x =>
+                    x.MedicalRecordId == medicalRecordId &&
+                    x.Appointment.AppointmentStatus == AppointmentStatus.Completed);
         }
     }
 }

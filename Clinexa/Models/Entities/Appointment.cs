@@ -17,6 +17,7 @@ namespace Clinexa.Models.Entities
         public DateTime? CheckedInAt { get; set; }
         public DateTime? CompletedAt { get; set; }
         public DateTime? CancelledAt { get; set; }
+        public DateTime? ConsultationStartedAt { get; set; }
         public string? CancellationReason { get; set; }
         public Patient Patient { get; set; } = null!;
         public int PatientId { get; set; }

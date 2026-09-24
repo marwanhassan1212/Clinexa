@@ -33,7 +33,17 @@ namespace Clinexa.Services.Implementations
                 return false;
             }
 
-            
+            bool appointmentCancelled =
+                await invoiceRepository
+                    .IsAppointmentCancelledAsync(
+                        invoice.AppointmentId);
+
+            if (appointmentCancelled)
+            {
+                return false;
+            }
+
+
             bool invoiceExists =
                 await invoiceRepository
                     .ExistsForAppointmentAsync(invoice.AppointmentId);
