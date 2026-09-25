@@ -2,9 +2,11 @@
 using Clinexa.Models.ViewModels.Role;
 using Clinexa.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Clinexa.Controllers
 {
+    [Authorize(Policy = "AdminOnly")]
     public class RoleController : Controller
     {
         private readonly IRoleService roleService;
@@ -83,7 +85,7 @@ namespace Clinexa.Controllers
 
             var model = new RoleEditViewModel
             {
-                RoleId = role.RoleId,
+                RoleId = role.Id,
                 Name = role.Name,
                 Description = role.Description
             };

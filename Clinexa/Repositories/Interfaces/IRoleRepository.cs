@@ -4,16 +4,12 @@ namespace Clinexa.Repositories.Interfaces
 {
     public interface IRoleRepository
     {
-        Task<Role?> GetByIdAsync(int id);
+        Task<bool> ExistsByNameAsync(string name);
 
         Task<List<Role>> GetAllAsync();
 
-        Task<bool> ExistsByNameAsync(string name);
+        Task<Role?> GetByIdAsync(int id);
 
-        Task AddAsync(Role role);
 
-        void Update(Role role);
-
-        Task SaveChangesAsync();
     }
 }

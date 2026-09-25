@@ -24,6 +24,8 @@ namespace Clinexa.Repositories.Interfaces
                 int medicineId,
                 int? excludedPrescriptionItemId = null);
 
+        Task<bool> BelongsToDoctorAsync(int prescriptionItemId, int doctorUserId);
+        Task<bool> PrescriptionBelongsToDoctorAsync(int prescriptionId, int doctorUserId);
         Task AddAsync(
             PrescriptionItem prescriptionItem);
 

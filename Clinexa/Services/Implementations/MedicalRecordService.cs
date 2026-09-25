@@ -1,15 +1,20 @@
 ﻿using Clinexa.Models.Entities;
+using Clinexa.Repositories.Implementations;
 using Clinexa.Repositories.Interfaces;
 using Clinexa.Services.Interfaces;
+using Microsoft.AspNetCore.Identity;
 
 namespace Clinexa.Services.Implementations
 {
     public class MedicalRecordService : IMedicalRecordService
     {
         private readonly IMedicalRecordRepository medicalRecordRepository;
-        public MedicalRecordService(IMedicalRecordRepository medicalRecordRepository)
+        private readonly UserManager<User> userManager;
+        public MedicalRecordService(IMedicalRecordRepository medicalRecordRepository
+            , UserManager<User> userManager)
         {
             this.medicalRecordRepository = medicalRecordRepository;
+            this.userManager = userManager;
         }
         public async Task<bool> CreateAsync(MedicalRecord medicalRecord)
         {
@@ -203,6 +208,32 @@ namespace Clinexa.Services.Implementations
             return await medicalRecordRepository
                 .GetAppointmentByIdAsync(
                     appointmentId);
+        }
+
+        public async Task<bool> CanAccessAsync(int medicalRecordId, int currentUserId)
+        {
+            var record = await medicalRecordRepository
+                .GetByIdAsync(medicalRecordId);
+
+            if (record == null)
+                return false;
+
+            // Admin can access all medical records.
+            if (await userManager.IsInRoleAsync(
+                    await userManager.FindByIdAsync(currentUserId.ToString())!,
+                    "Admin"))
+            {
+                return true;
+            }
+
+            // Doctor can access only his own medical records.
+            return record.Doctor.UserId == currentUserId;
+        }
+
+        public async Task<int?> GetDoctorIdByUserIdAsync(int userId)
+        {
+            return await medicalRecordRepository
+                .GetDoctorIdByUserIdAsync(userId);
         }
     }
 }

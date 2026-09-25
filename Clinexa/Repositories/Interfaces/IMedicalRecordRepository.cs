@@ -16,7 +16,9 @@ namespace Clinexa.Repositories.Interfaces
         Task<bool> IsAppointmentCompletedAsync(int appointmentId);
 
         Task<List<MedicalRecord>> GetByPatientIdAsync(int patientId);
+        Task<bool> BelongsToDoctorAsync(int medicalRecordId, int doctorUserId);
 
+        Task<int?> GetDoctorIdByUserIdAsync(int userId);
         Task<bool> AppointmentExistsAsync(int appointmentId);
 
         Task<bool> DoctorExistsAsync(int doctorId);

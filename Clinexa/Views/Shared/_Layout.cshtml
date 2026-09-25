@@ -1,9 +1,54 @@
-﻿@{
-    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
-    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+﻿@using System.Security.Claims
+
+@{
+    var currentController =
+        ViewContext.RouteData.Values["controller"]?.ToString();
+
+    var currentAction =
+        ViewContext.RouteData.Values["action"]?.ToString();
+
+    var firstName =
+        User.FindFirstValue(ClaimTypes.GivenName);
+
+    var lastName =
+        User.FindFirstValue(ClaimTypes.Surname);
+
+    var fullName =
+        $"{firstName} {lastName}".Trim();
+
+    if (string.IsNullOrWhiteSpace(fullName))
+    {
+        fullName = User.Identity?.Name ?? "User";
+    }
+
+    var initials = string.Concat(
+        fullName
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries)
+            .Take(2)
+            .Select(x => char.ToUpperInvariant(x[0]))
+    );
+
+    if (string.IsNullOrWhiteSpace(initials))
+    {
+        initials = "U";
+    }
+
+    var isAdmin = User.IsInRole("Admin");
+    var isDoctor = User.IsInRole("Doctor");
+    var isReceptionist = User.IsInRole("Receptionist");
+
+    var canAccessBilling =
+        isAdmin || isReceptionist;
+
+    var canAccessClinical =
+        isAdmin || isDoctor;
+
+    var canAccessOperational =
+        isAdmin || isDoctor || isReceptionist;
 }
 
 <!DOCTYPE html>
+
 <html lang="en" dir="ltr">
 
 <head>
@@ -13,36 +58,41 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0" />
 
-    <title>@ViewData["Title"] - Clinexa</title>
+    <meta name="theme-color"
+          content="#206bc4" />
+
+    <title>
+        @ViewData["Title"] - Clinexa
+    </title>
 
 
-    <!-- =========================
-         Tabler
-    ========================== -->
+    <!-- =========================================================
+         TABLER
+    ========================================================== -->
 
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/@@tabler/core@latest/dist/css/tabler.min.css" />
 
 
-    <!-- =========================
-         Bootstrap Icons
-    ========================== -->
+    <!-- =========================================================
+         BOOTSTRAP ICONS
+    ========================================================== -->
 
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 
 
-    <!-- =========================
-         Toastr
-    ========================== -->
+    <!-- =========================================================
+         TOASTR
+    ========================================================== -->
 
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
 
 
-    <!-- =========================
-         Clinexa
-    ========================== -->
+    <!-- =========================================================
+         CLINEXA
+    ========================================================== -->
 
     <link rel="stylesheet"
           href="~/css/site.css"
@@ -51,6 +101,12 @@
     <link rel="stylesheet"
           href="~/css/clinexa.css"
           asp-append-version="true" />
+
+
+    @await RenderSectionAsync(
+    "Styles",
+        required: false
+        )
 
 </head>
 
@@ -61,9 +117,9 @@
     <div class="page">
 
 
-        <!-- =====================================================
+        <!-- =========================================================
              SIDEBAR
-        ====================================================== -->
+        ========================================================== -->
 
         <aside class="navbar navbar-vertical navbar-expand-lg"
                data-bs-theme="dark">
@@ -71,7 +127,9 @@
             <div class="container-fluid">
 
 
-                <!-- Brand -->
+                <!-- =================================================
+                     BRAND
+                ================================================== -->
 
                 <h1 class="navbar-brand navbar-brand-autodark">
 
@@ -79,8 +137,13 @@
                        asp-action="Index"
                        class="clinexa-brand-link">
 
-                        <span class="clinexa-brand-icon bg-primary text-white rounded">
+                        <span class="clinexa-brand-icon
+                                 bg-primary
+                                 text-white
+                                 rounded">
+
                             <i class="bi bi-heart-pulse"></i>
+
                         </span>
 
                         <span class="text-white fw-bold">
@@ -92,7 +155,9 @@
                 </h1>
 
 
-                <!-- Mobile Toggle -->
+                <!-- =================================================
+                     MOBILE SIDEBAR TOGGLE
+                ================================================== -->
 
                 <button class="navbar-toggler"
                         type="button"
@@ -107,25 +172,45 @@
                 </button>
 
 
-                <!-- Sidebar -->
+                <!-- =================================================
+                     SIDEBAR MENU
+                ================================================== -->
 
                 <div class="collapse navbar-collapse"
                      id="sidebar-menu">
 
-
                     <ul class="navbar-nav pt-lg-3">
+
+
+                        <!-- =================================================
+                             MAIN
+                        ================================================== -->
+
+                        <li class="nav-item mb-2">
+
+                            <div class="hr-text">
+                                Main
+                            </div>
+
+                        </li>
 
 
                         <!-- Dashboard -->
 
-                        <li class="nav-item @(currentController == "Home" && currentAction == "Index" ? "active" : "")">
+                        <li class="nav-item
+                        @(currentController == "Home" &&
+                                                      currentAction == "Index"
+                                                        ? "active"
+                                                        : "")">
 
                             <a class="nav-link"
                                asp-controller="Home"
                                asp-action="Index">
 
                                 <span class="nav-link-icon">
+
                                     <i class="bi bi-grid-1x2"></i>
+
                                 </span>
 
                                 <span class="nav-link-title">
@@ -137,255 +222,472 @@
                         </li>
 
 
-                        <!-- Patients -->
+                        <!-- =================================================
+                             OPERATIONS
+                        ================================================== -->
+                        @if (canAccessOperational)
+                        {
+                            <li class="nav-item mt-4 mb-2">
 
-                        <li class="nav-item @(currentController == "Patient" ? "active" : "")">
+                                <div class="hr-text">
+                                    Operations
+                                </div>
 
-                            <a class="nav-link"
-                               asp-controller="Patient"
-                               asp-action="Index">
-
-                                <span class="nav-link-icon">
-                                    <i class="bi bi-people"></i>
-                                </span>
-
-                                <span class="nav-link-title">
-                                    Patients
-                                </span>
-
-                            </a>
-
-                        </li>
+                            </li>
 
 
-                        <!-- Doctors -->
-                        <!-- Doctors -->
+                            <!-- Patients -->
 
-                        <li class="nav-item @(currentController == "Doctor" || currentController == "DoctorSchedule" ? "active" : "")">
+                            <li class="nav-item
+                                @(currentController == "Patient"
+                                                                ? "active"
+                                                                : "")">
 
-                            <a class="nav-link"
-                               asp-controller="Doctor"
-                               asp-action="Index">
+                                <a class="nav-link"
+                                   asp-controller="Patient"
+                                   asp-action="Index">
 
-                                <span class="nav-link-icon">
-                                    <i class="bi bi-person-badge"></i>
-                                </span>
+                                    <span class="nav-link-icon">
 
-                                <span class="nav-link-title">
-                                    Doctors
-                                </span>
+                                        <i class="bi bi-people"></i>
 
-                            </a>
+                                    </span>
 
-                        </li>
+                                    <span class="nav-link-title">
+                                        Patients
+                                    </span>
 
+                                </a>
 
-                        <!-- Doctor Schedules -->
-
-                        <li class="nav-item @(currentController == "DoctorSchedule" ? "active" : "")">
-
-                            <a class="nav-link ps-4"
-                               asp-controller="DoctorSchedule"
-                               asp-action="Index">
-
-                                <span class="nav-link-icon">
-                                    <i class="bi bi-clock-history"></i>
-                                </span>
-
-                                <span class="nav-link-title">
-                                    Schedules
-                                </span>
-
-                            </a>
-
-                        </li>
+                            </li>
 
 
-                        <!-- Appointments -->
+                            <!-- Doctors -->
 
-                        <li class="nav-item @(currentController == "Appointment" ? "active" : "")">
+                            <li class="nav-item
+                                @(currentController == "Doctor" ||
+                                                              currentController == "DoctorSchedule"
+                                                                ? "active"
+                                                                : "")">
+
+                                <a class="nav-link"
+                                   asp-controller="Doctor"
+                                   asp-action="Index">
+
+                                    <span class="nav-link-icon">
+
+                                        <i class="bi bi-person-badge"></i>
+
+                                    </span>
+
+                                    <span class="nav-link-title">
+                                        Doctors
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+
+                            <!-- Doctor Schedules -->
+
+                            <li class="nav-item
+                                @(currentController == "DoctorSchedule"
+                                                                ? "active"
+                                                                : "")">
+
+                                <a class="nav-link ps-4"
+                                   asp-controller="DoctorSchedule"
+                                   asp-action="Index">
+
+                                    <span class="nav-link-icon">
+
+                                        <i class="bi bi-clock-history"></i>
+
+                                    </span>
+
+                                    <span class="nav-link-title">
+                                        Schedules
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+
+                            <!-- Appointments -->
+
+                            <li class="nav-item
+                                @(currentController == "Appointment"
+                                                                ? "active"
+                                                                : "")">
 
                             <a class="nav-link"
                                asp-controller="Appointment"
                                asp-action="Index">
 
-                                <span class="nav-link-icon">
-                                    <i class="bi bi-calendar3"></i>
-                                </span>
+                                    <span class="nav-link-icon">
 
-                                <span class="nav-link-title">
-                                    Appointments
-                                </span>
+                                        <i class="bi bi-calendar3"></i>
 
-                            </a>
+                                    </span>
 
-                        </li>
+                                    <span class="nav-link-title">
+                                        Appointments
+                                    </span>
 
+                                </a>
 
-                        <!-- Divider -->
-
-                        <li class="nav-item my-3">
-                            <div class="hr-text">Clinical</div>
-                        </li>
+                            </li>
+                                                }
 
 
-                        <!-- Medical Records -->
+                        <!-- =================================================
+                             CLINICAL
+                        ================================================== -->
+                        @if (canAccessClinical)
+                        {
+                            <li class="nav-item mt-4 mb-2">
 
-                        <li class="nav-item @(currentController == "MedicalRecord" ? "active" : "")">
+                                <div class="hr-text">
+                                    Clinical
+                                </div>
 
-                            <a class="nav-link"
-                               asp-controller="MedicalRecord"
-                               asp-action="Index">
-
-                                <span class="nav-link-icon">
-                                    <i class="bi bi-file-medical"></i>
-                                </span>
-
-                                <span class="nav-link-title">
-                                    Medical Records
-                                </span>
-
-                            </a>
-
-                        </li>
+                            </li>
 
 
-                        <!-- Prescriptions -->
+                            <!-- Medical Records -->
 
-                        <li class="nav-item @(currentController == "Prescription" ? "active" : "")">
+                            <li class="nav-item
+                                @(currentController == "MedicalRecord"
+                                                                ? "active"
+                                                                : "")">
 
-                            <a class="nav-link"
-                               asp-controller="Prescription"
-                               asp-action="Index">
+                                <a class="nav-link"
+                                   asp-controller="MedicalRecord"
+                                   asp-action="Index">
 
-                                <span class="nav-link-icon">
-                                    <i class="bi bi-prescription2"></i>
-                                </span>
+                                    <span class="nav-link-icon">
 
-                                <span class="nav-link-title">
-                                    Prescriptions
-                                </span>
+                                        <i class="bi bi-file-medical"></i>
 
-                            </a>
+                                    </span>
 
-                        </li>
+                                    <span class="nav-link-title">
+                                        Medical Records
+                                    </span>
+
+                                </a>
+
+                            </li>
 
 
-                        <!-- Medicines -->
+                            <!-- Prescriptions -->
 
-                        <li class="nav-item @(currentController == "Medicine" ? "active" : "")">
+                            <li class="nav-item
+                                @(currentController == "Prescription"
+                                                                ? "active"
+                                                                : "")">
+
+                                <a class="nav-link"
+                                   asp-controller="Prescription"
+                                   asp-action="Index">
+
+                                    <span class="nav-link-icon">
+
+                                        <i class="bi bi-prescription2"></i>
+
+                                    </span>
+
+                                    <span class="nav-link-title">
+                                        Prescriptions
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+
+                            <!-- Medicines -->
+
+                            <li class="nav-item
+                                @(currentController == "Medicine"
+                                                                ? "active"
+                                                                : "")">
 
                             <a class="nav-link"
                                asp-controller="Medicine"
                                asp-action="Index">
 
-                                <span class="nav-link-icon">
-                                    <i class="bi bi-capsule"></i>
-                                </span>
+                                    <span class="nav-link-icon">
 
-                                <span class="nav-link-title">
-                                    Medicines
-                                </span>
+                                        <i class="bi bi-capsule"></i>
 
-                            </a>
+                                    </span>
 
-                        </li>
+                                    <span class="nav-link-title">
+                                        Medicines
+                                    </span>
 
+                                </a>
 
-                        <!-- Divider -->
-
-                        <li class="nav-item my-3">
-                            <div class="hr-text">Billing</div>
-                        </li>
+                            </li>
+                                                }
 
 
-                        <!-- Invoices -->
+                        <!-- =================================================
+                             BILLING
+                        ================================================== -->
+                        @if (canAccessBilling)
+                        {
+                            <li class="nav-item mt-4 mb-2">
 
-                        <li class="nav-item @(currentController == "Invoice" ? "active" : "")">
+                                <div class="hr-text">
+                                    Billing
+                                </div>
 
-                            <a class="nav-link"
-                               asp-controller="Invoice"
-                               asp-action="Index">
-
-                                <span class="nav-link-icon">
-                                    <i class="bi bi-receipt"></i>
-                                </span>
-
-                                <span class="nav-link-title">
-                                    Invoices
-                                </span>
-
-                            </a>
-
-                        </li>
+                            </li>
 
 
-                        <!-- Payments -->
+                            <!-- Invoices -->
 
-                        <li class="nav-item @(currentController == "Payment" ? "active" : "")">
+                            <li class="nav-item
+                                @(currentController == "Invoice"
+                                                                ? "active"
+                                                                : "")">
+
+                                <a class="nav-link"
+                                   asp-controller="Invoice"
+                                   asp-action="Index">
+
+                                    <span class="nav-link-icon">
+
+                                        <i class="bi bi-receipt"></i>
+
+                                    </span>
+
+                                    <span class="nav-link-title">
+                                        Invoices
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+
+                            <!-- Payments -->
+
+                            <li class="nav-item
+                                @(currentController == "Payment"
+                                                                ? "active"
+                                                                : "")">
 
                             <a class="nav-link"
                                asp-controller="Payment"
                                asp-action="Index">
 
-                                <span class="nav-link-icon">
-                                    <i class="bi bi-credit-card"></i>
-                                </span>
+                                    <span class="nav-link-icon">
 
-                                <span class="nav-link-title">
-                                    Payments
-                                </span>
+                                        <i class="bi bi-credit-card"></i>
 
-                            </a>
+                                    </span>
 
-                        </li>
+                                    <span class="nav-link-title">
+                                        Payments
+                                    </span>
 
+                                </a>
 
-                        <!-- Divider -->
-
-                        <li class="nav-item my-3">
-                            <div class="hr-text">Administration</div>
-                        </li>
+                            </li>
+                                                }
 
 
-                        <!-- Users -->
+                        <!-- =================================================
+                             ADMINISTRATION
+                        ================================================== -->
+                        @if (isAdmin)
+                        {
+                            <li class="nav-item mt-4 mb-2">
 
-                        <li class="nav-item @(currentController == "User" ? "active" : "")">
+                                <div class="hr-text">
+                                    Administration
+                                </div>
+
+                            </li>
+
+
+                            <!-- Users -->
+
+                            <li class="nav-item
+                                @(currentController == "User"
+                                                                ? "active"
+                                                                : "")">
+
+                                <a class="nav-link"
+                                   asp-controller="User"
+                                   asp-action="Index">
+
+                                    <span class="nav-link-icon">
+
+                                        <i class="bi bi-person-gear"></i>
+
+                                    </span>
+
+                                    <span class="nav-link-title">
+                                        Users
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+
+                            <!-- Roles -->
+
+                            <li class="nav-item
+                                @(currentController == "Role"
+                                                                ? "active"
+                                                                : "")">
+
+                                <a class="nav-link"
+                                   asp-controller="Role"
+                                   asp-action="Index">
+
+                                    <span class="nav-link-icon">
+
+                                        <i class="bi bi-shield-lock"></i>
+
+                                    </span>
+
+                                    <span class="nav-link-title">
+                                        Roles
+                                    </span>
+
+                                </a>
+
+                            </li>
+
+
+                            <!-- Audit Logs -->
+
+                            <li class="nav-item
+                                @(currentController == "AuditLog"
+                                                                ? "active"
+                                                                : "")">
 
                             <a class="nav-link"
-                               asp-controller="User"
+                               asp-controller="AuditLog"
                                asp-action="Index">
 
-                                <span class="nav-link-icon">
-                                    <i class="bi bi-person-gear"></i>
-                                </span>
+                                    <span class="nav-link-icon">
 
-                                <span class="nav-link-title">
-                                    Users
-                                </span>
+                                        <i class="bi bi-shield-check"></i>
 
-                            </a>
+                                    </span>
 
-                        </li>
+                                    <span class="nav-link-title">
+                                        Audit Logs
+                                    </span>
+
+                                </a>
+
+                            </li>
+                                                }
 
 
-                        <!-- Roles -->
+                        <!-- =================================================
+                             SIDEBAR USER AREA
+                        ================================================== -->
 
-                        <li class="nav-item @(currentController == "Role" ? "active" : "")">
+                        <li class="nav-item mt-auto pt-4">
 
-                            <a class="nav-link"
-                               asp-controller="Role"
-                               asp-action="Index">
+                            <div class="dropdown">
 
-                                <span class="nav-link-icon">
-                                    <i class="bi bi-shield-lock"></i>
-                                </span>
+                                <a href="#"
+                                   class="nav-link d-flex align-items-center"
+                                   data-bs-toggle="dropdown"
+                                   aria-expanded="false">
 
-                                <span class="nav-link-title">
-                                    Roles
-                                </span>
+                                    <span class="avatar avatar-sm bg-blue-lt">
 
-                            </a>
+                                        @initials
+
+                                    </span>
+
+                                    <div class="d-none d-lg-block ps-2">
+
+                                        <div class="text-white">
+                                            @fullName
+                                        </div>
+
+                                        <div class="small text-secondary">
+
+                                            @if (isAdmin)
+                                            {
+                                                <text>Administrator</text>
+                                            }
+                                            else if (isDoctor)
+                                            {
+                                                <text>Doctor</text>
+                                            }
+                                            else if (isReceptionist)
+                                            {
+                                                <text>Receptionist</text>
+                                            }
+                                            else
+                                            {
+                                                <text>User</text>
+                                            }
+
+                                        </div>
+
+                                    </div>
+
+                                </a>
+
+
+                                <div class="dropdown-menu dropdown-menu-end">
+
+                                    <!-- Profile -->
+
+                                    <a class="dropdown-item"
+                                       asp-controller="Account"
+                                       asp-action="Profile">
+
+                                        <i class="bi bi-person me-2"></i>
+
+                                        My Profile
+
+                                    </a>
+
+
+                                    <!-- Divider -->
+
+                                    <div class="dropdown-divider"></div>
+
+
+                                    <!-- Logout -->
+
+                                    <form asp-controller="Account"
+                                          asp-action="Logout"
+                                          method="post">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <button type="submit"
+                                                class="dropdown-item text-danger">
+
+                                            <i class="bi bi-box-arrow-right me-2"></i>
+
+                                            Logout
+
+                                        </button>
+
+                                    </form>
+
+                                </div>
+
+                            </div>
 
                         </li>
 
@@ -398,16 +700,16 @@
         </aside>
 
 
-        <!-- =====================================================
+        <!-- =========================================================
              MAIN PAGE
-        ====================================================== -->
+        ========================================================== -->
 
         <div class="page-wrapper">
 
 
-            <!-- =================================================
+            <!-- =====================================================
                  TOPBAR
-            ================================================== -->
+            ====================================================== -->
 
             <header class="navbar navbar-expand-md d-print-none">
 
@@ -419,14 +721,19 @@
                     <button class="navbar-toggler"
                             type="button"
                             data-bs-toggle="collapse"
-                            data-bs-target="#navbar-menu">
+                            data-bs-target="#navbar-menu"
+                            aria-controls="navbar-menu"
+                            aria-expanded="false"
+                            aria-label="Toggle navigation">
 
                         <span class="navbar-toggler-icon"></span>
 
                     </button>
 
 
-                    <!-- Search -->
+                    <!-- =================================================
+                         RIGHT SIDE
+                    ================================================== -->
 
                     <div class="navbar-nav flex-row order-md-last">
 
@@ -437,31 +744,61 @@
 
                             <a href="#"
                                class="nav-link px-0"
-                               data-bs-toggle="dropdown">
+                               data-bs-toggle="dropdown"
+                               aria-label="Notifications">
 
-                                <i class="bi bi-bell fs-2 clinexa-notification-icon"></i>
+                                <i class="bi bi-bell fs-2"></i>
 
                             </a>
 
-                            <div class="dropdown-menu dropdown-menu-end">
+
+                            <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
 
                                 <h6 class="dropdown-header">
                                     Notifications
                                 </h6>
 
+                                <div class="dropdown-divider"></div>
+
+
                                 <a class="dropdown-item"
                                    href="#">
+
+                                    <i class="bi bi-calendar-event me-2"></i>
+
                                     New appointment booked
+
                                 </a>
+
 
                                 <a class="dropdown-item"
                                    href="#">
+
+                                    <i class="bi bi-credit-card me-2"></i>
+
                                     Payment received
+
                                 </a>
+
 
                                 <a class="dropdown-item"
                                    href="#">
+
+                                    <i class="bi bi-prescription2 me-2"></i>
+
                                     Prescription updated
+
+                                </a>
+
+
+                                <div class="dropdown-divider"></div>
+
+
+                                <a class="dropdown-item text-center text-primary"
+                                   href="#">
+
+                                    View all notifications
+
                                 </a>
 
                             </div>
@@ -475,20 +812,41 @@
 
                             <a href="#"
                                class="nav-link d-flex lh-1 text-reset p-0 ms-3"
-                               data-bs-toggle="dropdown">
+                               data-bs-toggle="dropdown"
+                               aria-expanded="false">
 
                                 <span class="avatar avatar-sm bg-blue-lt">
-                                    MH
+
+                                    @initials
+
                                 </span>
+
 
                                 <div class="d-none d-xl-block ps-2">
 
                                     <div>
-                                        Marwan Hassan
+                                        @fullName
                                     </div>
 
                                     <div class="mt-1 small text-secondary">
-                                        Administrator
+
+                                        @if (isAdmin)
+                                        {
+                                            <text>Administrator</text>
+                                        }
+                                        else if (isDoctor)
+                                        {
+                                            <text>Doctor</text>
+                                        }
+                                        else if (isReceptionist)
+                                        {
+                                            <text>Receptionist</text>
+                                        }
+                                        else
+                                        {
+                                            <text>User</text>
+                                        }
+
                                     </div>
 
                                 </div>
@@ -496,10 +854,13 @@
                             </a>
 
 
-                            <div class="dropdown-menu dropdown-menu-end">
+                            <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+
+                                <!-- Profile -->
 
                                 <a class="dropdown-item"
-                                   href="#">
+                                   asp-controller="Account"
+                                   asp-action="Profile">
 
                                     <i class="bi bi-person me-2"></i>
 
@@ -507,25 +868,28 @@
 
                                 </a>
 
-                                <a class="dropdown-item"
-                                   href="#">
-
-                                    <i class="bi bi-gear me-2"></i>
-
-                                    Settings
-
-                                </a>
 
                                 <div class="dropdown-divider"></div>
 
-                                <a class="dropdown-item text-danger"
-                                   href="#">
 
-                                    <i class="bi bi-box-arrow-right me-2"></i>
+                                <!-- Logout -->
 
-                                    Logout
+                                <form asp-controller="Account"
+                                      asp-action="Logout"
+                                      method="post">
 
-                                </a>
+                                    @Html.AntiForgeryToken()
+
+                                    <button type="submit"
+                                            class="dropdown-item text-danger">
+
+                                        <i class="bi bi-box-arrow-right me-2"></i>
+
+                                        Logout
+
+                                    </button>
+
+                                </form>
 
                             </div>
 
@@ -534,14 +898,17 @@
                     </div>
 
 
-                    <!-- Global Search -->
+                    <!-- =================================================
+                         GLOBAL SEARCH
+                    ================================================== -->
 
                     <div class="collapse navbar-collapse"
                          id="navbar-menu">
 
-                        <div>
+                        <div class="w-100">
 
-                            <form>
+                            <form method="get"
+                                  autocomplete="off">
 
                                 <div class="input-icon">
 
@@ -551,8 +918,10 @@
 
                                     </span>
 
-                                    <input type="text"
+                                    <input type="search"
                                            class="form-control"
+                                           name="search"
+                                           autocomplete="off"
                                            placeholder="Search patients, doctors, appointments..." />
 
                                 </div>
@@ -568,17 +937,18 @@
             </header>
 
 
-
-            <!-- =================================================
-                 PAGE CONTENT
-            ================================================== -->
+            <!-- =====================================================
+                 PAGE BODY
+            ====================================================== -->
 
             <div class="page-body">
 
                 <div class="container-xl">
 
 
-                    <!-- Page Header -->
+                    <!-- =================================================
+                         PAGE HEADER
+                    ================================================== -->
 
                     <div class="clinexa-page-header d-print-none">
 
@@ -590,25 +960,32 @@
 
                         </div>
 
+
                         <div class="clinexa-page-actions">
 
                             @RenderSection(
-                            "PageActions",   required: false )
+                            "PageActions",
+                                                        required: false
+                                                        )
+
                         </div>
 
                     </div>
-                    <!-- Actual View -->
-                    @RenderBody()
 
+
+                    <!-- =================================================
+                         PAGE CONTENT
+                    ================================================== -->
+                    @RenderBody()
 
                 </div>
 
             </div>
 
 
-            <!-- =================================================
+            <!-- =====================================================
                  FOOTER
-            ================================================== -->
+            ====================================================== -->
 
             <footer class="footer footer-transparent d-print-none">
 
@@ -618,7 +995,8 @@
 
                         <div class="col-12">
 
-                            © 2026 Clinexa — Clinic Management System
+                            © @DateTime.Now.Year
+                            Clinexa — Clinic Management System
 
                         </div>
 
@@ -628,25 +1006,69 @@
 
             </footer>
 
-
         </div>
 
     </div>
 
 
+    <!-- =========================================================
+         SCRIPTS
+    ========================================================== -->
 
     <script src="https://cdn.jsdelivr.net/npm/@@tabler/core@latest/dist/js/tabler.min.js">
     </script>
 
+
     <script src="https://code.jquery.com/jquery-3.7.1.min.js">
     </script>
+
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js">
     </script>
 
+
     <script src="~/js/site.js"
             asp-append-version="true">
     </script>
+
+
+    <!-- =========================================================
+         TEMP DATA TOASTR
+    ========================================================== -->
+
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const successMessage = '@TempData["Success"]';
+
+            const errorMessage = '@TempData["Error"]';
+
+            const warningMessage = '@TempData["Warning"]';
+
+            const infoMessage = '@TempData["Info"]';
+
+
+            if (successMessage) {
+                toastr.success(successMessage);
+            }
+
+            if (errorMessage) {
+                toastr.error(errorMessage);
+            }
+
+            if (warningMessage) {
+                toastr.warning(warningMessage);
+            }
+
+            if (infoMessage) {
+                toastr.info(infoMessage);
+            }
+
+        });
+
+    </script>
+
 
     @await RenderSectionAsync(
         "Scripts",

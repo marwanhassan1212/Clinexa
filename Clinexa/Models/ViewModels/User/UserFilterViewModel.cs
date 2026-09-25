@@ -21,5 +21,7 @@
         public int TotalPages =>
             (int)Math.Ceiling(
                 (double)TotalCount / PageSize);
+
+        public Dictionary<int, string?> RoleNames { get; set; } = new();
     }
 }

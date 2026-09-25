@@ -1,0 +1,115 @@
+﻿@model List<Clinexa.Models.Entities.AuditLog>
+
+@{
+    ViewData["Title"] = "Audit Logs";
+}
+
+<div class="container-fluid">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+
+        <div>
+            <h2 class="mb-1">
+                Audit Logs
+            </h2>
+
+            <div class="text-secondary">
+                Track important activities performed in Clinexa.
+            </div>
+        </div>
+
+    </div>
+
+
+    @if (!Model.Any())
+    {
+        <div class="card">
+
+            <div class="card-body text-center py-5">
+
+                <i class="bi bi-shield-check fs-1 text-secondary"></i>
+
+                <h3 class="mt-3">
+                    No audit logs yet
+                </h3>
+
+                <p class="text-secondary mb-0">
+                    Important system activities will appear here.
+                </p>
+
+            </div>
+
+        </div>
+    }
+    else
+    {
+        <div class="card">
+
+            <div class="table-responsive">
+
+                <table class="table table-vcenter card-table">
+
+                    <thead>
+                        <tr>
+
+                            <th>Date</th>
+
+                            <th>User</th>
+
+                            <th>Action</th>
+
+                            <th>Entity</th>
+
+                            <th>Entity ID</th>
+
+                            <th>IP Address</th>
+
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        @foreach (var log in Model)
+                        {
+                            <tr>
+
+                                <td>
+                                    @log.Timestamp
+                                </td>
+
+                                <td>
+                                    @log.User.FirstName
+                                    @log.User.LastName
+                                </td>
+
+                                <td>
+                                    <span class="badge bg-blue-lt">
+                                        @log.Action
+                                    </span>
+                                </td>
+
+                                <td>
+                                    @log.EntityName
+                                </td>
+
+                                <td>
+                                    #@log.EntityId
+                                </td>
+
+                                <td>
+                                    @(log.IpAddress ?? "-")
+                                </td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+    }
+
+</div>

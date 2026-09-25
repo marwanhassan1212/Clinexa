@@ -2,6 +2,7 @@
 using Clinexa.Enums;
 using Clinexa.Models.Entities;
 using Clinexa.Repositories.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 
@@ -140,6 +141,24 @@ namespace Clinexa.Repositories.Implementations
                 .AnyAsync(x =>
                     x.AppointmentId == appointmentId &&
                     x.AppointmentStatus == AppointmentStatus.Completed);
+        }
+
+        public async Task<bool> BelongsToDoctorAsync(int medicalRecordId, int doctorUserId)
+        {
+            return await _db.MedicalRecords
+               .AsNoTracking()
+               .AnyAsync(x =>
+                   x.MedicalRecordId == medicalRecordId &&
+                   x.Doctor.UserId == doctorUserId);
+        }
+
+        public async Task<int?> GetDoctorIdByUserIdAsync(int userId)
+        {
+            return await _db.Doctors
+                .AsNoTracking()
+                .Where(x => x.UserId == userId)
+                .Select(x => (int?)x.DoctorId)
+                .FirstOrDefaultAsync();
         }
     }
 }

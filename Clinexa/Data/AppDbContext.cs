@@ -1,16 +1,15 @@
 ﻿using Clinexa.Models.Entities;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace Clinexa.Data
 {
-    public class AppDbContext : DbContext
+    public class AppDbContext : IdentityDbContext<User , Role , int>
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
             
         }
-        public DbSet<User> Users { get; set; } = null!;
-        public DbSet<Role> Roles { get; set; } = null!;
         public DbSet<Patient> Patients { get; set; } = null!;
         public DbSet<Doctor> Doctors { get; set; } = null!;
         public DbSet<DoctorSchedule> DoctorSchedules { get; set; } = null!;

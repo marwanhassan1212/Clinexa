@@ -1,11 +1,13 @@
 ﻿using Clinexa.Models.Entities;
 using Clinexa.Models.ViewModels.Doctor;
 using Clinexa.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
 namespace Clinexa.Controllers
 {
+    [Authorize(Policy = "AdminOnly")]
     public class DoctorController : Controller
     {
         private readonly IDoctorService doctorService;

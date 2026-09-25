@@ -82,5 +82,27 @@ namespace Clinexa.Repositories.Implementations
                     x.MedicineId == medicineId &&
                     x.IsActive);
         }
+
+        public async Task<bool> BelongsToDoctorAsync(
+              int prescriptionItemId,
+              int doctorUserId)
+        {
+            return await _db.PrescriptionItems
+                .AsNoTracking()
+                .AnyAsync(x =>
+                    x.PrescriptionItemId ==
+                        prescriptionItemId &&
+                    x.Prescription.MedicalRecord.Doctor.UserId == doctorUserId);
+        }
+
+        public async Task<bool> PrescriptionBelongsToDoctorAsync(int prescriptionId, int doctorUserId)
+        {
+            return await _db.Prescriptions
+                .AsNoTracking()
+                .AnyAsync(x =>
+                    x.PrescriptionId == prescriptionId &&
+                    x.MedicalRecord.Doctor.UserId ==
+                        doctorUserId);
+        }
     }
 }

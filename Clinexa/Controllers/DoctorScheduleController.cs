@@ -2,11 +2,13 @@
 using Clinexa.Models.ViewModels.DoctorSchedule;
 using Clinexa.Repositories.Implementations;
 using Clinexa.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 
 namespace Clinexa.Controllers
 {
+    [Authorize(Policy = "AdminOnly")]
     public class DoctorScheduleController : Controller
     {
         private readonly IDoctorScheduleService doctorScheduleService;

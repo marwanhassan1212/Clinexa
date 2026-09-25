@@ -1,8 +1,10 @@
 using Clinexa.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Clinexa.Controllers
 {
+    [Authorize(Policy = "AdminOnly")]
     public class HomeController : Controller
     {
         private readonly IDashboardService _dashboardService;

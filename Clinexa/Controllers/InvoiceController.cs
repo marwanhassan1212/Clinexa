@@ -2,10 +2,12 @@
 using Clinexa.Models.Entities;
 using Clinexa.Models.ViewModels.Invoice;
 using Clinexa.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Clinexa.Controllers
 {
+    [Authorize(Policy = "BillingAccess")]
     public class InvoiceController : Controller
     {
         private readonly IInvoiceService invoiceService;

@@ -1,10 +1,12 @@
 ﻿using Clinexa.Models.Entities;
 using Clinexa.Models.ViewModels.Appointment;
 using Clinexa.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Clinexa.Controllers
 {
+    [Authorize(Policy = "OperationalAccess")]
     public class AppointmentController : Controller
     {
         private readonly IAppointmentService appointmentService;

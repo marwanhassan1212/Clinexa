@@ -22,13 +22,18 @@ namespace Clinexa.Models.ViewModels.User
         public string PhoneNumber { get; set; } = null!;
 
         [Required]
-        [StringLength(255, MinimumLength = 6)]
+        [DataType(DataType.Password)]
         public string Password { get; set; } = null!;
+
+        [Required]
+        [DataType(DataType.Password)]
+        [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
+        public string ConfirmPassword { get; set; } = null!;
 
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "Please select a role.")]
         public int RoleId { get; set; }
-        public List<Entities.Role> Roles { get; set; } = new();
 
+        public List<Entities.Role> Roles { get; set; } = new();
     }
 }

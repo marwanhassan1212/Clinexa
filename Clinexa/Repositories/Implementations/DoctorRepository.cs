@@ -79,8 +79,8 @@ namespace Clinexa.Repositories.Implementations
                 query = query.Where(x =>
                     x.User.FirstName.Contains(search) ||
                     x.User.LastName.Contains(search) ||
-                    x.User.Email.Contains(search) ||
-                    x.User.PhoneNumber.Contains(search));
+                    x.User.Email!.Contains(search) ||
+                    x.User.PhoneNumber!.Contains(search));
             }
 
             if (specialityId.HasValue)
@@ -111,11 +111,14 @@ namespace Clinexa.Repositories.Implementations
         {
             return await _db.Users
                 .AsNoTracking()
-                .Include(x => x.Role)
                 .Where(x =>
-                    x.Role.Name == "Doctor" &&
+                    x.IsActive &&
                     x.Doctor == null &&
-                    x.IsActive)
+                    _db.UserRoles.Any(ur =>
+                        ur.UserId == x.Id &&
+                        _db.Roles.Any(r =>
+                            r.Id == ur.RoleId &&
+                            r.Name == "Doctor")))
                 .OrderBy(x => x.FirstName)
                 .ThenBy(x => x.LastName)
                 .ToListAsync();

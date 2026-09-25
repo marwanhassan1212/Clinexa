@@ -2,25 +2,35 @@
 using Clinexa.Models.ViewModels.Prescription;
 using Clinexa.Services.Interfaces;
 using Clinexa.Services.PDF;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Clinexa.Controllers
 {
+    [Authorize(Policy = "ClinicalAccess")]
     public class PrescriptionController : Controller
     {
         private readonly IPrescriptionService prescriptionService;
         private readonly IPrescriptionItemService prescriptionItemService;
         private readonly IPrescriptionPdfService prescriptionPdfService;
+        private readonly UserManager<User> userManager;
 
         public PrescriptionController(
             IPrescriptionService prescriptionService,
-            IPrescriptionItemService prescriptionItemService
-            ,IPrescriptionPdfService prescriptionPdfService)
+            IPrescriptionItemService prescriptionItemService,
+            IPrescriptionPdfService prescriptionPdfService,
+            UserManager<User> userManager)
         {
             this.prescriptionService = prescriptionService;
             this.prescriptionItemService = prescriptionItemService;
             this.prescriptionPdfService = prescriptionPdfService;
+            this.userManager = userManager;
         }
+
+        // =========================================================
+        // Index
+        // =========================================================
 
         public async Task<IActionResult> Index(
             PrescriptionFilterViewModel model)
@@ -32,18 +42,51 @@ namespace Clinexa.Controllers
 
             model.PageSize = 10;
 
-            var result =
-                await prescriptionService.FilterAsync(
-                    model.Search,
-                    model.DateFrom,
-                    model.DateTo,
-                    model.MedicalRecordId,
-                    model.SortBy,
-                    model.SortDirection,
-                    model.Page,
-                    model.PageSize);
+            var currentUserIdString =
+                userManager.GetUserId(User);
 
-            model.Prescriptions = result.Prescriptions;
+            if (!int.TryParse(
+                    currentUserIdString,
+                    out var currentUserId))
+            {
+                return Forbid();
+            }
+
+            var currentUser =
+                await userManager.FindByIdAsync(
+                    currentUserId.ToString());
+
+            if (currentUser == null)
+            {
+                return Forbid();
+            }
+
+            int? doctorUserId = null;
+
+            // Admin → null → can see all prescriptions.
+            // Doctor → current user ID → only own prescriptions.
+            if (await userManager.IsInRoleAsync(
+                    currentUser,
+                    "Doctor"))
+            {
+                doctorUserId = currentUserId;
+            }
+
+            var result =
+                await prescriptionService
+                    .FilterAsync(
+                        model.Search,
+                        model.DateFrom,
+                        model.DateTo,
+                        model.MedicalRecordId,
+                        model.SortBy,
+                        model.SortDirection,
+                        model.Page,
+                        model.PageSize,
+                        doctorUserId);
+
+            model.Prescriptions =
+                result.Prescriptions;
 
             model.TotalPages =
                 (int)Math.Ceiling(
@@ -52,15 +95,42 @@ namespace Clinexa.Controllers
 
             model.MedicalRecords =
                 await prescriptionService
-                    .GetMedicalRecordsAsync();
+                    .GetMedicalRecordsAsync(
+                        doctorUserId);
 
             return View(model);
         }
 
+        // =========================================================
+        // Details
+        // =========================================================
+
         public async Task<IActionResult> Details(int id)
         {
+            var currentUserIdString =
+                userManager.GetUserId(User);
+
+            if (!int.TryParse(
+                    currentUserIdString,
+                    out var currentUserId))
+            {
+                return Forbid();
+            }
+
+            var canAccess =
+                await prescriptionService
+                    .CanAccessAsync(
+                        id,
+                        currentUserId);
+
+            if (!canAccess)
+            {
+                return Forbid();
+            }
+
             var prescription =
-                await prescriptionService.GetByIdAsync(id);
+                await prescriptionService
+                    .GetByIdAsync(id);
 
             if (prescription == null)
             {
@@ -71,17 +141,44 @@ namespace Clinexa.Controllers
                 await prescriptionItemService
                     .GetByPrescriptionIdAsync(id);
 
-            ViewBag.PrescriptionItems = prescriptionItems;
+            ViewBag.PrescriptionItems =
+                prescriptionItems;
 
             return View(prescription);
         }
 
+        // =========================================================
+        // Create - GET
+        // =========================================================
+
         [HttpGet]
-        public async Task<IActionResult> Create(int? medicalRecordId)
+        public async Task<IActionResult> Create(
+            int? medicalRecordId)
         {
             if (!medicalRecordId.HasValue)
             {
                 return BadRequest();
+            }
+
+            var currentUserIdString =
+                userManager.GetUserId(User);
+
+            if (!int.TryParse(
+                    currentUserIdString,
+                    out var currentUserId))
+            {
+                return Forbid();
+            }
+
+            var canAccess =
+                await prescriptionService
+                    .CanAccessMedicalRecordAsync(
+                        medicalRecordId.Value,
+                        currentUserId);
+
+            if (!canAccess)
+            {
+                return Forbid();
             }
 
             var existingPrescription =
@@ -99,14 +196,22 @@ namespace Clinexa.Controllers
                     });
             }
 
-            var model = new PrescriptionCreateViewModel
-            {
-                MedicalRecordId = medicalRecordId.Value,
-                PrescriptionDate = DateTime.Today
-            };
+            var model =
+                new PrescriptionCreateViewModel
+                {
+                    MedicalRecordId =
+                        medicalRecordId.Value,
+
+                    PrescriptionDate =
+                        DateTime.Today
+                };
 
             return View(model);
         }
+
+        // =========================================================
+        // Create - POST
+        // =========================================================
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -118,16 +223,44 @@ namespace Clinexa.Controllers
                 return View(model);
             }
 
-            var prescription = new Prescription
+            var currentUserIdString =
+                userManager.GetUserId(User);
+
+            if (!int.TryParse(
+                    currentUserIdString,
+                    out var currentUserId))
             {
-                PrescriptionDate = model.PrescriptionDate,
-                Notes = model.Notes,
-                MedicalRecordId = model.MedicalRecordId
-            };
+                return Forbid();
+            }
+
+            var canAccess =
+                await prescriptionService
+                    .CanAccessMedicalRecordAsync(
+                        model.MedicalRecordId,
+                        currentUserId);
+
+            if (!canAccess)
+            {
+                return Forbid();
+            }
+
+            var prescription =
+                new Prescription
+                {
+                    PrescriptionDate =
+                        model.PrescriptionDate,
+
+                    Notes =
+                        model.Notes,
+
+                    MedicalRecordId =
+                        model.MedicalRecordId
+                };
 
             var result =
                 await prescriptionService
-                    .CreateAsync(prescription);
+                    .CreateAsync(
+                        prescription);
 
             if (!result)
             {
@@ -151,9 +284,34 @@ namespace Clinexa.Controllers
                 });
         }
 
+        // =========================================================
+        // Edit - GET
+        // =========================================================
+
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
+            var currentUserIdString =
+                userManager.GetUserId(User);
+
+            if (!int.TryParse(
+                    currentUserIdString,
+                    out var currentUserId))
+            {
+                return Forbid();
+            }
+
+            var canAccess =
+                await prescriptionService
+                    .CanAccessAsync(
+                        id,
+                        currentUserId);
+
+            if (!canAccess)
+            {
+                return Forbid();
+            }
+
             var prescription =
                 await prescriptionService
                     .GetByIdAsync(id);
@@ -163,20 +321,25 @@ namespace Clinexa.Controllers
                 return NotFound();
             }
 
-            var model = new PrescriptionEditViewModel
-            {
-                PrescriptionId =
-                    prescription.PrescriptionId,
+            var model =
+                new PrescriptionEditViewModel
+                {
+                    PrescriptionId =
+                        prescription.PrescriptionId,
 
-                PrescriptionDate =
-                    prescription.PrescriptionDate,
+                    PrescriptionDate =
+                        prescription.PrescriptionDate,
 
-                Notes =
-                    prescription.Notes
-            };
+                    Notes =
+                        prescription.Notes
+                };
 
             return View(model);
         }
+
+        // =========================================================
+        // Edit - POST
+        // =========================================================
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -186,6 +349,27 @@ namespace Clinexa.Controllers
             if (!ModelState.IsValid)
             {
                 return View(model);
+            }
+
+            var currentUserIdString =
+                userManager.GetUserId(User);
+
+            if (!int.TryParse(
+                    currentUserIdString,
+                    out var currentUserId))
+            {
+                return Forbid();
+            }
+
+            var canAccess =
+                await prescriptionService
+                    .CanAccessAsync(
+                        model.PrescriptionId,
+                        currentUserId);
+
+            if (!canAccess)
+            {
+                return Forbid();
             }
 
             var prescription =
@@ -206,7 +390,8 @@ namespace Clinexa.Controllers
 
             var result =
                 await prescriptionService
-                    .UpdateAsync(prescription);
+                    .UpdateAsync(
+                        prescription);
 
             if (!result)
             {
@@ -229,15 +414,50 @@ namespace Clinexa.Controllers
                 });
         }
 
+        // =========================================================
+        // Search Medical Records
+        // =========================================================
+
         [HttpGet]
         public async Task<IActionResult> SearchMedicalRecords(
             string? search)
         {
+            var currentUserIdString =
+                userManager.GetUserId(User);
+
+            if (!int.TryParse(
+                    currentUserIdString,
+                    out var currentUserId))
+            {
+                return Forbid();
+            }
+
+            var currentUser =
+                await userManager.FindByIdAsync(
+                    currentUserId.ToString());
+
+            if (currentUser == null)
+            {
+                return Forbid();
+            }
+
+            int? doctorUserId = null;
+
+            // Admin → null → search all medical records.
+            // Doctor → current user ID → search only own records.
+            if (await userManager.IsInRoleAsync(
+                    currentUser,
+                    "Doctor"))
+            {
+                doctorUserId = currentUserId;
+            }
+
             var records =
                 await prescriptionService
                     .SearchMedicalRecordsAsync(
                         search,
-                        10);
+                        10,
+                        doctorUserId);
 
             var result =
                 records.Select(x => new
@@ -255,14 +475,45 @@ namespace Clinexa.Controllers
             return Json(result);
         }
 
+        // =========================================================
+        // Print
+        // =========================================================
+
         public async Task<IActionResult> Print(int id)
         {
-            var prescription = await prescriptionService.GetByIdAsync(id);
+            var currentUserIdString =
+                userManager.GetUserId(User);
+
+            if (!int.TryParse(
+                    currentUserIdString,
+                    out var currentUserId))
+            {
+                return Forbid();
+            }
+
+            var canAccess =
+                await prescriptionService
+                    .CanAccessAsync(
+                        id,
+                        currentUserId);
+
+            if (!canAccess)
+            {
+                return Forbid();
+            }
+
+            var prescription =
+                await prescriptionService
+                    .GetByIdAsync(id);
 
             if (prescription == null)
+            {
                 return NotFound();
+            }
 
-            var pdf = prescriptionPdfService.Generate(prescription);
+            var pdf =
+                prescriptionPdfService
+                    .Generate(prescription);
 
             return File(
                 pdf,

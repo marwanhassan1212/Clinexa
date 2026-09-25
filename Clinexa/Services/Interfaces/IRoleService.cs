@@ -11,5 +11,7 @@ namespace Clinexa.Services.Interfaces
         Task<bool> CreateAsync(Role role);
 
         Task<bool> UpdateAsync(Role role);
+    
+
     }
 }

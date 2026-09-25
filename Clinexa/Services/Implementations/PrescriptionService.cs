@@ -1,17 +1,25 @@
 ﻿using Clinexa.Models.Entities;
 using Clinexa.Repositories.Interfaces;
 using Clinexa.Services.Interfaces;
+using Microsoft.AspNetCore.Identity;
 
 namespace Clinexa.Services.Implementations
 {
     public class PrescriptionService : IPrescriptionService
     {
         private readonly IPrescriptionRepository prescriptionRepository;
-        public PrescriptionService(IPrescriptionRepository prescriptionRepository)
+        private readonly UserManager<User> userManager;
+
+        public PrescriptionService(
+            IPrescriptionRepository prescriptionRepository,
+            UserManager<User> userManager)
         {
             this.prescriptionRepository = prescriptionRepository;
+            this.userManager = userManager;
         }
-        public async Task<bool> CreateAsync(Prescription prescription)
+
+        public async Task<bool> CreateAsync(
+            Prescription prescription)
         {
             bool medicalRecordExists =
                 await prescriptionRepository
@@ -24,14 +32,14 @@ namespace Clinexa.Services.Implementations
             }
 
             bool appointmentCompleted =
-            await prescriptionRepository
-                .IsMedicalRecordAppointmentCompletedAsync(
-                    prescription.MedicalRecordId);
+                 await prescriptionRepository
+                     .IsMedicalRecordAppointmentCompletedAsync(
+                         prescription.MedicalRecordId);
+
             if (!appointmentCompleted)
             {
                 return false;
             }
-
 
             bool prescriptionExists =
                 await prescriptionRepository
@@ -43,18 +51,15 @@ namespace Clinexa.Services.Implementations
                 return false;
             }
 
-            
             if (prescription.PrescriptionDate >
                 DateTime.Now)
             {
                 return false;
             }
 
-            
             await prescriptionRepository
                 .AddAsync(prescription);
 
-            
             await prescriptionRepository
                 .SaveChangesAsync();
 
@@ -63,20 +68,27 @@ namespace Clinexa.Services.Implementations
 
         public async Task<List<Prescription>> GetAllAsync()
         {
-            return await prescriptionRepository.GetAllAsync();
+            return await prescriptionRepository
+                .GetAllAsync();
         }
 
-        public async Task<Prescription?> GetByIdAsync(int id)
+        public async Task<Prescription?> GetByIdAsync(
+            int id)
         {
-            return await prescriptionRepository.GetByIdAsync(id);
+            return await prescriptionRepository
+                .GetByIdAsync(id);
         }
 
-        public Task<Prescription?> GetByMedicalRecordIdAsync(int medicalRecordId)
+        public Task<Prescription?> GetByMedicalRecordIdAsync(
+            int medicalRecordId)
         {
-            return prescriptionRepository.GetByMedicalRecordIdAsync(medicalRecordId);
+            return prescriptionRepository
+                .GetByMedicalRecordIdAsync(
+                    medicalRecordId);
         }
 
-        public async Task<bool> UpdateAsync(Prescription prescription)
+        public async Task<bool> UpdateAsync(
+            Prescription prescription)
         {
             var prescriptionExists =
                 await prescriptionRepository
@@ -89,9 +101,9 @@ namespace Clinexa.Services.Implementations
             }
 
             bool medicalRecordExists =
-               await prescriptionRepository
-                   .MedicalRecordExistsAsync(
-                       prescription.MedicalRecordId);
+                await prescriptionRepository
+                    .MedicalRecordExistsAsync(
+                        prescription.MedicalRecordId);
 
             if (!medicalRecordExists)
             {
@@ -99,10 +111,10 @@ namespace Clinexa.Services.Implementations
             }
 
             bool duplicate =
-               await prescriptionRepository
-                   .ExistsForMedicalRecordAsync(
-                       prescription.MedicalRecordId,
-                       prescription.PrescriptionId);
+                await prescriptionRepository
+                    .ExistsForMedicalRecordAsync(
+                        prescription.MedicalRecordId,
+                        prescription.PrescriptionId);
 
             if (duplicate)
             {
@@ -110,25 +122,36 @@ namespace Clinexa.Services.Implementations
             }
 
             if (prescription.PrescriptionDate >
-               DateTime.UtcNow)
+                DateTime.UtcNow)
             {
                 return false;
             }
-          
+
             prescriptionRepository
                 .Update(prescription);
-           
+
             await prescriptionRepository
                 .SaveChangesAsync();
 
             return true;
         }
 
+        // =========================================================
+        // Filtering
+        // =========================================================
 
-        public async Task<(List<Prescription> Prescriptions, int TotalCount)> FilterAsync(
-            string? search, DateTime? dateFrom, DateTime? dateTo, int? medicalRecordId,
-            string sortBy, string sortDirection, int page, int pageSize)
-
+        public async Task<(
+            List<Prescription> Prescriptions,
+            int TotalCount)> FilterAsync(
+                string? search,
+                DateTime? dateFrom,
+                DateTime? dateTo,
+                int? medicalRecordId,
+                string sortBy,
+                string sortDirection,
+                int page,
+                int pageSize,
+                int? doctorUserId = null)
         {
             return await prescriptionRepository
                 .FilterAsync(
@@ -139,19 +162,95 @@ namespace Clinexa.Services.Implementations
                     sortBy,
                     sortDirection,
                     page,
-                    pageSize);
+                    pageSize,
+                    doctorUserId);
         }
 
-        public async Task<List<MedicalRecord>> GetMedicalRecordsAsync()
+        // =========================================================
+        // Medical Records
+        // =========================================================
+
+        public async Task<List<MedicalRecord>>
+            GetMedicalRecordsAsync(
+                int? doctorUserId = null)
         {
             return await prescriptionRepository
-                .GetMedicalRecordsAsync();
+                .GetMedicalRecordsAsync(
+                    doctorUserId);
         }
 
-        public async Task<List<MedicalRecord>> SearchMedicalRecordsAsync(string? search, int take = 10)
+        public async Task<List<MedicalRecord>>
+            SearchMedicalRecordsAsync(
+                string? search,
+                int take = 10,
+                int? doctorUserId = null)
         {
             return await prescriptionRepository
-                .SearchMedicalRecordsAsync(search, take);
+                .SearchMedicalRecordsAsync(
+                    search,
+                    take,
+                    doctorUserId);
+        }
+
+        // =========================================================
+        // Data-Level Authorization
+        // =========================================================
+
+        public async Task<bool> CanAccessAsync(
+            int prescriptionId,
+            int currentUserId)
+        {
+            var user =
+                await userManager.FindByIdAsync(
+                    currentUserId.ToString());
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            // Admin can access all prescriptions.
+            if (await userManager.IsInRoleAsync(
+                    user,
+                    "Admin"))
+            {
+                return true;
+            }
+
+            // Doctor can access only prescriptions
+            // belonging to their own medical records.
+            return await prescriptionRepository
+                .BelongsToDoctorAsync(
+                    prescriptionId,
+                    currentUserId);
+        }
+
+        public async Task<bool> CanAccessMedicalRecordAsync(
+            int medicalRecordId,
+            int currentUserId)
+        {
+            var user =
+                await userManager.FindByIdAsync(
+                    currentUserId.ToString());
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            // Admin can access all medical records.
+            if (await userManager.IsInRoleAsync(
+                    user,
+                    "Admin"))
+            {
+                return true;
+            }
+
+            // Doctor can access only their own medical records.
+            return await prescriptionRepository
+                .MedicalRecordBelongsToDoctorAsync(
+                    medicalRecordId,
+                    currentUserId);
         }
     }
 }

@@ -1,32 +1,35 @@
 ﻿using Clinexa.Models.Entities;
+using Clinexa.Repositories.Implementations;
 using Clinexa.Repositories.Interfaces;
 using Clinexa.Services.Interfaces;
+using Microsoft.AspNetCore.Identity;
 
 namespace Clinexa.Services.Implementations
 {
     public class RoleService : IRoleService
     {
         private readonly IRoleRepository roleRepository;
+        private readonly RoleManager<Role> roleManager;
 
-        public RoleService(IRoleRepository roleRepository)
+        public RoleService(IRoleRepository roleRepository , RoleManager<Role> roleManager)
         {
             this.roleRepository = roleRepository;
+            this.roleManager = roleManager;
         }
 
         public async Task<bool> CreateAsync(Role role)
         {
-            bool nameExists = await roleRepository
-               .ExistsByNameAsync(role.Name);
-
-            if (nameExists)
-            {
+            if (string.IsNullOrWhiteSpace(role.Name))
                 return false;
-            }
 
-            await roleRepository.AddAsync(role);
-            await roleRepository.SaveChangesAsync();
+            var exists = await roleRepository.ExistsByNameAsync(role.Name);
 
-            return true;
+            if (exists)
+                return false;
+
+            var result = await roleManager.CreateAsync(role);
+
+            return result.Succeeded;
         }
 
         public async Task<List<Role>> GetAllAsync()
@@ -41,27 +44,32 @@ namespace Clinexa.Services.Implementations
 
         public async Task<bool> UpdateAsync(Role role)
         {
-            var roleExists = await roleRepository
-                .GetByIdAsync(role.RoleId);
+            if (string.IsNullOrWhiteSpace(role.Name))
+                return false;
 
-            if (roleExists == null)
+            var existingRole = await roleManager.FindByIdAsync(
+                role.Id.ToString());
+
+            if (existingRole == null)
+                return false;
+
+            var exists = await roleRepository.ExistsByNameAsync(role.Name);
+
+            if (exists &&
+                !string.Equals(
+                    existingRole.Name,
+                    role.Name,
+                    StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }
 
-            bool nameExists = await roleRepository
-                .ExistsByNameAsync(role.Name);
+            existingRole.Name = role.Name;
+            existingRole.Description = role.Description;
 
-            if (nameExists && roleExists.Name != role.Name)
-            {
-                return false;
-            }
+            var result = await roleManager.UpdateAsync(existingRole);
 
-            roleRepository.Update(role);
-
-            await roleRepository.SaveChangesAsync();
-
-            return true;
+            return result.Succeeded;
         }
     }
 }

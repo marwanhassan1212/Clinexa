@@ -9,20 +9,41 @@ namespace Clinexa.Configurations
         public void Configure(EntityTypeBuilder<User> builder)
         {
             builder.ToTable("Users");
-            builder.HasKey(x => x.UserId);
-            builder.Property(x => x.FirstName).IsRequired().HasMaxLength(100);
-            builder.Property(x => x.LastName).IsRequired().HasMaxLength(100);
-            builder.Property(x => x.Email).IsRequired().HasMaxLength(255);
-            builder.HasIndex(x => x.Email).IsUnique();
-            builder.Property(x => x.PhoneNumber).IsRequired().HasMaxLength(30);
-            builder.HasIndex(x => x.PhoneNumber);
-            builder.Property(x => x.PasswordHash).IsRequired().HasMaxLength(500);
-            builder.Property(x => x.CreatedAt).IsRequired();
+
+            builder.Property(x => x.FirstName)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            builder.Property(x => x.LastName)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            builder.Property(x => x.Email)
+                .IsRequired()
+                .HasMaxLength(255);
+
+            builder.HasIndex(x => x.Email)
+                .IsUnique();
+
+            builder.Property(x => x.PhoneNumber)
+                .IsRequired()
+                .HasMaxLength(30);
+
+            builder.HasIndex(x => x.PhoneNumber)
+                .IsUnique();
+
+            builder.Property(x => x.IsActive)
+                .IsRequired();
+
+            builder.Property(x => x.CreatedAt)
+                .IsRequired();
+
             builder.Property(x => x.LastLoginAt);
-            builder.HasOne(x => x.Role).WithMany(x => x.Users).HasForeignKey(x => x.RoleId)
+
+            builder.HasOne(x => x.Doctor)
+                .WithOne(x => x.User)
+                .HasForeignKey<Doctor>(x => x.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
-
-
         }
     }
 }

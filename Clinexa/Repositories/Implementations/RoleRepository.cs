@@ -13,15 +13,12 @@ namespace Clinexa.Repositories.Implementations
         {
             _db = db;
         }
-        public async Task AddAsync(Role role)
-        {
-            await _db.Roles.AddAsync(role);
-        }
 
         public async Task<bool> ExistsByNameAsync(string name)
         {
             return await _db.Roles
-                 .AnyAsync(x => x.Name == name);
+                .AsNoTracking()
+                .AnyAsync(x => x.Name == name);
         }
 
         public async Task<List<Role>> GetAllAsync()
@@ -36,17 +33,9 @@ namespace Clinexa.Repositories.Implementations
         {
             return await _db.Roles
                 .AsNoTracking()
-                .FirstOrDefaultAsync(x => x.RoleId == id);
+                .FirstOrDefaultAsync(x => x.Id == id);
         }
 
-        public async Task SaveChangesAsync()
-        {
-            await _db.SaveChangesAsync();
-        }
 
-        public void Update(Role role)
-        {
-            _db.Roles.Update(role);
-        }
     }
 }

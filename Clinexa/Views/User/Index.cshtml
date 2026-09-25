@@ -78,7 +78,7 @@
 
                         @foreach (var role in Model.Roles)
                         {
-                            <option value="@role.RoleId">
+                            <option value="@role.Id">
                                 @role.Name
                             </option>
                         }
@@ -220,7 +220,7 @@
 
                                         <div class="text-secondary small">
 
-                                            #@user.UserId
+                                            #@user.Id
 
                                         </div>
 
@@ -256,7 +256,7 @@
 
                                 <span class="badge bg-blue-lt">
 
-                                    @user.Role?.Name
+                                    @(Model.RoleNames.TryGetValue(user.Id, out var roleName) ? roleName : "No Role")
 
                                 </span>
 
@@ -287,7 +287,7 @@
 
                                     <!-- Details -->
                                     <a asp-action="Details"
-                                       asp-route-id="@user.UserId"
+                                       asp-route-id="@user.Id"
                                        class="btn btn-sm btn-outline-secondary"
                                        title="Details">
 
@@ -298,7 +298,7 @@
 
                                     <!-- Edit -->
                                     <a asp-action="Edit"
-                                       asp-route-id="@user.UserId"
+                                       asp-route-id="@user.Id"
                                        class="btn btn-sm btn-outline-primary"
                                        title="Edit">
 
@@ -311,7 +311,7 @@
                                     {
                                         <!-- Deactivate -->
                                         <form asp-action="Deactivate"
-                                              asp-route-id="@user.UserId"
+                                              asp-route-id="@user.Id"
                                               method="post"
                                               class="d-inline">
 
@@ -332,7 +332,7 @@
                                     {
                                         <!-- Activate -->
                                         <form asp-action="Activate"
-                                              asp-route-id="@user.UserId"
+                                              asp-route-id="@user.Id"
                                               method="post"
                                               class="d-inline">
 

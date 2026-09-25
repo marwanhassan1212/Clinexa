@@ -1,17 +1,81 @@
 ﻿using Clinexa.Models.Entities;
 using Clinexa.Repositories.Interfaces;
 using Clinexa.Services.Interfaces;
+using Microsoft.AspNetCore.Identity;
 
 namespace Clinexa.Services.Implementations
 {
     public class PrescriptionItemService : IPrescriptionItemService
     {
         private readonly IPrescriptionItemRepository prescriptionItemRepository;
+        private readonly UserManager<User> userManager;
  
-        public PrescriptionItemService(IPrescriptionItemRepository prescriptionItemRepository)
+        public PrescriptionItemService(IPrescriptionItemRepository prescriptionItemRepository
+            ,UserManager<User> userManager)
         {
             this.prescriptionItemRepository = prescriptionItemRepository;
+            this.userManager = userManager;
         }
+
+        public async Task<bool> CanAccessAsync(
+                 int prescriptionItemId,
+                 int currentUserId)
+        {
+            var user =
+                await userManager.FindByIdAsync(
+                    currentUserId.ToString());
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            // Admin can access everything.
+            if (await userManager.IsInRoleAsync(
+                    user,
+                    "Admin"))
+            {
+                return true;
+            }
+
+            // Doctor can access only items
+            // belonging to their own prescription.
+            return await prescriptionItemRepository
+                .BelongsToDoctorAsync(
+                    prescriptionItemId,
+                    currentUserId);
+        }
+
+        public async Task<bool>
+            CanAccessPrescriptionAsync(
+                int prescriptionId,
+                int currentUserId)
+        {
+            var user =
+                await userManager.FindByIdAsync(
+                    currentUserId.ToString());
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            // Admin can access everything.
+            if (await userManager.IsInRoleAsync(
+                    user,
+                    "Admin"))
+            {
+                return true;
+            }
+
+            // Doctor can create items only inside
+            // their own prescription.
+            return await prescriptionItemRepository
+                .PrescriptionBelongsToDoctorAsync(
+                    prescriptionId,
+                    currentUserId);
+        }
+
         public async Task<bool> CreateAsync(PrescriptionItem prescriptionItem)
         {
             bool medicineAlreadyExists =

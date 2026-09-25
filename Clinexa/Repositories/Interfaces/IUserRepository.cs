@@ -18,6 +18,10 @@ namespace Clinexa.Repositories.Interfaces
         Task AddAsync(User user);
 
         void Update(User user);
+        Task<int?> GetRoleIdAsync(int userId);
+
+        Task<Dictionary<int, string>> GetRoleNamesAsync(IEnumerable<int> userIds);
+
 
         Task SaveChangesAsync();
     }

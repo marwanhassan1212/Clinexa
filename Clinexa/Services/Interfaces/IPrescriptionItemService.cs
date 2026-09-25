@@ -8,13 +8,16 @@ namespace Clinexa.Services.Interfaces
 
         Task<List<PrescriptionItem>> GetAllAsync();
 
-        Task<List<PrescriptionItem>> GetByPrescriptionIdAsync(
-            int prescriptionId);
+        Task<List<PrescriptionItem>> GetByPrescriptionIdAsync(int prescriptionId);
+        Task<bool> CreateAsync(PrescriptionItem prescriptionItem);
+        Task<bool> UpdateAsync(PrescriptionItem prescriptionItem);
 
-        Task<bool> CreateAsync(
-            PrescriptionItem prescriptionItem);
+        Task<bool> CanAccessAsync(int prescriptionItemId, int currentUserId);
+        Task<bool> CanAccessPrescriptionAsync(int prescriptionId, int currentUserId);
 
-        Task<bool> UpdateAsync(
-            PrescriptionItem prescriptionItem);
+
+
     }
+
+
 }

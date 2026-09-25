@@ -1,10 +1,12 @@
 ﻿using Clinexa.Models.Entities;
 using Clinexa.Models.ViewModels.Payment;
 using Clinexa.Services.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Clinexa.Controllers
 {
+    [Authorize(Policy = "BillingAccess")]
     public class PaymentController : Controller
     {
         private readonly IPaymentService paymentService;
