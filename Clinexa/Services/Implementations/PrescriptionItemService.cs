@@ -1,6 +1,9 @@
-﻿using Clinexa.Models.Entities;
+﻿using System.Security.Claims;
+using System.Text.Json;
+using Clinexa.Models.Entities;
 using Clinexa.Repositories.Interfaces;
 using Clinexa.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 
 namespace Clinexa.Services.Implementations
@@ -9,17 +12,28 @@ namespace Clinexa.Services.Implementations
     {
         private readonly IPrescriptionItemRepository prescriptionItemRepository;
         private readonly UserManager<User> userManager;
- 
-        public PrescriptionItemService(IPrescriptionItemRepository prescriptionItemRepository
-            ,UserManager<User> userManager)
+        private readonly IAuditLogService auditLogService;
+        private readonly IHttpContextAccessor httpContextAccessor;
+
+        public PrescriptionItemService(
+            IPrescriptionItemRepository prescriptionItemRepository,
+            UserManager<User> userManager,
+            IAuditLogService auditLogService,
+            IHttpContextAccessor httpContextAccessor)
         {
             this.prescriptionItemRepository = prescriptionItemRepository;
             this.userManager = userManager;
+            this.auditLogService = auditLogService;
+            this.httpContextAccessor = httpContextAccessor;
         }
 
+        // =========================================================
+        // Data-Level Authorization
+        // =========================================================
+
         public async Task<bool> CanAccessAsync(
-                 int prescriptionItemId,
-                 int currentUserId)
+            int prescriptionItemId,
+            int currentUserId)
         {
             var user =
                 await userManager.FindByIdAsync(
@@ -76,7 +90,12 @@ namespace Clinexa.Services.Implementations
                     currentUserId);
         }
 
-        public async Task<bool> CreateAsync(PrescriptionItem prescriptionItem)
+        // =========================================================
+        // Create
+        // =========================================================
+
+        public async Task<bool> CreateAsync(
+            PrescriptionItem prescriptionItem)
         {
             bool medicineAlreadyExists =
                 await prescriptionItemRepository
@@ -89,72 +108,196 @@ namespace Clinexa.Services.Implementations
                 return false;
             }
 
-            bool PrescriptionExists = await prescriptionItemRepository.PrescriptionExistsAsync(prescriptionItem.PrescriptionId);
-            if(!PrescriptionExists)
+            bool prescriptionExists =
+                await prescriptionItemRepository
+                    .PrescriptionExistsAsync(
+                        prescriptionItem.PrescriptionId);
+
+            if (!prescriptionExists)
             {
                 return false;
             }
 
-            bool ActiveMedicineExists = await prescriptionItemRepository.ActiveMedicineExistsAsync(prescriptionItem.MedicineId);
-            if(!ActiveMedicineExists)
+            bool activeMedicineExists =
+                await prescriptionItemRepository
+                    .ActiveMedicineExistsAsync(
+                        prescriptionItem.MedicineId);
+
+            if (!activeMedicineExists)
             {
                 return false;
             }
-            await prescriptionItemRepository.AddAsync(prescriptionItem);
-            await prescriptionItemRepository.SaveChangesAsync();
+
+            await prescriptionItemRepository
+                .AddAsync(prescriptionItem);
+
+            await prescriptionItemRepository
+                .SaveChangesAsync();
+
+            var userId = await GetCurrentUserIdAsync();
+
+            if (userId.HasValue)
+            {
+                var newValues = JsonSerializer.Serialize(new
+                {
+                    prescriptionItem.PrescriptionItemId,
+                    prescriptionItem.PrescriptionId,
+                    prescriptionItem.MedicineId
+                });
+
+                await auditLogService.LogAsync(
+                    "Create",
+                    "PrescriptionItem",
+                    prescriptionItem.PrescriptionItemId,
+                    userId.Value,
+                    newValues: newValues,
+                    ipAddress: GetIpAddress());
+            }
+
             return true;
         }
 
+        // =========================================================
+        // Get
+        // =========================================================
+
         public async Task<List<PrescriptionItem>> GetAllAsync()
         {
-            return await prescriptionItemRepository.GetAllAsync();
+            return await prescriptionItemRepository
+                .GetAllAsync();
         }
 
-        public async Task<PrescriptionItem?> GetByIdAsync(int id)
+        public async Task<PrescriptionItem?> GetByIdAsync(
+            int id)
         {
-            return await prescriptionItemRepository.GetByIdAsync(id);
+            return await prescriptionItemRepository
+                .GetByIdAsync(id);
         }
 
-        public async Task<List<PrescriptionItem>> GetByPrescriptionIdAsync(int prescriptionId)
+        public async Task<List<PrescriptionItem>>
+            GetByPrescriptionIdAsync(
+                int prescriptionId)
         {
-            return await prescriptionItemRepository.GetByPrescriptionIdAsync(prescriptionId);
+            return await prescriptionItemRepository
+                .GetByPrescriptionIdAsync(
+                    prescriptionId);
         }
 
-        public async Task<bool> UpdateAsync(PrescriptionItem prescriptionItem)
+        // =========================================================
+        // Update
+        // =========================================================
+
+        public async Task<bool> UpdateAsync(
+            PrescriptionItem prescriptionItem)
         {
-            var prescriptionItemExists = await prescriptionItemRepository.GetByIdAsync(prescriptionItem.PrescriptionItemId);
-            if(prescriptionItemExists == null)
+            var prescriptionItemExists =
+                await prescriptionItemRepository
+                    .GetByIdAsync(
+                        prescriptionItem.PrescriptionItemId);
+
+            if (prescriptionItemExists == null)
             {
                 return false;
             }
 
-            bool prescriptionExists = await prescriptionItemRepository.PrescriptionExistsAsync(prescriptionItem.PrescriptionId);
-            if(!prescriptionExists)
+            bool prescriptionExists =
+                await prescriptionItemRepository
+                    .PrescriptionExistsAsync(
+                        prescriptionItem.PrescriptionId);
+
+            if (!prescriptionExists)
             {
                 return false;
             }
-            bool ActiveMedicineExists = await prescriptionItemRepository.ActiveMedicineExistsAsync(prescriptionItem.MedicineId);
-            if(!ActiveMedicineExists)
+
+            bool activeMedicineExists =
+                await prescriptionItemRepository
+                    .ActiveMedicineExistsAsync(
+                        prescriptionItem.MedicineId);
+
+            if (!activeMedicineExists)
             {
                 return false;
             }
+
             bool medicineAlreadyExists =
-            await prescriptionItemRepository
-                .ExistsForPrescriptionAsync(
-                    prescriptionItem.PrescriptionId,
-                    prescriptionItem.MedicineId,
-                    prescriptionItem.PrescriptionItemId);
+                await prescriptionItemRepository
+                    .ExistsForPrescriptionAsync(
+                        prescriptionItem.PrescriptionId,
+                        prescriptionItem.MedicineId,
+                        prescriptionItem.PrescriptionItemId);
 
             if (medicineAlreadyExists)
             {
                 return false;
             }
-            prescriptionItemRepository.Update(prescriptionItem);
-            await prescriptionItemRepository.SaveChangesAsync();
-            return true;
 
+            var oldValues = JsonSerializer.Serialize(new
+            {
+                prescriptionItemExists.PrescriptionItemId,
+                prescriptionItemExists.PrescriptionId,
+                prescriptionItemExists.MedicineId
+            });
+
+            prescriptionItemRepository
+                .Update(prescriptionItem);
+
+            await prescriptionItemRepository
+                .SaveChangesAsync();
+
+            var userId = await GetCurrentUserIdAsync();
+
+            if (userId.HasValue)
+            {
+                var newValues = JsonSerializer.Serialize(new
+                {
+                    prescriptionItem.PrescriptionItemId,
+                    prescriptionItem.PrescriptionId,
+                    prescriptionItem.MedicineId
+                });
+
+                await auditLogService.LogAsync(
+                    "Update",
+                    "PrescriptionItem",
+                    prescriptionItem.PrescriptionItemId,
+                    userId.Value,
+                    oldValues,
+                    newValues,
+                    GetIpAddress());
+            }
+
+            return true;
         }
 
-     
+        // =========================================================
+        // Audit Log Helpers
+        // =========================================================
+
+        private async Task<int?> GetCurrentUserIdAsync()
+        {
+            var userIdClaim =
+                httpContextAccessor.HttpContext?
+                    .User
+                    .FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                return null;
+            }
+
+            var user =
+                await userManager.FindByIdAsync(
+                    userIdClaim);
+
+            return user?.Id;
+        }
+
+        private string? GetIpAddress()
+        {
+            return httpContextAccessor.HttpContext?
+                .Connection
+                .RemoteIpAddress?
+                .ToString();
+        }
     }
 }

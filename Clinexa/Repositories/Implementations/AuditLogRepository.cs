@@ -28,7 +28,8 @@ namespace Clinexa.Repositories.Implementations
                 .ToListAsync();
         }
 
-        public async Task<List<AuditLog>> GetByUserIdAsync(int userId)
+        public async Task<List<AuditLog>> GetByUserIdAsync(
+            int userId)
         {
             return await _db.AuditLogs
                 .AsNoTracking()
@@ -52,6 +53,13 @@ namespace Clinexa.Repositories.Implementations
                 .ToListAsync();
         }
 
+        public async Task<AuditLog?> GetByIdAsync(int id)
+        {
+            return await _db.AuditLogs
+                .AsNoTracking()
+                .Include(x => x.User)
+                .FirstOrDefaultAsync(x => x.AuditLogId == id);
+        }
         public async Task SaveChangesAsync()
         {
             await _db.SaveChangesAsync();

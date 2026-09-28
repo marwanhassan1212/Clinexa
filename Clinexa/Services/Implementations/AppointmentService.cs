@@ -2,18 +2,37 @@
 using Clinexa.Models.Entities;
 using Clinexa.Repositories.Interfaces;
 using Clinexa.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
+using System.Security.Claims;
+using System.Text.Json;
+using System.Threading.Channels;
 
 namespace Clinexa.Services.Implementations
 {
     public class AppointmentService : IAppointmentService
     {
         private readonly IAppointmentRepository appointmentRepository;
+        private readonly IAuditLogService auditLogService;
+        private readonly IHttpContextAccessor httpContextAccessor;
+        private readonly UserManager<User> userManager;
 
         public AppointmentService(
-            IAppointmentRepository appointmentRepository)
+            IAppointmentRepository appointmentRepository,
+            IAuditLogService auditLogService,
+            IHttpContextAccessor httpContextAccessor,
+            UserManager<User> userManager)
         {
             this.appointmentRepository = appointmentRepository;
+            this.auditLogService = auditLogService;
+            this.httpContextAccessor = httpContextAccessor;
+            this.userManager = userManager;
         }
+
+        // =========================================================
+        // Create
+        // =========================================================
 
         public async Task<bool> CreateAsync(Appointment appointment)
         {
@@ -66,8 +85,37 @@ namespace Clinexa.Services.Implementations
             await appointmentRepository.AddAsync(appointment);
             await appointmentRepository.SaveChangesAsync();
 
+            var userId = await GetCurrentUserIdAsync();
+
+            if (userId.HasValue)
+            {
+                var newValues = JsonSerializer.Serialize(new
+                {
+                    appointment.AppointmentId,
+                    appointment.DoctorId,
+                    appointment.PatientId,
+                    appointment.AppointmentDate,
+                    appointment.StartTime,
+                    appointment.EndTime,
+                    appointment.AppointmentStatus,
+                    appointment.CreatedAt
+                });
+
+                await auditLogService.LogAsync(
+                    "Create",
+                    "Appointment",
+                    appointment.AppointmentId,
+                    userId.Value,
+                    newValues: newValues,
+                    ipAddress: GetIpAddress());
+            }
+
             return true;
         }
+
+        // =========================================================
+        // Update
+        // =========================================================
 
         public async Task<bool> UpdateAsync(Appointment appointment)
         {
@@ -127,6 +175,24 @@ namespace Clinexa.Services.Implementations
             if (hasConflict)
                 return false;
 
+            var oldValues = JsonSerializer.Serialize(new
+            {
+                existingAppointment.AppointmentId,
+                existingAppointment.DoctorId,
+                existingAppointment.PatientId,
+                existingAppointment.AppointmentDate,
+                existingAppointment.StartTime,
+                existingAppointment.EndTime,
+                existingAppointment.AppointmentStatus,
+                existingAppointment.ConfirmedAt,
+                existingAppointment.CheckedInAt,
+                existingAppointment.ConsultationStartedAt,
+                existingAppointment.CompletedAt,
+                existingAppointment.CancelledAt,
+                existingAppointment.CancellationReason,
+                existingAppointment.CreatedAt
+            });
+
             // Preserve the existing workflow state.
             appointment.AppointmentStatus =
                 existingAppointment.AppointmentStatus;
@@ -155,8 +221,44 @@ namespace Clinexa.Services.Implementations
             appointmentRepository.Update(appointment);
             await appointmentRepository.SaveChangesAsync();
 
+            var userId = await GetCurrentUserIdAsync();
+
+            if (userId.HasValue)
+            {
+                var newValues = JsonSerializer.Serialize(new
+                {
+                    appointment.AppointmentId,
+                    appointment.DoctorId,
+                    appointment.PatientId,
+                    appointment.AppointmentDate,
+                    appointment.StartTime,
+                    appointment.EndTime,
+                    appointment.AppointmentStatus,
+                    appointment.ConfirmedAt,
+                    appointment.CheckedInAt,
+                    appointment.ConsultationStartedAt,
+                    appointment.CompletedAt,
+                    appointment.CancelledAt,
+                    appointment.CancellationReason,
+                    appointment.CreatedAt
+                });
+
+                await auditLogService.LogAsync(
+                    "Update",
+                    "Appointment",
+                    appointment.AppointmentId,
+                    userId.Value,
+                    oldValues,
+                    newValues,
+                    GetIpAddress());
+            }
+
             return true;
         }
+
+        // =========================================================
+        // Confirm
+        // =========================================================
 
         public async Task<bool> ConfirmAsync(int id)
         {
@@ -169,6 +271,8 @@ namespace Clinexa.Services.Implementations
             if (appointment.AppointmentStatus != AppointmentStatus.Scheduled)
                 return false;
 
+            var oldValues = SerializeAppointment(appointment);
+
             appointment.AppointmentStatus =
                 AppointmentStatus.Confirmed;
 
@@ -178,8 +282,17 @@ namespace Clinexa.Services.Implementations
             appointmentRepository.Update(appointment);
             await appointmentRepository.SaveChangesAsync();
 
+            await WriteAuditLogAsync(
+                "Confirm",
+                appointment,
+                oldValues);
+
             return true;
         }
+
+        // =========================================================
+        // Check In
+        // =========================================================
 
         public async Task<bool> CheckInAsync(int id)
         {
@@ -192,6 +305,8 @@ namespace Clinexa.Services.Implementations
             if (appointment.AppointmentStatus != AppointmentStatus.Confirmed)
                 return false;
 
+            var oldValues = SerializeAppointment(appointment);
+
             appointment.AppointmentStatus =
                 AppointmentStatus.CheckedIn;
 
@@ -201,8 +316,17 @@ namespace Clinexa.Services.Implementations
             appointmentRepository.Update(appointment);
             await appointmentRepository.SaveChangesAsync();
 
+            await WriteAuditLogAsync(
+                "CheckIn",
+                appointment,
+                oldValues);
+
             return true;
         }
+
+        // =========================================================
+        // Start Consultation
+        // =========================================================
 
         public async Task<bool> StartConsultationAsync(int id)
         {
@@ -215,6 +339,8 @@ namespace Clinexa.Services.Implementations
             if (appointment.AppointmentStatus != AppointmentStatus.CheckedIn)
                 return false;
 
+            var oldValues = SerializeAppointment(appointment);
+
             appointment.AppointmentStatus =
                 AppointmentStatus.InConsultation;
 
@@ -224,8 +350,17 @@ namespace Clinexa.Services.Implementations
             appointmentRepository.Update(appointment);
             await appointmentRepository.SaveChangesAsync();
 
+            await WriteAuditLogAsync(
+                "StartConsultation",
+                appointment,
+                oldValues);
+
             return true;
         }
+
+        // =========================================================
+        // Complete
+        // =========================================================
 
         public async Task<bool> CompleteAsync(int id)
         {
@@ -238,6 +373,8 @@ namespace Clinexa.Services.Implementations
             if (appointment.AppointmentStatus != AppointmentStatus.InConsultation)
                 return false;
 
+            var oldValues = SerializeAppointment(appointment);
+
             appointment.AppointmentStatus =
                 AppointmentStatus.Completed;
 
@@ -247,8 +384,17 @@ namespace Clinexa.Services.Implementations
             appointmentRepository.Update(appointment);
             await appointmentRepository.SaveChangesAsync();
 
+            await WriteAuditLogAsync(
+                "Complete",
+                appointment,
+                oldValues);
+
             return true;
         }
+
+        // =========================================================
+        // Cancel
+        // =========================================================
 
         public async Task<bool> CancelAsync(
             int id,
@@ -267,6 +413,8 @@ namespace Clinexa.Services.Implementations
                 return false;
             }
 
+            var oldValues = SerializeAppointment(appointment);
+
             appointment.AppointmentStatus =
                 AppointmentStatus.Cancelled;
 
@@ -279,8 +427,17 @@ namespace Clinexa.Services.Implementations
             appointmentRepository.Update(appointment);
             await appointmentRepository.SaveChangesAsync();
 
+            await WriteAuditLogAsync(
+                "Cancel",
+                appointment,
+                oldValues);
+
             return true;
         }
+
+        // =========================================================
+        // No Show
+        // =========================================================
 
         public async Task<bool> MarkAsNoShowAsync(int id)
         {
@@ -296,14 +453,25 @@ namespace Clinexa.Services.Implementations
                 return false;
             }
 
+            var oldValues = SerializeAppointment(appointment);
+
             appointment.AppointmentStatus =
                 AppointmentStatus.NoShow;
 
             appointmentRepository.Update(appointment);
             await appointmentRepository.SaveChangesAsync();
 
+            await WriteAuditLogAsync(
+                "NoShow",
+                appointment,
+                oldValues);
+
             return true;
         }
+
+        // =========================================================
+        // Get
+        // =========================================================
 
         public async Task<List<Appointment>> GetAllAsync()
         {
@@ -330,6 +498,10 @@ namespace Clinexa.Services.Implementations
                 .GetByPatientIdAsync(patientId);
         }
 
+        // =========================================================
+        // Filtering
+        // =========================================================
+
         public async Task<(
             List<Appointment> Appointments,
             int TotalCount)> FilterAsync(
@@ -350,6 +522,10 @@ namespace Clinexa.Services.Implementations
                 page,
                 pageSize);
         }
+
+        // =========================================================
+        // Available Slots
+        // =========================================================
 
         public async Task<List<TimeSpan>> GetAvailableSlotsAsync(
             int doctorId,
@@ -412,6 +588,81 @@ namespace Clinexa.Services.Implementations
                 .Distinct()
                 .OrderBy(x => x)
                 .ToList();
+        }
+
+        // =========================================================
+        // Audit Log
+        // =========================================================
+
+        private string SerializeAppointment(
+            Appointment appointment)
+        {
+            return JsonSerializer.Serialize(new
+            {
+                appointment.AppointmentId,
+                appointment.DoctorId,
+                appointment.PatientId,
+                appointment.AppointmentDate,
+                appointment.StartTime,
+                appointment.EndTime,
+                appointment.AppointmentStatus,
+                appointment.ConfirmedAt,
+                appointment.CheckedInAt,
+                appointment.ConsultationStartedAt,
+                appointment.CompletedAt,
+                appointment.CancelledAt,
+                appointment.CancellationReason,
+                appointment.CreatedAt
+            });
+        }
+
+        private async Task WriteAuditLogAsync(
+            string action,
+            Appointment appointment,
+            string oldValues)
+        {
+            var userId = await GetCurrentUserIdAsync();
+
+            if (!userId.HasValue)
+                return;
+
+            var newValues =
+                SerializeAppointment(appointment);
+
+            await auditLogService.LogAsync(
+                action,
+                "Appointment",
+                appointment.AppointmentId,
+                userId.Value,
+                oldValues,
+                newValues,
+                GetIpAddress());
+        }
+
+        private async Task<int?> GetCurrentUserIdAsync()
+        {
+            var userIdClaim =
+                httpContextAccessor.HttpContext?
+                    .User
+                    .FindFirstValue(
+                        ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userIdClaim))
+                return null;
+
+            var user =
+                await userManager.FindByIdAsync(
+                    userIdClaim);
+
+            return user?.Id;
+        }
+
+        private string? GetIpAddress()
+        {
+            return httpContextAccessor.HttpContext?
+                .Connection
+                .RemoteIpAddress?
+                .ToString();
         }
     }
 }

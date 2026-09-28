@@ -1,6 +1,9 @@
-﻿using Clinexa.Models.Entities;
+﻿using System.Security.Claims;
+using System.Text.Json;
+using Clinexa.Models.Entities;
 using Clinexa.Repositories.Interfaces;
 using Clinexa.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 
 namespace Clinexa.Services.Implementations
@@ -9,13 +12,19 @@ namespace Clinexa.Services.Implementations
     {
         private readonly IPrescriptionRepository prescriptionRepository;
         private readonly UserManager<User> userManager;
+        private readonly IAuditLogService auditLogService;
+        private readonly IHttpContextAccessor httpContextAccessor;
 
         public PrescriptionService(
             IPrescriptionRepository prescriptionRepository,
-            UserManager<User> userManager)
+            UserManager<User> userManager,
+            IAuditLogService auditLogService,
+            IHttpContextAccessor httpContextAccessor)
         {
             this.prescriptionRepository = prescriptionRepository;
             this.userManager = userManager;
+            this.auditLogService = auditLogService;
+            this.httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<bool> CreateAsync(
@@ -32,9 +41,9 @@ namespace Clinexa.Services.Implementations
             }
 
             bool appointmentCompleted =
-                 await prescriptionRepository
-                     .IsMedicalRecordAppointmentCompletedAsync(
-                         prescription.MedicalRecordId);
+                await prescriptionRepository
+                    .IsMedicalRecordAppointmentCompletedAsync(
+                        prescription.MedicalRecordId);
 
             if (!appointmentCompleted)
             {
@@ -62,6 +71,26 @@ namespace Clinexa.Services.Implementations
 
             await prescriptionRepository
                 .SaveChangesAsync();
+
+            var userId = await GetCurrentUserIdAsync();
+
+            if (userId.HasValue)
+            {
+                var newValues = JsonSerializer.Serialize(new
+                {
+                    prescription.PrescriptionId,
+                    prescription.MedicalRecordId,
+                    prescription.PrescriptionDate
+                });
+
+                await auditLogService.LogAsync(
+                    "Create",
+                    "Prescription",
+                    prescription.PrescriptionId,
+                    userId.Value,
+                    newValues: newValues,
+                    ipAddress: GetIpAddress());
+            }
 
             return true;
         }
@@ -127,11 +156,39 @@ namespace Clinexa.Services.Implementations
                 return false;
             }
 
+            var oldValues = JsonSerializer.Serialize(new
+            {
+                prescriptionExists.PrescriptionId,
+                prescriptionExists.MedicalRecordId,
+                prescriptionExists.PrescriptionDate
+            });
+
             prescriptionRepository
                 .Update(prescription);
 
             await prescriptionRepository
                 .SaveChangesAsync();
+
+            var userId = await GetCurrentUserIdAsync();
+
+            if (userId.HasValue)
+            {
+                var newValues = JsonSerializer.Serialize(new
+                {
+                    prescription.PrescriptionId,
+                    prescription.MedicalRecordId,
+                    prescription.PrescriptionDate
+                });
+
+                await auditLogService.LogAsync(
+                    "Update",
+                    "Prescription",
+                    prescription.PrescriptionId,
+                    userId.Value,
+                    oldValues,
+                    newValues,
+                    GetIpAddress());
+            }
 
             return true;
         }
@@ -251,6 +308,37 @@ namespace Clinexa.Services.Implementations
                 .MedicalRecordBelongsToDoctorAsync(
                     medicalRecordId,
                     currentUserId);
+        }
+
+        // =========================================================
+        // Audit Log Helpers
+        // =========================================================
+
+        private async Task<int?> GetCurrentUserIdAsync()
+        {
+            var userIdClaim =
+                httpContextAccessor.HttpContext?
+                    .User
+                    .FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userIdClaim))
+            {
+                return null;
+            }
+
+            var user =
+                await userManager.FindByIdAsync(
+                    userIdClaim);
+
+            return user?.Id;
+        }
+
+        private string? GetIpAddress()
+        {
+            return httpContextAccessor.HttpContext?
+                .Connection
+                .RemoteIpAddress?
+                .ToString();
         }
     }
 }

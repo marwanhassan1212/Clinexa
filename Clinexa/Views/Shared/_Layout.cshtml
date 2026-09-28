@@ -566,33 +566,32 @@
                                 </a>
 
                             </li>
+                                                }
 
+                        <!-- Audit Logs -->
 
-                            <!-- Audit Logs -->
-
-                            <li class="nav-item
-                                @(currentController == "AuditLog"
-                                                                ? "active"
-                                                                : "")">
+                        <li class="nav-item
+                            @(currentController == "AuditLog"
+                                    ? "active"
+                                    : "")">
 
                             <a class="nav-link"
                                asp-controller="AuditLog"
                                asp-action="Index">
 
-                                    <span class="nav-link-icon">
+                                <span class="nav-link-icon">
 
-                                        <i class="bi bi-shield-check"></i>
+                                    <i class="bi bi-shield-check"></i>
 
-                                    </span>
+                                </span>
 
-                                    <span class="nav-link-title">
-                                        Audit Logs
-                                    </span>
+                                <span class="nav-link-title">
+                                    Audit Logs
+                                </span>
 
-                                </a>
+                            </a>
 
-                            </li>
-                                                }
+                        </li>
 
 
                         <!-- =================================================

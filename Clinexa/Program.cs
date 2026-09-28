@@ -37,7 +37,9 @@ namespace Clinexa
             builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
             builder.Services.AddScoped<IDashboardRepository, DashboardRepository>();
             builder.Services.AddScoped<IAuditLogRepository, AuditLogRepository>();
-           
+
+
+
 
             // Services
             builder.Services.AddScoped<IPatientService, PatientService>();
@@ -57,6 +59,9 @@ namespace Clinexa
             builder.Services.AddScoped<IDashboardService, DashboardService>();
             builder.Services.AddScoped<IAuditLogService, AuditLogService>();
 
+
+            // IHttpContextAccessor
+            builder.Services.AddHttpContextAccessor();
 
             //PDF
             builder.Services.AddScoped<IPrescriptionPdfService, PrescriptionPdfService>();

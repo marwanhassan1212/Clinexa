@@ -1,6 +1,10 @@
 ﻿using Clinexa.Models.Entities;
 using Clinexa.Repositories.Interfaces;
 using Clinexa.Services.Interfaces;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using System.Security.Claims;
+using System.Text.Json;
 
 namespace Clinexa.Services.Implementations
 {
@@ -8,10 +12,20 @@ namespace Clinexa.Services.Implementations
     {
         private readonly IDoctorScheduleRepository doctorScheduleRepository;
 
+        private readonly IAuditLogService auditLogService;
+        private readonly IHttpContextAccessor httpContextAccessor;
+        private readonly UserManager<User> userManager;
+
         public DoctorScheduleService(
-            IDoctorScheduleRepository doctorScheduleRepository)
+            IDoctorScheduleRepository doctorScheduleRepository,
+            IAuditLogService auditLogService,
+            IHttpContextAccessor httpContextAccessor,
+            UserManager<User> userManager)
         {
             this.doctorScheduleRepository = doctorScheduleRepository;
+            this.auditLogService = auditLogService;
+            this.httpContextAccessor = httpContextAccessor;
+            this.userManager = userManager;
         }
 
         public async Task<bool> CreateAsync(DoctorSchedule schedule)
@@ -21,14 +35,10 @@ namespace Clinexa.Services.Implementations
                     schedule.DoctorId);
 
             if (!doctorExists)
-            {
                 return false;
-            }
 
             if (schedule.StartTime >= schedule.EndTime)
-            {
                 return false;
-            }
 
             bool hasDuplicateStartTime =
                 await doctorScheduleRepository.HasDuplicateStartTimeAsync(
@@ -37,9 +47,7 @@ namespace Clinexa.Services.Implementations
                     schedule.StartTime);
 
             if (hasDuplicateStartTime)
-            {
                 return false;
-            }
 
             bool hasOverlap =
                 await doctorScheduleRepository.HasOverlapAsync(
@@ -49,14 +57,17 @@ namespace Clinexa.Services.Implementations
                     schedule.EndTime);
 
             if (hasOverlap)
-            {
                 return false;
-            }
 
             schedule.IsAvailable = true;
 
             await doctorScheduleRepository.AddAsync(schedule);
             await doctorScheduleRepository.SaveChangesAsync();
+
+            await WriteAuditLogAsync(
+                "Create",
+                schedule,
+                null);
 
             return true;
         }
@@ -67,15 +78,20 @@ namespace Clinexa.Services.Implementations
                 await doctorScheduleRepository.GetByIdAsync(id);
 
             if (schedule == null)
-            {
                 return false;
-            }
+
+            var oldValues = SerializeSchedule(schedule);
 
             schedule.IsAvailable = false;
 
             doctorScheduleRepository.Update(schedule);
 
             await doctorScheduleRepository.SaveChangesAsync();
+
+            await WriteAuditLogAsync(
+                "Deactivate",
+                schedule,
+                oldValues);
 
             return true;
         }
@@ -86,18 +102,14 @@ namespace Clinexa.Services.Implementations
                 await doctorScheduleRepository.GetByIdAsync(id);
 
             if (schedule == null)
-            {
                 return false;
-            }
 
             bool doctorExists =
                 await doctorScheduleRepository.DoctorExistsAsync(
                     schedule.DoctorId);
 
             if (!doctorExists)
-            {
                 return false;
-            }
 
             bool hasDuplicateStartTime =
                 await doctorScheduleRepository.HasDuplicateStartTimeAsync(
@@ -107,9 +119,7 @@ namespace Clinexa.Services.Implementations
                     schedule.DoctorScheduleId);
 
             if (hasDuplicateStartTime)
-            {
                 return false;
-            }
 
             bool hasOverlap =
                 await doctorScheduleRepository.HasOverlapAsync(
@@ -120,15 +130,20 @@ namespace Clinexa.Services.Implementations
                     schedule.DoctorScheduleId);
 
             if (hasOverlap)
-            {
                 return false;
-            }
+
+            var oldValues = SerializeSchedule(schedule);
 
             schedule.IsAvailable = true;
 
             doctorScheduleRepository.Update(schedule);
 
             await doctorScheduleRepository.SaveChangesAsync();
+
+            await WriteAuditLogAsync(
+                "Activate",
+                schedule,
+                oldValues);
 
             return true;
         }
@@ -141,23 +156,17 @@ namespace Clinexa.Services.Implementations
                     schedule.DoctorScheduleId);
 
             if (existingSchedule == null)
-            {
                 return false;
-            }
 
             bool doctorExists =
                 await doctorScheduleRepository.DoctorExistsAsync(
                     schedule.DoctorId);
 
             if (!doctorExists)
-            {
                 return false;
-            }
 
             if (schedule.StartTime >= schedule.EndTime)
-            {
                 return false;
-            }
 
             bool hasDuplicateStartTime =
                 await doctorScheduleRepository.HasDuplicateStartTimeAsync(
@@ -167,9 +176,7 @@ namespace Clinexa.Services.Implementations
                     schedule.DoctorScheduleId);
 
             if (hasDuplicateStartTime)
-            {
                 return false;
-            }
 
             bool hasOverlap =
                 await doctorScheduleRepository.HasOverlapAsync(
@@ -180,13 +187,18 @@ namespace Clinexa.Services.Implementations
                     schedule.DoctorScheduleId);
 
             if (hasOverlap)
-            {
                 return false;
-            }
+
+            var oldValues = SerializeSchedule(existingSchedule);
 
             doctorScheduleRepository.Update(schedule);
 
             await doctorScheduleRepository.SaveChangesAsync();
+
+            await WriteAuditLogAsync(
+                "Update",
+                schedule,
+                oldValues);
 
             return true;
         }
@@ -236,6 +248,64 @@ namespace Clinexa.Services.Implementations
         {
             await doctorScheduleRepository
                 .ActivateByDoctorIdAsync(doctorId);
+        }
+
+        private async Task WriteAuditLogAsync(
+            string action,
+            DoctorSchedule schedule,
+            string? oldValues)
+        {
+            var userId = await GetCurrentUserIdAsync();
+
+            if (!userId.HasValue)
+                return;
+
+            await auditLogService.LogAsync(
+                action: action,
+                entityName: nameof(DoctorSchedule),
+                entityId: schedule.DoctorScheduleId,
+                userId: userId.Value,
+                oldValues: oldValues,
+                newValues: SerializeSchedule(schedule),
+                ipAddress: GetIpAddress());
+        }
+
+        private async Task<int?> GetCurrentUserIdAsync()
+        {
+            var userIdClaim =
+                httpContextAccessor.HttpContext?
+                    .User
+                    .FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userIdClaim))
+                return null;
+
+            var user =
+                await userManager.FindByIdAsync(userIdClaim);
+
+            return user?.Id;
+        }
+
+        private string? GetIpAddress()
+        {
+            return httpContextAccessor.HttpContext?
+                .Connection
+                .RemoteIpAddress?
+                .ToString();
+        }
+
+        private string SerializeSchedule(
+            DoctorSchedule schedule)
+        {
+            return JsonSerializer.Serialize(new
+            {
+                schedule.DoctorScheduleId,
+                schedule.DoctorId,
+                schedule.DayOfWeek,
+                schedule.StartTime,
+                schedule.EndTime,
+                schedule.IsAvailable
+            });
         }
     }
 }

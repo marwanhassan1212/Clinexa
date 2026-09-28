@@ -1,0 +1,369 @@
+﻿@using System.Text.Json
+@model Clinexa.Models.Entities.AuditLog
+
+@{
+    ViewData["Title"] = "Audit Log Details";
+}
+
+<div class="row row-cards">
+
+    <!-- =========================================================
+         AUDIT INFORMATION
+    ========================================================== -->
+
+    <div class="col-12">
+
+        <div class="card">
+
+            <div class="card-header">
+
+                <div>
+
+                    <h3 class="card-title">
+                        Audit Log Details
+                    </h3>
+
+                    <div class="text-secondary small">
+                        Detailed information about this system activity.
+                    </div>
+
+                </div>
+
+                <div class="card-actions">
+
+                    <a asp-action="Index"
+                       class="btn btn-outline-secondary">
+
+                        <i class="bi bi-arrow-left me-1"></i>
+
+                        Back to Logs
+
+                    </a>
+
+                </div>
+
+            </div>
+
+
+            <div class="card-body">
+
+                <div class="row g-4">
+
+
+                    <!-- Action -->
+
+                    <div class="col-md-3">
+
+                        <div class="text-secondary small mb-1">
+                            Action
+                        </div>
+
+                        @switch (Model.Action)
+                        {
+                            case "Create":
+
+                                <span class="badge bg-green-lt">
+                                    <i class="bi bi-plus-circle me-1"></i>
+                                    Create
+                                </span>
+
+                                break;
+
+                            case "Update":
+
+                                <span class="badge bg-blue-lt">
+                                    <i class="bi bi-pencil me-1"></i>
+                                    Update
+                                </span>
+
+                                break;
+
+                            case "Delete":
+
+                                <span class="badge bg-red-lt">
+                                    <i class="bi bi-trash me-1"></i>
+                                    Delete
+                                </span>
+
+                                break;
+
+                            case "Activate":
+
+                                <span class="badge bg-green-lt">
+                                    <i class="bi bi-check-circle me-1"></i>
+                                    Activate
+                                </span>
+
+                                break;
+
+                            case "Deactivate":
+
+                                <span class="badge bg-yellow-lt">
+                                    <i class="bi bi-pause-circle me-1"></i>
+                                    Deactivate
+                                </span>
+
+                                break;
+
+                            default:
+
+                                <span class="badge bg-secondary-lt">
+                                    @Model.Action
+                                </span>
+
+                                break;
+                        }
+
+                    </div>
+
+
+                    <!-- Entity -->
+
+                    <div class="col-md-3">
+
+                        <div class="text-secondary small mb-1">
+                            Entity
+                        </div>
+
+                        <div class="fw-semibold">
+                            @Model.EntityName
+                        </div>
+
+                    </div>
+
+
+                    <!-- Entity ID -->
+
+                    <div class="col-md-3">
+
+                        <div class="text-secondary small mb-1">
+                            Entity ID
+                        </div>
+
+                        <div class="fw-semibold">
+                            #@Model.EntityId
+                        </div>
+
+                    </div>
+
+
+                    <!-- User -->
+
+                    <div class="col-md-3">
+
+                        <div class="text-secondary small mb-1">
+                            User
+                        </div>
+
+                        <div class="fw-semibold">
+
+                            @if (Model.User != null)
+                            {
+                                @Model.User.FirstName
+                                @(" ")
+                                @Model.User.LastName
+                            }
+                            else
+                            {
+                                @($"User #{Model.UserId}")
+                            }
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- IP Address -->
+
+                    <div class="col-md-3">
+
+                        <div class="text-secondary small mb-1">
+                            IP Address
+                        </div>
+
+                        <div>
+
+                            @if (!string.IsNullOrWhiteSpace(Model.IpAddress))
+                            {
+                                <span>
+                                    <i class="bi bi-globe2 me-1"></i>
+                                    @Model.IpAddress
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-secondary">
+                                    —
+                                </span>
+                            }
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Timestamp -->
+
+                    <div class="col-md-3">
+
+                        <div class="text-secondary small mb-1">
+                            Date & Time
+                        </div>
+
+                        <div>
+
+                            <div class="fw-semibold">
+                                @Model.Timestamp.ToString("dd MMM yyyy")
+                            </div>
+
+                            <div class="text-secondary small">
+                                @Model.Timestamp.ToString("hh:mm:ss tt")
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Audit ID -->
+
+                    <div class="col-md-3">
+
+                        <div class="text-secondary small mb-1">
+                            Audit Log ID
+                        </div>
+
+                        <div class="fw-semibold">
+                            #@Model.AuditLogId
+                        </div>
+
+                    </div>
+
+
+                    <!-- User ID -->
+
+                    <div class="col-md-3">
+
+                        <div class="text-secondary small mb-1">
+                            User ID
+                        </div>
+
+                        <div class="fw-semibold">
+                            #@Model.UserId
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         OLD VALUES
+    ========================================================== -->
+
+    <div class="col-md-6">
+
+        <div class="card h-100">
+
+            <div class="card-header">
+
+                <h3 class="card-title">
+
+                    <i class="bi bi-arrow-left-circle text-secondary me-2"></i>
+
+                    Old Values
+
+                </h3>
+
+            </div>
+
+
+            <div class="card-body">
+
+                @if (!string.IsNullOrWhiteSpace(Model.OldValues))
+                {
+                    <pre class="bg-dark text-white p-3 rounded mb-0"
+                         style="max-height: 500px; overflow:auto;"><code>@Model.OldValues</code></pre>
+                }
+                else
+                {
+                    <div class="text-center py-5 text-secondary">
+
+                        <i class="bi bi-dash-circle fs-1 d-block mb-2"></i>
+
+                        <div class="fw-semibold">
+                            No previous values
+                        </div>
+
+                        <div class="small">
+                            This action did not have previous values.
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================================
+         NEW VALUES
+    ========================================================== -->
+
+    <div class="col-md-6">
+
+        <div class="card h-100">
+
+            <div class="card-header">
+
+                <h3 class="card-title">
+
+                    <i class="bi bi-arrow-right-circle text-primary me-2"></i>
+
+                    New Values
+
+                </h3>
+
+            </div>
+
+
+            <div class="card-body">
+
+                @if (!string.IsNullOrWhiteSpace(Model.NewValues))
+                {
+                    <pre class="bg-dark text-white p-3 rounded mb-0"
+                         style="max-height: 500px; overflow:auto;"><code>@Model.NewValues</code></pre>
+                }
+                else
+                {
+                    <div class="text-center py-5 text-secondary">
+
+                        <i class="bi bi-dash-circle fs-1 d-block mb-2"></i>
+
+                        <div class="fw-semibold">
+                            No new values
+                        </div>
+
+                        <div class="small">
+                            This action did not have new values.
+                        </div>
+
+                    </div>
+                }
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

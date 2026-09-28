@@ -14,6 +14,8 @@ namespace Clinexa.Repositories.Interfaces
             string entityName,
             int entityId);
 
+        Task<AuditLog?> GetByIdAsync(int id);
+
         Task SaveChangesAsync();
     }
 }
