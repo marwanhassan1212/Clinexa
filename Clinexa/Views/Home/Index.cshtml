@@ -1,4 +1,5 @@
-﻿@model Clinexa.Models.ViewModels.Dashboard.DashboardViewModel
+﻿
+@model Clinexa.Models.ViewModels.Dashboard.DashboardViewModel
 
 @{
     ViewData["Title"] = "Dashboard";
@@ -246,7 +247,7 @@
 
                                     <td>
                                         <strong>
-                                            @DateTime.Today
+                                            @appointment.StartTime.ToString(@"hh\:mm")
                                         </strong>
                                     </td>
 
@@ -676,3 +677,4 @@
     </div>
 
 </div>
+\

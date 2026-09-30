@@ -12,7 +12,7 @@ namespace Clinexa.Services.Implementations
     public class PaymentService : IPaymentService
     {
         private readonly IPaymentRepository paymentRepository;
-
+        private readonly IDateTimeService dateTimeService;
         private readonly IAuditLogService auditLogService;
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly UserManager<User> userManager;
@@ -21,12 +21,14 @@ namespace Clinexa.Services.Implementations
             IPaymentRepository paymentRepository,
             IAuditLogService auditLogService,
             IHttpContextAccessor httpContextAccessor,
-            UserManager<User> userManager)
+            UserManager<User> userManager,
+            IDateTimeService dateTimeService)
         {
             this.paymentRepository = paymentRepository;
             this.auditLogService = auditLogService;
             this.httpContextAccessor = httpContextAccessor;
             this.userManager = userManager;
+            this.dateTimeService = dateTimeService;
         }
 
         public async Task<bool> CreateAsync(Payment payment)
@@ -74,7 +76,7 @@ namespace Clinexa.Services.Implementations
 
             // 8. Set payment date automatically
             if (payment.PaymentDate == default)
-                payment.PaymentDate = DateTime.Now;
+                payment.PaymentDate = dateTimeService.Now;
 
             // 9. Add payment
             await paymentRepository.AddAsync(payment);

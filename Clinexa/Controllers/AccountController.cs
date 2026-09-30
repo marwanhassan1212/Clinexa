@@ -127,5 +127,36 @@ namespace Clinexa.Controllers
             return RedirectToAction(
                 nameof(Login));
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Profile()
+        {
+            if (User.Identity?.IsAuthenticated != true)
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+
+            if (user == null)
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            var roles = await _userManager.GetRolesAsync(user);
+
+            var model = new ProfileViewModel
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Email = user.Email ?? string.Empty,
+                PhoneNumber = user.PhoneNumber,
+                Role = roles.FirstOrDefault() ?? "User",
+                LastLoginAt = user.LastLoginAt,
+                IsActive = user.IsActive
+            };
+
+            return View(model);
+        }
     }
 }

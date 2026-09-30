@@ -12,7 +12,7 @@ namespace Clinexa.Services.Implementations
     {
         private readonly IDoctorRepository doctorRepository;
         private readonly IDoctorScheduleRepository doctorScheduleRepository;
-
+        private readonly IDateTimeService dateTimeService;
         private readonly IAuditLogService auditLogService;
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly UserManager<User> userManager;
@@ -22,13 +22,15 @@ namespace Clinexa.Services.Implementations
             IDoctorScheduleRepository doctorScheduleRepository,
             IAuditLogService auditLogService,
             IHttpContextAccessor httpContextAccessor,
-            UserManager<User> userManager)
+            UserManager<User> userManager,
+            IDateTimeService dateTimeService)
         {
             this.doctorRepository = doctorRepository;
             this.doctorScheduleRepository = doctorScheduleRepository;
             this.auditLogService = auditLogService;
             this.httpContextAccessor = httpContextAccessor;
             this.userManager = userManager;
+            this.dateTimeService = dateTimeService;
         }
 
         public async Task<bool> CreateAsync(Doctor doctor)
@@ -48,7 +50,7 @@ namespace Clinexa.Services.Implementations
             if (doctor.ConsultationFee < 0)
                 return false;
 
-            doctor.CreatedAt = DateTime.UtcNow;
+            doctor.CreatedAt = dateTimeService.Now;
             doctor.IsActive = true;
 
             await doctorRepository.AddAsync(doctor);

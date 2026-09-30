@@ -60,6 +60,11 @@ namespace Clinexa.Repositories.Implementations
         public async Task<List<MedicalRecord>> GetByDoctorIdAsync(int doctorId)
         {
             return await _db.MedicalRecords
+                .AsNoTracking()
+                .Include(x => x.Patient)
+                .Include(x => x.Doctor)
+                    .ThenInclude(x => x.User)
+                .Include(x => x.Appointment)
                 .Where(x => x.DoctorId == doctorId)
                 .OrderByDescending(x => x.MedicalRecordId)
                 .ToListAsync();
@@ -159,6 +164,22 @@ namespace Clinexa.Repositories.Implementations
                 .Where(x => x.UserId == userId)
                 .Select(x => (int?)x.DoctorId)
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<List<Appointment>> GetAvailableAppointmentsByDoctorIdAsync(int doctorId)
+        {
+            return await _db.Appointments
+                .AsNoTracking()
+                .Include(x => x.Patient)
+                .Include(x => x.Doctor)
+                    .ThenInclude(x => x.User)
+                .Where(x =>
+                    x.DoctorId == doctorId &&
+                    x.AppointmentStatus == AppointmentStatus.Completed &&
+                    x.MedicalRecord == null)
+                .OrderByDescending(x => x.AppointmentDate)
+                .ThenByDescending(x => x.StartTime)
+                .ToListAsync();
         }
     }
 }

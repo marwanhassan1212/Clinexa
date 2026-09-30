@@ -606,13 +606,6 @@
                                    class="nav-link d-flex align-items-center"
                                    data-bs-toggle="dropdown"
                                    aria-expanded="false">
-
-                                    <span class="avatar avatar-sm bg-blue-lt">
-
-                                        @initials
-
-                                    </span>
-
                                     <div class="d-none d-lg-block ps-2">
 
                                         <div class="text-white">
@@ -646,24 +639,6 @@
 
 
                                 <div class="dropdown-menu dropdown-menu-end">
-
-                                    <!-- Profile -->
-
-                                    <a class="dropdown-item"
-                                       asp-controller="Account"
-                                       asp-action="Profile">
-
-                                        <i class="bi bi-person me-2"></i>
-
-                                        My Profile
-
-                                    </a>
-
-
-                                    <!-- Divider -->
-
-                                    <div class="dropdown-divider"></div>
-
 
                                     <!-- Logout -->
 
@@ -906,20 +881,22 @@
 
                         <div class="w-100">
 
-                            <form method="get"
+
+                            <form asp-controller="Search"
+                                  asp-action="Index"
+                                  method="get"
                                   autocomplete="off">
 
                                 <div class="input-icon">
 
                                     <span class="input-icon-addon">
-
                                         <i class="bi bi-search"></i>
-
                                     </span>
 
                                     <input type="search"
                                            class="form-control"
                                            name="search"
+                                           value="@Context.Request.Query["search"]"
                                            autocomplete="off"
                                            placeholder="Search patients, doctors, appointments..." />
 

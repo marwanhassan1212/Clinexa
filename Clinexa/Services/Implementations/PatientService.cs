@@ -16,17 +16,19 @@ namespace Clinexa.Services.Implementations
         private readonly IAuditLogService auditLogService;
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly UserManager<User> userManager;
-
+        private readonly IDateTimeService dateTimeService;
         public PatientService(
             IPatientRepository patientRepository,
             IAuditLogService auditLogService,
             IHttpContextAccessor httpContextAccessor,
-            UserManager<User> userManager)
+            UserManager<User> userManager,
+            IDateTimeService dateTimeService)
         {
             this.patientRepository = patientRepository;
             this.auditLogService = auditLogService;
             this.httpContextAccessor = httpContextAccessor;
             this.userManager = userManager;
+            this.dateTimeService = dateTimeService;
         }
 
         // =========================================================
@@ -45,7 +47,7 @@ namespace Clinexa.Services.Implementations
                 return false;
             }
 
-            patient.CreatedAt = DateTime.UtcNow;
+            patient.CreatedAt = dateTimeService.Now;
             patient.IsActive = true;
 
             await patientRepository.AddAsync(patient);

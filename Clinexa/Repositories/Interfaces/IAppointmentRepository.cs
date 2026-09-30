@@ -44,7 +44,8 @@ namespace Clinexa.Repositories.Interfaces
 
         Task<List<Appointment>> GetDoctorAppointmentsForWeekAsync(int doctorId, DateTime weekStart,
             DateTime weekEnd);
-        
+
+        Task<Doctor?> GetDoctorByUserIdAsync(int userId);
 
 
         Task AddAsync(Appointment appointment);

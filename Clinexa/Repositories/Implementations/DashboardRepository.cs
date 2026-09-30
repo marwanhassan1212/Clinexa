@@ -2,6 +2,7 @@
 using Clinexa.Enums;
 using Clinexa.Models.ViewModels.Dashboard;
 using Clinexa.Repositories.Interfaces;
+using Clinexa.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Clinexa.Repositories.Implementations
@@ -9,22 +10,28 @@ namespace Clinexa.Repositories.Implementations
     public class DashboardRepository : IDashboardRepository
     {
         private readonly AppDbContext _db;
+        private readonly IDateTimeService _dateTimeService;
 
-        public DashboardRepository(AppDbContext db)
+        public DashboardRepository(
+            AppDbContext db,
+            IDateTimeService dateTimeService)
         {
             _db = db;
+            _dateTimeService = dateTimeService;
         }
 
 
         // Today's Appointments
         public async Task<int> GetTodayAppointmentsCountAsync()
         {
-            var today = DateTime.Today;
+            var today = _dateTimeService.Now.Date;
+            var tomorrow = today.AddDays(1);
 
             return await _db.Appointments
                 .AsNoTracking()
                 .CountAsync(x =>
-                    x.AppointmentDate == today);
+                    x.AppointmentDate >= today &&
+                    x.AppointmentDate < tomorrow);
         }
 
 
@@ -49,7 +56,7 @@ namespace Clinexa.Repositories.Implementations
         // Today's Revenue
         public async Task<decimal> GetTodayRevenueAsync()
         {
-            var start = DateTime.Today;
+            var start = _dateTimeService.Now.Date;
             var end = start.AddDays(1);
 
             return await _db.Payments
@@ -62,30 +69,38 @@ namespace Clinexa.Repositories.Implementations
 
 
         // Completed Appointments
+
         public async Task<int> GetCompletedAppointmentsCountAsync()
         {
-            var today = DateTime.Today;
+            var today = _dateTimeService.Now.Date;
+            var tomorrow = today.AddDays(1);
 
             return await _db.Appointments
                 .AsNoTracking()
                 .CountAsync(x =>
-                    x.AppointmentDate == today &&
+                    x.AppointmentDate >= today &&
+                    x.AppointmentDate < tomorrow &&
                     x.AppointmentStatus == AppointmentStatus.Completed);
         }
+
 
 
 
         // Upcoming Appointments
         public async Task<int> GetUpcomingAppointmentsCountAsync()
         {
-            var today = DateTime.Today;
-            var now = DateTime.Now.TimeOfDay;
+            var now = _dateTimeService.Now;
+
+            var today = now.Date;
+            var tomorrow = today.AddDays(1);
+            var currentTime = now.TimeOfDay;
 
             return await _db.Appointments
                 .AsNoTracking()
                 .CountAsync(x =>
-                    x.AppointmentDate == today &&
-                    x.StartTime >= now &&
+                    x.AppointmentDate >= today &&
+                    x.AppointmentDate < tomorrow &&
+                    x.StartTime >= currentTime &&
                     x.AppointmentStatus != AppointmentStatus.Cancelled &&
                     x.AppointmentStatus != AppointmentStatus.NoShow &&
                     x.AppointmentStatus != AppointmentStatus.Completed);
@@ -96,28 +111,31 @@ namespace Clinexa.Repositories.Implementations
 
         public async Task<int> GetCancelledAppointmentsCountAsync()
         {
-            var today = DateTime.Today;
+            var today = _dateTimeService.Now.Date;
+            var tomorrow = today.AddDays(1);
 
             return await _db.Appointments
                 .AsNoTracking()
                 .CountAsync(x =>
-                    x.AppointmentDate == today &&
+                    x.AppointmentDate >= today &&
+                    x.AppointmentDate < tomorrow &&
                     x.AppointmentStatus == AppointmentStatus.Cancelled);
         }
 
-
         // No-Show Appointments
-
         public async Task<int> GetNoShowAppointmentsCountAsync()
         {
-            var today = DateTime.Today;
+            var today = _dateTimeService.Now.Date;
+            var tomorrow = today.AddDays(1);
 
             return await _db.Appointments
                 .AsNoTracking()
                 .CountAsync(x =>
-                    x.AppointmentDate == today &&
+                    x.AppointmentDate >= today &&
+                    x.AppointmentDate < tomorrow &&
                     x.AppointmentStatus == AppointmentStatus.NoShow);
         }
+
 
 
         // Unpaid Invoices
@@ -149,11 +167,14 @@ namespace Clinexa.Repositories.Implementations
 
         public async Task<List<DashboardAppointmentViewModel>> GetTodayAppointmentsAsync()
         {
-            var today = DateTime.Today;
+            var today = _dateTimeService.Now.Date;
+            var tomorrow = today.AddDays(1);
 
             return await _db.Appointments
                 .AsNoTracking()
-                .Where(x => x.AppointmentDate == today)
+                .Where(x =>
+                    x.AppointmentDate >= today &&
+                    x.AppointmentDate < tomorrow)
                 .OrderBy(x => x.StartTime)
                 .Take(8)
                 .Select(x => new DashboardAppointmentViewModel

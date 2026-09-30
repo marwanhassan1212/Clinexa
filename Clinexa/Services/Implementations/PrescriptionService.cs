@@ -14,17 +14,19 @@ namespace Clinexa.Services.Implementations
         private readonly UserManager<User> userManager;
         private readonly IAuditLogService auditLogService;
         private readonly IHttpContextAccessor httpContextAccessor;
-
+        private readonly IDateTimeService dateTimeService;
         public PrescriptionService(
             IPrescriptionRepository prescriptionRepository,
             UserManager<User> userManager,
             IAuditLogService auditLogService,
-            IHttpContextAccessor httpContextAccessor)
+            IHttpContextAccessor httpContextAccessor,
+            IDateTimeService dateTimeService)
         {
             this.prescriptionRepository = prescriptionRepository;
             this.userManager = userManager;
             this.auditLogService = auditLogService;
             this.httpContextAccessor = httpContextAccessor;
+            this.dateTimeService = dateTimeService;
         }
 
         public async Task<bool> CreateAsync(
@@ -61,7 +63,7 @@ namespace Clinexa.Services.Implementations
             }
 
             if (prescription.PrescriptionDate >
-                DateTime.Now)
+                dateTimeService.Now)
             {
                 return false;
             }
@@ -151,7 +153,7 @@ namespace Clinexa.Services.Implementations
             }
 
             if (prescription.PrescriptionDate >
-                DateTime.UtcNow)
+                dateTimeService.Now)
             {
                 return false;
             }

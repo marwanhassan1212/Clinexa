@@ -1,0 +1,185 @@
+﻿
+@model Clinexa.Models.ViewModels.Account.ProfileViewModel
+
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="container-fluid">
+
+    <!-- Page Header -->
+    <div class="mb-4">
+        <h2 class="mb-1">My Profile</h2>
+        <p class="text-muted mb-0">
+            View your account information.
+        </p>
+    </div>
+
+
+    <div class="row">
+
+        <!-- Profile Card -->
+        <div class="col-lg-4">
+
+            <div class="card">
+
+                <div class="card-body text-center">
+
+                    <!-- Avatar -->
+                    <div class="avatar avatar-xl bg-primary text-white mx-auto mb-3"
+                         style="font-size: 28px;">
+
+                        @Model.FirstName.Substring(0, 1).ToUpper()
+                        @Model.LastName.Substring(0, 1).ToUpper()
+
+                    </div>
+
+                    <h3 class="mb-1">
+                        @Model.FirstName @Model.LastName
+                    </h3>
+
+                    <div class="text-muted mb-3">
+                        @Model.Role
+                    </div>
+
+
+                    <!-- Account Status -->
+                    @if (Model.IsActive)
+                    {
+                        <span class="badge bg-success">
+                            Active
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-danger">
+                            Inactive
+                        </span>
+                    }
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <!-- Account Information -->
+        <div class="col-lg-8">
+
+            <div class="card">
+
+                <div class="card-header">
+                    <h3 class="card-title">
+                        Account Information
+                    </h3>
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row">
+
+                        <!-- First Name -->
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label text-muted">
+                                First Name
+                            </label>
+
+                            <div class="form-control-plaintext">
+                                @Model.FirstName
+                            </div>
+
+                        </div>
+
+
+                        <!-- Last Name -->
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label text-muted">
+                                Last Name
+                            </label>
+
+                            <div class="form-control-plaintext">
+                                @Model.LastName
+                            </div>
+
+                        </div>
+
+
+                        <!-- Email -->
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label text-muted">
+                                Email
+                            </label>
+
+                            <div class="form-control-plaintext">
+                                @Model.Email
+                            </div>
+
+                        </div>
+
+
+                        <!-- Phone -->
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label text-muted">
+                                Phone Number
+                            </label>
+
+                            <div class="form-control-plaintext">
+                                @(Model.PhoneNumber ?? "Not provided")
+                            </div>
+
+                        </div>
+
+
+                        <!-- Role -->
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label text-muted">
+                                Role
+                            </label>
+
+                            <div class="form-control-plaintext">
+                                @Model.Role
+                            </div>
+
+                        </div>
+
+
+                        <!-- Last Login -->
+                        <div class="col-md-6 mb-3">
+
+                            <label class="form-label text-muted">
+                                Last Login
+                            </label>
+
+                            <div class="form-control-plaintext">
+
+                                @if (Model.LastLoginAt.HasValue)
+                                {
+                                @Model.LastLoginAt.Value
+                                                             
+                                                                }
+                                else
+                                {
+                                    <span>First login</span>
+                                }
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

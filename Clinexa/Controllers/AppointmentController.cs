@@ -26,6 +26,10 @@ namespace Clinexa.Controllers
             this.invoiceService = invoiceService;
         }
 
+        // =========================================================
+        // INDEX
+        // =========================================================
+
         public async Task<IActionResult> Index(
             AppointmentFilterViewModel model)
         {
@@ -49,11 +53,52 @@ namespace Clinexa.Controllers
                     model.Page,
                     model.PageSize);
 
-            model.Appointments = result.Appointments;
-            model.TotalCount = result.TotalCount;
+            model.Appointments =
+                result.Appointments;
 
-            model.Doctors =
-                await doctorService.GetAllAsync();
+            model.TotalCount =
+                result.TotalCount;
+
+            // -----------------------------------------------------
+            // Doctor
+            // -----------------------------------------------------
+            // Doctor must not receive all doctors as a filter.
+            // The Service already forces the query to the
+            // currently logged-in Doctor.
+            // -----------------------------------------------------
+
+            if (User.IsInRole("Doctor"))
+            {
+                var currentDoctorId =
+                    await appointmentService
+                        .GetCurrentDoctorIdAsync();
+
+                if (!currentDoctorId.HasValue)
+                {
+                    return Forbid();
+                }
+
+                var currentDoctor =
+                    await doctorService
+                        .GetByIdAsync(currentDoctorId.Value);
+
+                model.Doctors =
+                    currentDoctor == null
+                        ? new List<Clinexa.Models.Entities.Doctor>()
+                        : new List<Clinexa.Models.Entities.Doctor>
+                        {
+                            currentDoctor
+                        };
+            }
+            else
+            {
+                model.Doctors =
+                    await doctorService.GetAllAsync();
+            }
+
+            // -----------------------------------------------------
+            // Patients
+            // -----------------------------------------------------
 
             model.Patients =
                 await patientService.GetAllAsync();
@@ -61,8 +106,19 @@ namespace Clinexa.Controllers
             return View(model);
         }
 
+        // =========================================================
+        // DETAILS
+        // =========================================================
+
         public async Task<IActionResult> Details(int id)
         {
+            /*
+             * GetByIdAsync() performs Data-Level Authorization.
+             *
+             * If the current user is a Doctor and the appointment
+             * belongs to another Doctor, the Service returns null.
+             */
+
             var appointment =
                 await appointmentService.GetByIdAsync(id);
 
@@ -75,68 +131,177 @@ namespace Clinexa.Controllers
                 await invoiceService
                     .GetByAppointmentIdAsync(id);
 
-            var model = new AppointmentDetailsViewModel
-            {
-                Appointment = appointment,
-                Invoice = invoice
-            };
+            var model =
+                new AppointmentDetailsViewModel
+                {
+                    Appointment = appointment,
+                    Invoice = invoice
+                };
 
             return View(model);
         }
 
-        // =========================
-        // Create
-        // =========================
+        // =========================================================
+        // CREATE - GET
+        // =========================================================
 
         [HttpGet]
         public async Task<IActionResult> Create()
         {
-            await LoadCreateEditDataAsync();
-
-            return View(
+            var model =
                 new AppointmentCreateViewModel
                 {
-                    AppointmentDate = DateTime.Today
-                });
+                    AppointmentDate =
+                        DateTime.Today
+                };
+
+            // -----------------------------------------------------
+            // Doctor
+            // -----------------------------------------------------
+
+            if (User.IsInRole("Doctor"))
+            {
+                var currentDoctorId =
+                    await appointmentService
+                        .GetCurrentDoctorIdAsync();
+
+                if (!currentDoctorId.HasValue)
+                {
+                    return Forbid();
+                }
+
+                /*
+                 * Force DoctorId to the logged-in Doctor.
+                 *
+                 * The value coming from the client will never
+                 * be trusted by the Service.
+                 */
+
+                model.DoctorId =
+                    currentDoctorId.Value;
+
+                var currentDoctor =
+                    await doctorService
+                        .GetByIdAsync(
+                            currentDoctorId.Value);
+
+                ViewBag.Doctors =
+                    currentDoctor == null
+                        ? new List<Clinexa.Models.Entities.Doctor>()
+                        : new List<Clinexa.Models.Entities.Doctor>
+                        {
+                            currentDoctor
+                        };
+            }
+            else
+            {
+                ViewBag.Doctors =
+                    await doctorService.GetAllAsync();
+            }
+
+            // -----------------------------------------------------
+            // Patients
+            // -----------------------------------------------------
+
+            ViewBag.Patients =
+                await patientService.GetAllAsync();
+
+            return View(model);
         }
+
+        // =========================================================
+        // CREATE - POST
+        // =========================================================
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
             AppointmentCreateViewModel model)
         {
+            // -----------------------------------------------------
+            // Doctor Data-Level Authorization
+            // -----------------------------------------------------
+
+            if (User.IsInRole("Doctor"))
+            {
+                var currentDoctorId =
+                    await appointmentService
+                        .GetCurrentDoctorIdAsync();
+
+                if (!currentDoctorId.HasValue)
+                {
+                    return Forbid();
+                }
+
+                /*
+                 * Never trust DoctorId coming from the form.
+                 *
+                 * Force it to the logged-in Doctor.
+                 */
+
+                model.DoctorId =
+                    currentDoctorId.Value;
+            }
+
+            // -----------------------------------------------------
+            // Validation
+            // -----------------------------------------------------
+
             if (!ModelState.IsValid)
             {
                 await LoadCreateEditDataAsync();
-
                 return View(model);
             }
 
+            // -----------------------------------------------------
             // Appointment duration is fixed at 30 minutes.
+            // -----------------------------------------------------
+
             var endTime =
                 model.StartTime.Add(
                     TimeSpan.FromMinutes(30));
 
-            var appointment = new Appointment
-            {
-                PatientId = model.PatientId,
-                DoctorId = model.DoctorId,
-                AppointmentDate = model.AppointmentDate.Date,
-                StartTime = model.StartTime,
-                EndTime = endTime,
-                Reason = model.Reason,
-                Notes = model.Notes
-            };
+            var appointment =
+                new Appointment
+                {
+                    PatientId =
+                        model.PatientId,
+
+                    DoctorId =
+                        model.DoctorId,
+
+                    AppointmentDate =
+                        model.AppointmentDate.Date,
+
+                    StartTime =
+                        model.StartTime,
+
+                    EndTime =
+                        endTime,
+
+                    Reason =
+                        model.Reason,
+
+                    Notes =
+                        model.Notes
+                };
+
+            /*
+             * CreateAsync() performs the final server-side
+             * Data-Level Authorization.
+             */
 
             var result =
                 await appointmentService
-                    .CreateAsync(appointment);
+                    .CreateAsync(
+                        appointment);
 
             if (!result)
             {
                 ModelState.AddModelError(
                     "",
-                    "Unable to create appointment. The selected time may no longer be available.");
+                    "Unable to create appointment. " +
+                    "The selected time may no longer be available.");
 
                 await LoadCreateEditDataAsync();
 
@@ -146,80 +311,139 @@ namespace Clinexa.Controllers
             TempData["Success"] =
                 "Appointment created successfully.";
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(
+                nameof(Index));
         }
 
-      
-        // Edit
-       
+        // =========================================================
+        // EDIT - GET
+        // =========================================================
 
         [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var appointmentExists =
-                await appointmentService.GetByIdAsync(id);
-
-            if (appointmentExists == null)
-            {
-                return NotFound();
-            }
-
-            var appointment =
-                new AppointmentEditViewModel
-                {
-                    AppointmentId =
-                        appointmentExists.AppointmentId,
-
-                    PatientId =
-                        appointmentExists.PatientId,
-
-                    DoctorId =
-                        appointmentExists.DoctorId,
-
-                    AppointmentDate =
-                        appointmentExists.AppointmentDate,
-
-                    StartTime =
-                        appointmentExists.StartTime,
-
-                    EndTime =
-                        appointmentExists.EndTime,
-
-                    Notes =
-                        appointmentExists.Notes,
-
-                    Reason =
-                        appointmentExists.Reason
-                };
-
-            await LoadCreateEditDataAsync();
-
-            return View(appointment);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(
-            AppointmentEditViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                await LoadCreateEditDataAsync();
-
-                return View(model);
-            }
+            /*
+             * GetByIdAsync() performs Data-Level Authorization.
+             *
+             * Doctor cannot retrieve an appointment belonging
+             * to another Doctor.
+             */
 
             var appointment =
                 await appointmentService
-                    .GetByIdAsync(model.AppointmentId);
+                    .GetByIdAsync(id);
 
             if (appointment == null)
             {
                 return NotFound();
             }
 
+            var model =
+                new AppointmentEditViewModel
+                {
+                    AppointmentId =
+                        appointment.AppointmentId,
+
+                    PatientId =
+                        appointment.PatientId,
+
+                    DoctorId =
+                        appointment.DoctorId,
+
+                    AppointmentDate =
+                        appointment.AppointmentDate,
+
+                    StartTime =
+                        appointment.StartTime,
+
+                    EndTime =
+                        appointment.EndTime,
+
+                    Notes =
+                        appointment.Notes,
+
+                    Reason =
+                        appointment.Reason
+                };
+
+            await LoadCreateEditDataAsync();
+
+            return View(model);
+        }
+
+        // =========================================================
+        // EDIT - POST
+        // =========================================================
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(
+            AppointmentEditViewModel model)
+        {
+            // -----------------------------------------------------
+            // Doctor Data-Level Authorization
+            // -----------------------------------------------------
+
+            if (User.IsInRole("Doctor"))
+            {
+                var currentDoctorId =
+                    await appointmentService
+                        .GetCurrentDoctorIdAsync();
+
+                if (!currentDoctorId.HasValue)
+                {
+                    return Forbid();
+                }
+
+                /*
+                 * Doctor cannot change the appointment owner.
+                 *
+                 * Even if the client sends another DoctorId,
+                 * we replace it with the logged-in Doctor.
+                 */
+
+                model.DoctorId =
+                    currentDoctorId.Value;
+            }
+
+            // -----------------------------------------------------
+            // Validation
+            // -----------------------------------------------------
+
+            if (!ModelState.IsValid)
+            {
+                await LoadCreateEditDataAsync();
+                return View(model);
+            }
+
+            /*
+             * GetByIdAsync() performs Data-Level Authorization.
+             */
+
+            var appointment =
+                await appointmentService
+                    .GetByIdAsync(
+                        model.AppointmentId);
+
+            if (appointment == null)
+            {
+                return NotFound();
+            }
+
+            // -----------------------------------------------------
+            // Update editable fields
+            // -----------------------------------------------------
+
             appointment.PatientId =
                 model.PatientId;
+
+            /*
+             * For Doctor, model.DoctorId was already forced
+             * to the current Doctor.
+             *
+             * For Admin/Receptionist, the selected Doctor
+             * is accepted and validated again inside Service.
+             */
 
             appointment.DoctorId =
                 model.DoctorId;
@@ -239,15 +463,25 @@ namespace Clinexa.Controllers
             appointment.Notes =
                 model.Notes;
 
+            /*
+             * UpdateAsync() performs another ownership check.
+             *
+             * This protects the business operation even if
+             * somebody bypasses the normal UI flow.
+             */
+
             var result =
                 await appointmentService
-                    .UpdateAsync(appointment);
+                    .UpdateAsync(
+                        appointment);
 
             if (!result)
             {
                 ModelState.AddModelError(
                     "",
-                    "Unable to update appointment. Please check the doctor, patient, schedule, appointment time, or current appointment status.");
+                    "Unable to update appointment. " +
+                    "Please check the doctor, patient, schedule, " +
+                    "appointment time, or current appointment status.");
 
                 await LoadCreateEditDataAsync();
 
@@ -257,12 +491,13 @@ namespace Clinexa.Controllers
             TempData["Success"] =
                 "Appointment updated successfully.";
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(
+                nameof(Index));
         }
 
-
-        // Appointment Status Workflow
-      
+        // =========================================================
+        // CONFIRM
+        // =========================================================
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -290,6 +525,10 @@ namespace Clinexa.Controllers
                 new { id });
         }
 
+        // =========================================================
+        // CHECK IN
+        // =========================================================
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CheckIn(int id)
@@ -316,9 +555,14 @@ namespace Clinexa.Controllers
                 new { id });
         }
 
+        // =========================================================
+        // START CONSULTATION
+        // =========================================================
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> StartConsultation(int id)
+        public async Task<IActionResult> StartConsultation(
+            int id)
         {
             var result =
                 await appointmentService
@@ -341,6 +585,10 @@ namespace Clinexa.Controllers
                 nameof(Details),
                 new { id });
         }
+
+        // =========================================================
+        // COMPLETE
+        // =========================================================
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -368,6 +616,10 @@ namespace Clinexa.Controllers
                 new { id });
         }
 
+        // =========================================================
+        // NO SHOW
+        // =========================================================
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> NoShow(int id)
@@ -393,6 +645,10 @@ namespace Clinexa.Controllers
                 nameof(Details),
                 new { id });
         }
+
+        // =========================================================
+        // CANCEL
+        // =========================================================
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -424,15 +680,20 @@ namespace Clinexa.Controllers
                 new { id });
         }
 
-    
-        // Available Slots
-    
+        // =========================================================
+        // AVAILABLE SLOTS
+        // =========================================================
 
         [HttpGet]
         public async Task<IActionResult> GetAvailableSlots(
             int doctorId,
             DateTime appointmentDate)
         {
+            /*
+             * AppointmentService validates that a Doctor
+             * can only request slots for himself.
+             */
+
             var slots =
                 await appointmentService
                     .GetAvailableSlotsAsync(
@@ -442,17 +703,62 @@ namespace Clinexa.Controllers
             var result =
                 slots.Select(x => new
                 {
-                    value = x.ToString(@"hh\:mm"),
-                    text = x.ToString(@"hh\:mm")
+                    value =
+                        x.ToString(@"hh\:mm"),
+
+                    text =
+                        x.ToString(@"hh\:mm")
                 });
 
             return Json(result);
         }
 
+        // =========================================================
+        // VIEW DATA
+        // =========================================================
+
         private async Task LoadCreateEditDataAsync()
         {
-            ViewBag.Doctors =
-                await doctorService.GetAllAsync();
+            // -----------------------------------------------------
+            // Doctors
+            // -----------------------------------------------------
+
+            if (User.IsInRole("Doctor"))
+            {
+                var currentDoctorId =
+                    await appointmentService
+                        .GetCurrentDoctorIdAsync();
+
+                if (currentDoctorId.HasValue)
+                {
+                    var currentDoctor =
+                        await doctorService
+                            .GetByIdAsync(
+                                currentDoctorId.Value);
+
+                    ViewBag.Doctors =
+                        currentDoctor == null
+                            ? new List<Clinexa.Models.Entities.Doctor>()
+                            : new List<Clinexa.Models.Entities.Doctor>
+                            {
+                                currentDoctor
+                            };
+                }
+                else
+                {
+                    ViewBag.Doctors =
+                        new List<Clinexa.Models.Entities.Doctor>();
+                }
+            }
+            else
+            {
+                ViewBag.Doctors =
+                    await doctorService.GetAllAsync();
+            }
+
+            // -----------------------------------------------------
+            // Patients
+            // -----------------------------------------------------
 
             ViewBag.Patients =
                 await patientService.GetAllAsync();

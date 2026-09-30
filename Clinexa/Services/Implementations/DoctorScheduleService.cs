@@ -15,17 +15,19 @@ namespace Clinexa.Services.Implementations
         private readonly IAuditLogService auditLogService;
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly UserManager<User> userManager;
-
+        private readonly IDateTimeService dateTimeService;
         public DoctorScheduleService(
             IDoctorScheduleRepository doctorScheduleRepository,
             IAuditLogService auditLogService,
             IHttpContextAccessor httpContextAccessor,
-            UserManager<User> userManager)
+            UserManager<User> userManager,
+            IDateTimeService dateTimeService)
         {
             this.doctorScheduleRepository = doctorScheduleRepository;
             this.auditLogService = auditLogService;
             this.httpContextAccessor = httpContextAccessor;
             this.userManager = userManager;
+            this.dateTimeService = dateTimeService;
         }
 
         public async Task<bool> CreateAsync(DoctorSchedule schedule)

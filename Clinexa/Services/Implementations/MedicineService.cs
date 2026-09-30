@@ -14,17 +14,20 @@ namespace Clinexa.Services.Implementations
         private readonly IAuditLogService auditLogService;
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly UserManager<User> userManager;
+        private readonly IDateTimeService dateTimeService;
 
         public MedicineService(
             IMedicineRepository medicineRepository,
             IAuditLogService auditLogService,
             IHttpContextAccessor httpContextAccessor,
-            UserManager<User> userManager)
+            UserManager<User> userManager,
+            IDateTimeService dateTimeService)
         {
             this.medicineRepository = medicineRepository;
             this.auditLogService = auditLogService;
             this.httpContextAccessor = httpContextAccessor;
             this.userManager = userManager;
+            this.dateTimeService = dateTimeService;
         }
 
         public async Task<bool> CreateAsync(Medicine medicine)
@@ -39,7 +42,7 @@ namespace Clinexa.Services.Implementations
             }
 
             medicine.IsActive = true;
-            medicine.CreatedAt = DateTime.UtcNow;
+            medicine.CreatedAt = dateTimeService.Now;
             medicine.Name = medicine.Name.Trim();
 
             if (!string.IsNullOrWhiteSpace(medicine.GenericName))

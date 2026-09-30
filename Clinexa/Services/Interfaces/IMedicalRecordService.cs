@@ -16,8 +16,6 @@ namespace Clinexa.Services.Interfaces
 
         Task<bool> CanAccessAsync(int medicalRecordId, int currentUserId);
         Task<int?> GetDoctorIdByUserIdAsync(int userId);
-
-
         Task<bool> CreateAsync(MedicalRecord medicalRecord);
         Task<List<Appointment>> GetAvailableAppointmentsAsync();
 

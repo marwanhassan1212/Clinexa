@@ -33,6 +33,7 @@ namespace Clinexa.Repositories.Interfaces
         Task<List<Appointment>> GetAvailableAppointmentsAsync();
         Task<Appointment?> GetAppointmentByIdAsync(int appointmentId);
 
+        Task<List<Appointment>> GetAvailableAppointmentsByDoctorIdAsync(int doctorId);
 
         Task SaveChangesAsync();
 

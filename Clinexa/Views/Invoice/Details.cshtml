@@ -34,12 +34,15 @@
                         Edit Invoice
                     </a>
 
-                    <button type="button"
-                            class="btn btn-outline-secondary"
-                            onclick="window.print()">
-                        <i class="bi bi-printer me-1"></i>
-                        Print
-                    </button>
+
+
+                    <!-- Download PDF -->
+                    <a asp-action="Print"
+                       asp-route-id="@Model.Invoice.InvoiceId"
+                       class="btn btn-outline-danger">
+                        <i class="bi bi-file-earmark-pdf me-1"></i>
+                        Download PDF
+                    </a>
 
                 </div>
             </div>
@@ -509,8 +512,8 @@
                             </span>
 
                             <span class="@(Model.Invoice.RemainingAmount > 0
-                                                                  ? "text-danger fw-bold"
-                                                                  : "text-success fw-bold")">
+                                                                                                    ? "text-danger fw-bold"
+                                                                                                    : "text-success fw-bold")">
 
                                 @Model.Invoice.RemainingAmount.ToString("N2")
 

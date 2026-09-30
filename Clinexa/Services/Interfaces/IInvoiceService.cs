@@ -1,4 +1,5 @@
 ﻿using Clinexa.Models.Entities;
+using System;
 
 namespace Clinexa.Services.Interfaces
 {
@@ -20,6 +21,7 @@ namespace Clinexa.Services.Interfaces
           int page,
           int pageSize);
         Task<List<Invoice>> GetByPatientIdAsync(int patientId);
+
 
         Task<Invoice?> GetByAppointmentIdAsync(int appointmentId);
 

@@ -185,9 +185,13 @@
 
 
                                 <!-- Date -->
-                                <td>
-                                    @appointment.AppointmentDate.ToString("dd MMM yyyy")
-                                </td>
+                            <td>
+                                @appointment.AppointmentDate.ToString("dd/MM/yyyy")
+                                <br />
+                                @appointment.StartTime.ToString(@"hh\:mm")
+                                -
+                                @appointment.EndTime.ToString(@"hh\:mm")
+                            </td>
 
 
                                 <!-- Time -->

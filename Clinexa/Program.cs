@@ -58,6 +58,10 @@ namespace Clinexa
             builder.Services.AddScoped<IPaymentService, PaymentService>();
             builder.Services.AddScoped<IDashboardService, DashboardService>();
             builder.Services.AddScoped<IAuditLogService, AuditLogService>();
+            builder.Services.AddScoped<ISearchService, SearchService>();
+           
+
+            builder.Services.AddSingleton<IDateTimeService, EgyptDateTimeService>();
 
 
             // IHttpContextAccessor
@@ -65,6 +69,7 @@ namespace Clinexa
 
             //PDF
             builder.Services.AddScoped<IPrescriptionPdfService, PrescriptionPdfService>();
+            builder.Services.AddScoped<IInvoicePdfService, InvoicePdfService>();
 
 
             builder.Services.AddDbContext<AppDbContext>(options =>
@@ -113,10 +118,16 @@ namespace Clinexa
                     policy.RequireRole("Admin");
                 });
 
-                // Clinical access
+                // Clinical read access
                 options.AddPolicy("ClinicalAccess", policy =>
                 {
                     policy.RequireRole("Admin", "Doctor");
+                });
+
+                // Clinical write access
+                options.AddPolicy("ClinicalWriteAccess", policy =>
+                {
+                    policy.RequireRole("Admin");
                 });
 
                 // Reception / operational access
@@ -160,6 +171,7 @@ namespace Clinexa
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllerRoute(

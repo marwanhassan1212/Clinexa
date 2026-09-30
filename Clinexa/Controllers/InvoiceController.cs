@@ -4,6 +4,7 @@ using Clinexa.Models.ViewModels.Invoice;
 using Clinexa.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Clinexa.Services.PDF;
 
 namespace Clinexa.Controllers
 {
@@ -14,17 +15,21 @@ namespace Clinexa.Controllers
         private readonly IAppointmentService appointmentService;
         private readonly IInvoiceItemService invoiceItemService;
         private readonly IPaymentService paymentService;
+        private readonly IInvoicePdfService invoicePdfService;
 
         public InvoiceController(
             IInvoiceService invoiceService,
             IAppointmentService appointmentService,
             IInvoiceItemService invoiceItemService
-            ,IPaymentService paymentService)
+            ,IPaymentService paymentService
+            ,IInvoicePdfService invoicePdfService)
+            
         {
             this.invoiceService = invoiceService;
             this.appointmentService = appointmentService;
             this.invoiceItemService = invoiceItemService;
             this.paymentService = paymentService;
+            this.invoicePdfService = invoicePdfService;
         }
 
         // GET: Invoice
@@ -264,6 +269,38 @@ namespace Clinexa.Controllers
             return RedirectToAction(
                 nameof(Details),
                 new { id = invoice.InvoiceId });
+        }
+
+        public async Task<IActionResult> Print(int id)
+        {
+            var invoice =
+                await invoiceService
+                    .GetByIdAsync(id);
+
+            if (invoice == null)
+            {
+                return NotFound();
+            }
+
+            var items =
+                await invoiceItemService
+                    .GetByInvoiceIdAsync(id);
+
+            var payments =
+                await paymentService
+                    .GetByInvoiceIdAsync(id);
+
+            var pdf =
+                invoicePdfService
+                    .Generate(
+                        invoice,
+                        items,
+                        payments);
+
+            return File(
+                pdf,
+                "application/pdf",
+                $"Invoice-{invoice.InvoiceId}.pdf");
         }
     }
 }

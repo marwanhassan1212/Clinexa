@@ -11,12 +11,14 @@ namespace Clinexa.Services.Implementations
         private readonly IUserRepository userRepository;
         private readonly UserManager<User> userManager;
         private readonly RoleManager<Role> roleManager;
+        private readonly IDateTimeService dateTimeService;
         public UserService(IUserRepository userRepository , UserManager<User> userManager
-            , RoleManager<Role> roleManager)
+            , RoleManager<Role> roleManager, IDateTimeService dateTimeService)
         {
             this.userRepository = userRepository;
             this.userManager = userManager;
             this.roleManager = roleManager;
+            this.dateTimeService = dateTimeService;
         }
 
         public async Task<bool> CreateAsync(
@@ -44,7 +46,7 @@ namespace Clinexa.Services.Implementations
             }
 
             user.UserName = user.Email;
-            user.CreatedAt = DateTime.UtcNow;
+            user.CreatedAt = dateTimeService.Now;
             user.IsActive = true;
 
             var result = await userManager.CreateAsync(user, password);

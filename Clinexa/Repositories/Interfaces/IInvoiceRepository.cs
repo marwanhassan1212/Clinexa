@@ -32,7 +32,7 @@ namespace Clinexa.Repositories.Interfaces
             int? excludedInvoiceId = null);
         Task<bool> IsAppointmentCancelledAsync(int appointmentId);
 
-
+        Task<bool> IsAppointmentCompletedAsync(int appointmentId);
         Task AddAsync(Invoice invoice);
 
         void Update(Invoice invoice);

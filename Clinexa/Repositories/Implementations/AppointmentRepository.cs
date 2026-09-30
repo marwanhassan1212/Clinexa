@@ -230,5 +230,12 @@ namespace Clinexa.Repositories.Implementations
                 .Include(x => x.DoctorSchedules)
                 .FirstOrDefaultAsync(x => x.DoctorId == doctorId);
         }
+
+        public async Task<Doctor?> GetDoctorByUserIdAsync(int userId)
+        {
+            return await _db.Doctors
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.UserId == userId);
+        }
     }
 }

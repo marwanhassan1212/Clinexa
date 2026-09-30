@@ -1,4 +1,6 @@
-﻿using Clinexa.Models.Entities;
+﻿using Clinexa.Enums;
+using Clinexa.Models.Entities;
+using Clinexa.Repositories.Implementations;
 using Clinexa.Repositories.Interfaces;
 using Clinexa.Services.Interfaces;
 using Microsoft.AspNetCore.Http;
@@ -15,18 +17,22 @@ namespace Clinexa.Services.Implementations
         private readonly IAuditLogService auditLogService;
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly UserManager<User> userManager;
+        private readonly IDateTimeService dateTimeService;
 
         public InvoiceService(
             IInvoiceRepository invoiceRepository,
             IAuditLogService auditLogService,
             IHttpContextAccessor httpContextAccessor,
-            UserManager<User> userManager)
+            UserManager<User> userManager,
+            IDateTimeService dateTimeService)
         {
             this.invoiceRepository = invoiceRepository;
             this.auditLogService = auditLogService;
             this.httpContextAccessor = httpContextAccessor;
             this.userManager = userManager;
+            this.dateTimeService = dateTimeService;
         }
+
 
         public async Task<bool> CreateAsync(Invoice invoice)
         {
@@ -44,12 +50,14 @@ namespace Clinexa.Services.Implementations
             if (!appointmentExists)
                 return false;
 
-            bool appointmentCancelled =
+            // Invoice can only be created
+            // after the appointment is completed.
+            bool appointmentCompleted =
                 await invoiceRepository
-                    .IsAppointmentCancelledAsync(
+                    .IsAppointmentCompletedAsync(
                         invoice.AppointmentId);
 
-            if (appointmentCancelled)
+            if (!appointmentCompleted)
                 return false;
 
             bool invoiceExists =
@@ -88,21 +96,21 @@ namespace Clinexa.Services.Implementations
             if (invoice.PaidAmount == 0)
             {
                 invoice.InvoiceStatus =
-                    Enums.InvoiceStatus.Unpaid;
+                    InvoiceStatus.Unpaid;
             }
             else if (invoice.PaidAmount < invoice.TotalAmount)
             {
                 invoice.InvoiceStatus =
-                    Enums.InvoiceStatus.PartiallyPaid;
+                    InvoiceStatus.PartiallyPaid;
             }
             else
             {
                 invoice.InvoiceStatus =
-                    Enums.InvoiceStatus.Paid;
+                    InvoiceStatus.Paid;
             }
 
             if (invoice.InvoiceDate == default)
-                invoice.InvoiceDate = DateTime.Now;
+                invoice.InvoiceDate = dateTimeService.Now;
 
             await invoiceRepository.AddAsync(invoice);
 
@@ -115,6 +123,7 @@ namespace Clinexa.Services.Implementations
 
             return true;
         }
+
 
         public async Task<(List<Invoice> Invoices, int TotalCount)> FilterAsync(
             string? search,

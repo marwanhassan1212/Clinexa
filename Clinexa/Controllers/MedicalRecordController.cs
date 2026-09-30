@@ -21,54 +21,24 @@ namespace Clinexa.Controllers
             this.userManager = userManager;
         }
 
+        // =========================================================
+        // INDEX
+        // =========================================================
+
         public async Task<IActionResult> Index()
         {
-            var currentUserId = int.Parse(
-                userManager.GetUserId(User)!);
-
-            var user = await userManager.FindByIdAsync(
-                currentUserId.ToString());
-
-            if (user == null)
-                return Forbid();
-
-            List<MedicalRecord> medicalRecords;
-
-            if (await userManager.IsInRoleAsync(user, "Admin"))
-            {
-                medicalRecords =
-                    await medicalRecordService.GetAllAsync();
-            }
-            else
-            {
-                var doctorId = await medicalRecordService.GetDoctorIdByUserIdAsync(currentUserId);
-                if (!doctorId.HasValue)
-                    return Forbid();
-
-                medicalRecords =
-                    await medicalRecordService
-                        .GetByDoctorIdAsync(doctorId.Value);
-            }
+            var medicalRecords =
+                await medicalRecordService.GetAllAsync();
 
             return View(medicalRecords);
         }
 
-
-        // Details
+        // =========================================================
+        // DETAILS
+        // =========================================================
 
         public async Task<IActionResult> Details(int id)
         {
-            var currentUserId = int.Parse(
-                userManager.GetUserId(User)!);
-
-            var canAccess =
-                await medicalRecordService.CanAccessAsync(
-                    id,
-                    currentUserId);
-
-            if (!canAccess)
-                return Forbid();
-
             var medicalRecord =
                 await medicalRecordService.GetByIdAsync(id);
 
@@ -78,9 +48,11 @@ namespace Clinexa.Controllers
             return View(medicalRecord);
         }
 
+        // =========================================================
+        // CREATE - GET
+        // =========================================================
 
-        // Create
-
+        [HttpGet]
         public async Task<IActionResult> Create()
         {
             var model = new MedicalRecordCreateViewModel
@@ -93,6 +65,10 @@ namespace Clinexa.Controllers
             return View(model);
         }
 
+        // =========================================================
+        // CREATE - POST
+        // =========================================================
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(
@@ -101,9 +77,13 @@ namespace Clinexa.Controllers
             if (!ModelState.IsValid)
             {
                 await LoadAppointmentsAsync(model);
-
                 return View(model);
             }
+
+            // -----------------------------------------------------
+            // This method is already data-level authorized
+            // inside MedicalRecordService.
+            // -----------------------------------------------------
 
             var appointment =
                 await medicalRecordService
@@ -121,54 +101,45 @@ namespace Clinexa.Controllers
                 return View(model);
             }
 
-            var currentUserId = int.Parse(
-                userManager.GetUserId(User)!);
-
-            var currentUser =
-                await userManager.FindByIdAsync(
-                    currentUserId.ToString());
-
-            if (currentUser == null)
-                return Forbid();
-
-            // Doctor can create a medical record
-            // only for his own appointment.
-            if (await userManager.IsInRoleAsync(
-                    currentUser,
-                    "Doctor"))
-            {
-                if (currentUser.Doctor == null ||
-                    currentUser.Doctor.DoctorId != appointment.DoctorId)
-                {
-                    return Forbid();
-                }
-            }
-
             var medicalRecord = new MedicalRecord
             {
-                PatientId = appointment.PatientId,
-                DoctorId = appointment.DoctorId,
-                AppointmentId = appointment.AppointmentId,
+                AppointmentId =
+                    appointment.AppointmentId,
 
-                Symptoms = model.Symptoms,
-                Diagnosis = model.Diagnosis,
-                Treatment = model.Treatment,
-                Notes = model.Notes,
-                FollowUpDate = model.FollowUpDate,
+                PatientId =
+                    appointment.PatientId,
 
-                CreatedAt = DateTime.UtcNow
+                DoctorId =
+                    appointment.DoctorId,
+
+                Symptoms =
+                    model.Symptoms,
+
+                Diagnosis =
+                    model.Diagnosis,
+
+                Treatment =
+                    model.Treatment,
+
+                Notes =
+                    model.Notes,
+
+                FollowUpDate =
+                    model.FollowUpDate
             };
 
             var result =
                 await medicalRecordService
-                    .CreateAsync(medicalRecord);
+                    .CreateAsync(
+                        medicalRecord);
 
             if (!result)
             {
                 ModelState.AddModelError(
                     "",
                     "Unable to create medical record. " +
-                    "Please check the appointment or existing medical record.");
+                    "Please check the selected appointment " +
+                    "or existing medical record.");
 
                 await LoadAppointmentsAsync(model);
 
@@ -178,25 +149,17 @@ namespace Clinexa.Controllers
             TempData["Success"] =
                 "Medical record created successfully.";
 
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(
+                nameof(Index));
         }
 
+        // =========================================================
+        // EDIT - GET
+        // =========================================================
 
-        // Edit
-
+        [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
-            var currentUserId = int.Parse(
-                userManager.GetUserId(User)!);
-
-            var canAccess =
-                await medicalRecordService.CanAccessAsync(
-                    id,
-                    currentUserId);
-
-            if (!canAccess)
-                return Forbid();
-
             var medicalRecord =
                 await medicalRecordService
                     .GetByIdAsync(id);
@@ -204,29 +167,34 @@ namespace Clinexa.Controllers
             if (medicalRecord == null)
                 return NotFound();
 
-            var model = new MedicalRecordEditViewModel
-            {
-                MedicalRecordId =
-                    medicalRecord.MedicalRecordId,
+            var model =
+                new MedicalRecordEditViewModel
+                {
+                    MedicalRecordId =
+                        medicalRecord.MedicalRecordId,
 
-                Symptoms =
-                    medicalRecord.Symptoms,
+                    Symptoms =
+                        medicalRecord.Symptoms,
 
-                Diagnosis =
-                    medicalRecord.Diagnosis,
+                    Diagnosis =
+                        medicalRecord.Diagnosis,
 
-                Treatment =
-                    medicalRecord.Treatment,
+                    Treatment =
+                        medicalRecord.Treatment,
 
-                Notes =
-                    medicalRecord.Notes,
+                    Notes =
+                        medicalRecord.Notes,
 
-                FollowUpDate =
-                    medicalRecord.FollowUpDate
-            };
+                    FollowUpDate =
+                        medicalRecord.FollowUpDate
+                };
 
             return View(model);
         }
+
+        // =========================================================
+        // EDIT - POST
+        // =========================================================
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -236,17 +204,6 @@ namespace Clinexa.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var currentUserId = int.Parse(
-                userManager.GetUserId(User)!);
-
-            var canAccess =
-                await medicalRecordService.CanAccessAsync(
-                    model.MedicalRecordId,
-                    currentUserId);
-
-            if (!canAccess)
-                return Forbid();
-
             var medicalRecord =
                 await medicalRecordService
                     .GetByIdAsync(
@@ -254,6 +211,16 @@ namespace Clinexa.Controllers
 
             if (medicalRecord == null)
                 return NotFound();
+
+            // -----------------------------------------------------
+            // Only medical information can be edited.
+            //
+            // AppointmentId
+            // PatientId
+            // DoctorId
+            //
+            // are preserved by the Service.
+            // -----------------------------------------------------
 
             medicalRecord.Symptoms =
                 model.Symptoms;
@@ -270,12 +237,10 @@ namespace Clinexa.Controllers
             medicalRecord.FollowUpDate =
                 model.FollowUpDate;
 
-            medicalRecord.UpdatedAt =
-                DateTime.UtcNow;
-
             var result =
                 await medicalRecordService
-                    .UpdateAsync(medicalRecord);
+                    .UpdateAsync(
+                        medicalRecord);
 
             if (!result)
             {
@@ -293,10 +258,14 @@ namespace Clinexa.Controllers
                 nameof(Details),
                 new
                 {
-                    id = medicalRecord.MedicalRecordId
+                    id =
+                        medicalRecord.MedicalRecordId
                 });
         }
 
+        // =========================================================
+        // LOAD APPOINTMENTS
+        // =========================================================
 
         private async Task LoadAppointmentsAsync(
             MedicalRecordCreateViewModel model)

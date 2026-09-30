@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Clinexa.Controllers
 {
-    [Authorize(Policy = "OperationalAccess")]
+    [Authorize(Policy = "BillingAccess")]
     public class PatientController : Controller
     {
         private readonly IPatientService patientService;

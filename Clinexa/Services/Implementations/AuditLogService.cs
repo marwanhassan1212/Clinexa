@@ -1,4 +1,5 @@
 ﻿using Clinexa.Models.Entities;
+using Clinexa.Repositories.Implementations;
 using Clinexa.Repositories.Interfaces;
 using Clinexa.Services.Interfaces;
 
@@ -7,11 +8,13 @@ namespace Clinexa.Services.Implementations
     public class AuditLogService : IAuditLogService
     {
         private readonly IAuditLogRepository _auditLogRepository;
+        private readonly IDateTimeService dateTimeService;
 
-        public AuditLogService(
-            IAuditLogRepository auditLogRepository)
+        public AuditLogService(IAuditLogRepository auditLogRepository , IDateTimeService dateTimeService)
+
         {
             _auditLogRepository = auditLogRepository;
+            this.dateTimeService = dateTimeService;
         }
 
         public async Task LogAsync(
@@ -36,7 +39,7 @@ namespace Clinexa.Services.Implementations
 
                 IpAddress = ipAddress,
 
-                Timestamp = DateTime.UtcNow
+                Timestamp = dateTimeService.Now
             };
 
             await _auditLogRepository.AddAsync(auditLog);
@@ -72,6 +75,31 @@ namespace Clinexa.Services.Implementations
         {
             return await _auditLogRepository
                 .GetByIdAsync(id);
+        }
+
+        public async Task<(List<AuditLog> Logs, int TotalCount)> FilterAsync(string? search, string? action,
+             string? entityName, int? userId, DateTime? dateFrom, DateTime? dateTo, int page, int pageSize)
+
+        {
+            return await _auditLogRepository
+                .FilterAsync(search, action, entityName, userId, dateFrom, dateTo, page,
+                    pageSize);
+
+        }
+
+        public async Task<List<User>> GetUsersAsync()
+        {
+            return await _auditLogRepository.GetUsersAsync();
+        }
+
+        public async Task<List<string>> GetEntityNamesAsync()
+        {
+            return await _auditLogRepository.GetEntityNamesAsync();
+        }
+
+        public async Task<List<string>> GetActionsAsync()
+        {
+            return await _auditLogRepository.GetActionsAsync();
         }
     }
 }

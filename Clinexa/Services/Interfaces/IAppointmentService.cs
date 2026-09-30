@@ -29,7 +29,7 @@ namespace Clinexa.Services.Interfaces
            int pageSize);
         Task<bool> UpdateAsync(Appointment appointment);
 
-        Task<bool> CancelAsync(int id , string? cancellationReason);
+        Task<bool> CancelAsync(int id, string? cancellationReason);
 
         Task<bool> ConfirmAsync(int id);
 
@@ -40,5 +40,9 @@ namespace Clinexa.Services.Interfaces
         Task<bool> CompleteAsync(int id);
 
         Task<bool> MarkAsNoShowAsync(int id);
+
+
+
+        Task<int?> GetCurrentDoctorIdAsync();
     }
 }
